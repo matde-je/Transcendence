@@ -1,4 +1,4 @@
-// Define routes
+//define routes
 const routes = {
     '#home': `
         <h1>Welcome to Pong</h1>
@@ -9,16 +9,16 @@ const routes = {
         <canvas id="pongCanvas" width="600" height="400" class="border"></canvas>
         <button id="startGame" class="btn btn-primary mt-3">Start Game</button>
     `,
-    '#leaderboard': `
-        <h2>Leaderboard</h2>
-        <ul class="list-group">
-            <li class="list-group-item">Player 1: 100 points</li>
-            <li class="list-group-item">Player 2: 90 points</li>
-        </ul>
-    `
+    // '#leaderboard': `
+    //     <h2>Leaderboard</h2>
+    //     <ul class="list-group">
+    //         <li class="list-group-item">Player 1: 100 points</li>
+    //         <li class="list-group-item">Player 2: 90 points</li>
+    //     </ul>
+    // `
 };
 
-// Function to update content
+//function to update content
 function updateContent() {
     const hash = window.location.hash || '#home';
     document.getElementById('content').innerHTML = routes[hash] || routes['#home'];
@@ -27,15 +27,15 @@ function updateContent() {
     }
 }
 
-// Listen for hash changes
+//listen for hash changes
 window.addEventListener('hashchange', updateContent);
 
-// Initial content load
+//initial content load
 document.addEventListener('DOMContentLoaded', updateContent);
 
-// Game initialization
+//game init
 function initGame() {
     const canvas = document.getElementById('pongCanvas');
     const ctx = canvas.getContext('2d');
-    // Add game logic here
+    //add game logic here
 }
