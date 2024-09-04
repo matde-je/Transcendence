@@ -19,7 +19,7 @@ from django.urls import path
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
-from . import views  
+from ..pong import views  
 
 # urlpatterns = [
 #     path('', TemplateView.as_view(template_name='index.html')),
@@ -30,5 +30,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),  #keep admin route if you need it
     path('', views.home, name='home'),  #root URL now points to a home view
     path('tournament/', views.tournament, name='tournament'),
-    #keep static files config
-] + static('/static/', document_root=settings.STATIC_ROOT)
+ ] # + static('/static/', document_root=settings.STATIC_ROOT) #keep static files config
