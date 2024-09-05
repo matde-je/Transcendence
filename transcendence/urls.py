@@ -17,9 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from pong import views  
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),  #keep admin route if you need it
     path('', views.home, name='home'),  #root URL now points to a home view
     path('tournament/', views.tournament, name='tournament'),
- ] # + static('/static/', document_root=settings.STATIC_ROOT) #keep static files config
+ ] 
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
