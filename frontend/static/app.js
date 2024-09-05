@@ -8,6 +8,8 @@
 // }
 // const context = canvas.getContext("2d");
 
+console.log("Pong game script loaded");
+
 const canvas = document.getElementById("PongGame");
 const context = canvas.getContext("2d");
 

@@ -15,13 +15,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from pong import views  
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),  #keep admin route if you need it
+    path('', include('pong.urls')),
     path('', views.home, name='home'),  #root URL now points to a home view
     path('tournament/', views.tournament, name='tournament'),
  ] 
