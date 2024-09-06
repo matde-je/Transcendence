@@ -1,4 +1,3 @@
-
 //document.addEventListener('DOMContentLoaded', function() {});
 // const canvas = document.getElementById("game");
 // const context = canvas.getContext("2d");
@@ -48,7 +47,7 @@ const ball = new Element ( {
     width: 15,
     height: 15,
     color: "#fff",
-    speed: 5,
+    speed: 10,
     gravity: 1,
 });
 
@@ -78,29 +77,30 @@ function draw_all(){
     score_2();
 }
 
-function collision(){
+function collision() {
     if (ball.x + ball.speed <= 0 || ball.x + ball.speed + ball.width >= canvas.width)
         ball.speed *= -1;
-    ball.y += ball.gravity;
     ball.x += ball.speed;
+    ball.x = Math.max(0, Math.min(ball.x, canvas.width - ball.width));
     draw_all();
 }
 
 function bounce_ball() {
-    if (ball.y + ball.gravity <= 0 || ball.y + ball.gravity >= canvas.height) 
+    ball.y += ball.gravity;    
+    if (ball.y <= 0 || ball.y + ball.height >= canvas.height) { 
         ball.gravity *= -1;
-    ball.y += ball.gravity;
-    ball.x += ball.speed;
+        if (ball.y <= 0)
+            ball.y = 0;
+        else 
+            ball.y = canvas.height - ball.height;
+    }
     collision();
 }
 
-function loop(){
+function loop() {
     bounce_ball();
     window.requestAnimationFrame(loop);
 }
 
 loop();
-
-
-
 
