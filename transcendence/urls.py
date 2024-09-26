@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),  #keep admin route if you need it
     path('', include('pong.urls')),
     path('', views.home, name='home'),  #root URL now points to a home view
-    path('tournament/', views.tournament, name='tournament'),
+    # path('tournament/', views.tournament, name='tournament'),
  ] 
 
 if settings.DEBUG:
