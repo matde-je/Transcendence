@@ -45,4 +45,18 @@ info:
 	@echo "\n*****   docker volume ls   *****"
 	@docker volume ls
 
-.PHONY: run stop venv activate install clean createsuperuser migrate info #fclean logs info mariadb-it nginx-it wordpress-it
+# Interactive mode
+backend-it:
+	@clear
+	docker exec -it django /bin/bash
+
+db-it:
+	@clear
+	docker exec -it postgres /bin/bash
+
+# Display containers logs
+logs:
+	@clear
+	docker-compose -f $(COMPOSE_FILE) logs
+
+.PHONY: run stop venv activate install clean createsuperuser migrate info backend-it db-it logs #fclean 

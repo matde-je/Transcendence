@@ -1,23 +1,35 @@
+networks:
+  transcendence:
+
+volumes:
+  postgres_data:
+
 services:
-  web:
+  backend:
+    container_name: django
     build: .
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
     ports:
       - "8000:8000"
+    networks:
+      - transcendence
     env_file:
       - .env
+    restart: unless-stopped
     depends_on:
       - db
+
   db:
+    container_name: postgres
     image: postgres:13
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+    env_file:
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - transcendence
+    restart: always
 
-volumes:
-  postgres_data:
+
