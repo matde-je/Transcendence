@@ -13,6 +13,10 @@ stop:
 down:
 	docker-compose -f $(COMPOSE_FILE) down
 
+clean:
+	clear
+	docker-compose -f $(COMPOSE_FILE) down --rmi all --volumes
+
 # Comando para criar o ambiente virtual
 venv:
 	virtualenv venv
@@ -46,7 +50,7 @@ info:
 	@docker volume ls
 
 # Interactive mode
-backend-it:
+backend-it:$(COMPOSE)
 	@clear
 	docker exec -it django /bin/bash
 
@@ -59,4 +63,4 @@ logs:
 	@clear
 	docker-compose -f $(COMPOSE_FILE) logs
 
-.PHONY: run stop venv activate install clean createsuperuser migrate info backend-it db-it logs #fclean 
+.PHONY: run stop down clean venv activate install createsuperuser migrate info backend-it db-it logs #fclean 
