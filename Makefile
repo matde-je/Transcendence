@@ -11,7 +11,7 @@ stop:
 
 # Stop and remove all containers, network and volumes defined in docker-compose.yml
 down:
-	docker-compose -f $(COMPOSE_FILE) down
+	docker-compose -f $(COMPOSE_FILE) down 
 
 clean:
 	clear
@@ -35,6 +35,7 @@ createsuperuser:
 
 # Comando para rodar migrações do Django
 migrate:
+#	docker-compose -f $(COMPOSE_FILE) run web python manage.py makemigrations
 	docker-compose -f $(COMPOSE_FILE) run web python manage.py migrate
 
 # Display containers details
