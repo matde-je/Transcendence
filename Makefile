@@ -7,35 +7,41 @@ run:
 
 # Stop all containers defined in docker-compose.yml
 stop:
+	@clear
 	docker-compose -f $(COMPOSE_FILE) stop
 
 # Stop and remove all containers and networks defined in docker-compose.yml
 down:
+	@clear
 	docker-compose -f $(COMPOSE_FILE) down 
 
 # Stop and remove all containers, network, images and volumes defined in docker-compose.yml
 clean:
-	clear
+	@clear
 	docker-compose -f $(COMPOSE_FILE) down --rmi all --volumes
 
 # Create a virtual environment
 venv:
 	virtualenv venv
 
-# Activate the virtual environment
+# Activate the virtual environment (needs to run this command in a terminal)
 activate:
-	. .venv/bin/activate
+	@clear
+	@echo "To activate the virtual environment, run:"
+	@echo "source .venv/bin/activate"
 
 # Install dependencies inside the virtual environment
 install:
-	pip install -r ./srcs/requirements.txt
+	. venv/bin/activate && pip install -r ./srcs/requirements.txt
 
 # Create a superuser in Django
 createsuperuser:
+	@clear
 	docker-compose -f $(COMPOSE_FILE) run backend python manage.py createsuperuser
 
 # Migrate the database
 migrate:
+	@clear
 	docker-compose -f $(COMPOSE_FILE) run backend python manage.py migrate
 
 # Display containers details
@@ -64,4 +70,4 @@ logs:
 	@clear
 	docker-compose -f $(COMPOSE_FILE) logs
 
-.PHONY: run stop down clean venv activate install createsuperuser migrate info backend-it db-it logs #fclean 
+.PHONY: run stop down clean venv activate install createsuperuser migrate info backend-it db-it logs 
