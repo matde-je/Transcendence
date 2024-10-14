@@ -1,6 +1,6 @@
 include srcs/.env
 
-# Stars and build all containers defined in docker-compose.yml
+# Starts and build all containers defined in docker-compose.yml
 run:
 	@clear
 	docker-compose -f $(COMPOSE_FILE) up --build
@@ -9,34 +9,34 @@ run:
 stop:
 	docker-compose -f $(COMPOSE_FILE) stop
 
-# Stop and remove all containers, network and volumes defined in docker-compose.yml
+# Stop and remove all containers and networks defined in docker-compose.yml
 down:
 	docker-compose -f $(COMPOSE_FILE) down 
 
+# Stop and remove all containers, network, images and volumes defined in docker-compose.yml
 clean:
 	clear
 	docker-compose -f $(COMPOSE_FILE) down --rmi all --volumes
 
-# Comando para criar o ambiente virtual
+# Create a virtual environment
 venv:
 	virtualenv venv
 
-# Comando para ativar o ambiente virtual
+# Activate the virtual environment
 activate:
-	source venv/bin/activate
+	. .venv/bin/activate
 
-# Comando para instalar dependências dentro do ambiente virtual
+# Install dependencies inside the virtual environment
 install:
-	pip install -r requirements.txt
+	pip install -r ./srcs/requirements.txt
 
-# Comando para criar um superuser no Django
+# Create a superuser in Django
 createsuperuser:
-	docker-compose -f $(COMPOSE_FILE) run web python manage.py createsuperuser
+	docker-compose -f $(COMPOSE_FILE) run backend python manage.py createsuperuser
 
-# Comando para rodar migrações do Django
+# Migrate the database
 migrate:
-#	docker-compose -f $(COMPOSE_FILE) run web python manage.py makemigrations
-	docker-compose -f $(COMPOSE_FILE) run web python manage.py migrate
+	docker-compose -f $(COMPOSE_FILE) run backend python manage.py migrate
 
 # Display containers details
 info:
