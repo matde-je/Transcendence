@@ -1,5 +1,3 @@
-include srcs/.env
-
 # Starts and build all containers defined in docker-compose.yml
 run:
 	@clear
