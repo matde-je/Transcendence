@@ -5,11 +5,31 @@ volumes:
   postgres_data:
 
 services:
+  db:
+    container_name: postgres
+    image: postgres:13
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - transcendence
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     container_name: django
     build: .
     command: >
-      sh -c "python manage.py migrate &&
+      sh -c "until pg_isready -h db -p 5432 -U $${POSTGRES_USER}; do
+               echo 'Waiting for Postgres...';
+               sleep 2;
+             done &&
+             python manage.py migrate &&
              python manage.py runserver_plus --cert-file cert.pem 0.0.0.0:8000"
     volumes:
       - .:/app
@@ -22,14 +42,11 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
-  db:
-    container_name: postgres
-    image: postgres:13
-    env_file:
-      - .env
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - transcendence
-    restart: always
+
+

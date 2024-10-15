@@ -22,7 +22,10 @@ clean:
 
 # Create a virtual environment
 venv:
-	virtualenv venv
+#	virtualenv .venv
+	@clear
+	python3 -m venv .venv
+
 
 # Activate the virtual environment (needs to run this command in a terminal)
 activate:
