@@ -1,24 +1,22 @@
-include srcs/.env
-
 # Starts and build all containers defined in docker-compose.yml
 run:
 	@clear
-	docker-compose -f $(COMPOSE_FILE) up --build
+	docker-compose -f srcs/docker-compose.yml up --build
 
 # Stop all containers defined in docker-compose.yml
 stop:
 	@clear
-	docker-compose -f $(COMPOSE_FILE) stop
+	docker-compose -f srcs/docker-compose.yml stop
 
 # Stop and remove all containers and networks defined in docker-compose.yml
 down:
 	@clear
-	docker-compose -f $(COMPOSE_FILE) down 
+	docker-compose -f srcs/docker-compose.yml down 
 
 # Stop and remove all containers, network, images and volumes defined in docker-compose.yml
 clean:
 	@clear
-	docker-compose -f $(COMPOSE_FILE) down --rmi all --volumes
+	docker-compose -f srcs/docker-compose.yml down --rmi all --volumes
 
 # Create a virtual environment
 venv:
@@ -40,12 +38,12 @@ install:
 # Create a superuser in Django
 createsuperuser:
 	@clear
-	docker-compose -f $(COMPOSE_FILE) run backend python manage.py createsuperuser
+	docker-compose -f srcs/docker-compose.yml run backend python manage.py createsuperuser
 
 # Migrate the database
 migrate:
 	@clear
-	docker-compose -f $(COMPOSE_FILE) run backend python manage.py migrate
+	docker-compose -f srcs/docker-compose.yml run backend python manage.py migrate
 
 # Display containers details
 info:
@@ -60,7 +58,7 @@ info:
 	@docker volume ls
 
 # Interactive mode
-backend-it:$(COMPOSE)
+backend-it:
 	@clear
 	docker exec -it django /bin/bash
 
@@ -71,6 +69,6 @@ db-it:
 # Display containers logs
 logs:
 	@clear
-	docker-compose -f $(COMPOSE_FILE) logs
+	docker-compose -f srcs/docker-compose.yml logs
 
 .PHONY: run stop down clean venv activate install createsuperuser migrate info backend-it db-it logs #fclean 
