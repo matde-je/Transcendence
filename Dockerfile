@@ -11,7 +11,6 @@ COPY ./srcs/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install PostgreSQL client to use pg_isready for checking database readiness
-# Added this step to enable database readiness checks
 RUN apt-get update && apt-get install -y postgresql-client
 
 # Generate SSL certificate using OpenSSL
