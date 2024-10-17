@@ -49,15 +49,15 @@ const ball = new Element ( {
     width: 15,
     height: 15,
     color: "#fff",
-    speed: 8,
+    speed: 5,
     gravity: 1,
 });
 
 function key_down(e) {
     const key = e.key;
-    if (key == "w" && player1.y - player1.gravity > 0)
+    if (key == "s" && player1.y - player1.gravity > 0)
         player1.y -= player1.gravity * 4;
-    else if (key == "s" && player1.y + player1.height + player1.gravity < canvas.height)
+    else if (key == "x" && player1.y + player1.height + player1.gravity < canvas.height)
         player1.y += player1.gravity * 4;
     if (key == "i" && player2.y - player2.gravity > 0)
         player2.y -= player2.gravity * 4;
