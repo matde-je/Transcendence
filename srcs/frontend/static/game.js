@@ -12,6 +12,7 @@ let ani;
 let game_over = false;
 let pause = false;
 let init = 0;
+let ai = 0;
 
 window.addEventListener("keydown", key_down, false);
 
@@ -80,12 +81,15 @@ function key_down(e) {
             player2.y += player2.gravity * 4;
         if (key == "p")
             pause = !pause;
-        // if (key == "1") {
-
-        // }
+        if (key == "1") {
+			ai = 1;
+			context.fillText("Player 1 - S AND X", canvas.width / 2, 90);
+			context.fillText("P - to pause", canvas.width / 2, 120);
+			context.fillText("G - to start", canvas.width / 2, 150);
+        }
         if (key == "2") {
-            context.font = "20px Arial";  
-            context.textAlign = "center"; 
+            context.font = "20px Arial";
+            context.textAlign = "center";
             context.fillStyle = "white";
             context.fillText("Player 1 - Arrow keys", canvas.width / 2, 60);
             context.fillText("Player 2 - S AND X", canvas.width / 2, 90);
@@ -130,11 +134,11 @@ function draw_all(){
 function collision() {
     if (game_over == true)
         return ;
-    if (ball.x <= player1.x + player1.width && ball.y + ball.height >= player1.y && 
+    if (ball.x <= player1.x + player1.width && ball.y + ball.height >= player1.y &&
             ball.y <= player1.y + player1.height && ball.speed < 0)
         ball.speed *= -1;
-    else if (ball.x + ball.width >= player2.x && ball.y + ball.height >= player2.y && 
-               ball.y <= player2.y + player2.height && ball.speed > 0) 
+    else if (ball.x + ball.width >= player2.x && ball.y + ball.height >= player2.y &&
+               ball.y <= player2.y + player2.height && ball.speed > 0)
         ball.speed *= -1;
 
     if (ball.x + ball.width < 0) {
@@ -155,11 +159,11 @@ function bounce_ball() {
         return ;
     ball.x += ball.speed;
     ball.y += ball.gravity;
-    if (ball.y <= 0 || ball.y + ball.height >= canvas.height) { 
+    if (ball.y <= 0 || ball.y + ball.height >= canvas.height) {
         ball.gravity *= -1;
-        if (ball.y <= 0) 
+        if (ball.y <= 0)
             ball.y = 0;
-        else 
+        else
             ball.y = canvas.height - ball.height;
     }
     collision();
@@ -168,16 +172,18 @@ function bounce_ball() {
 
 function loop() {
     if (init == 0) {
-        context.font = "20px Arial";  
-        context.textAlign = "center"; 
+        context.font = "20px Arial";
+        context.textAlign = "center";
         context.fillStyle = "white";
         context.fillText("Press number of players (1-4)", canvas.width / 2, 30);
     }
     if (game_over == false && pause == false && init == 1) {
         bounce_ball();
+		if (ai)
+			moveAI(); // Call the AI movement function
         if (score1 == 10 || score2 == 10) {
-            context.font = "20px Arial";  
-            context.textAlign = "center"; 
+            context.font = "20px Arial";
+            context.textAlign = "center";
             context.fillStyle = "white";
             context.fillText("Game Over", canvas.width / 2, 60);
             context.fillText("Press G to play again", canvas.width / 2, 80);
