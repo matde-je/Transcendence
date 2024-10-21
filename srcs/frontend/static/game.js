@@ -83,7 +83,7 @@ window.addEventListener("keydown", (e) => {
         reset_game();
         init = 1;
     }
-    if (keys['p']) {
+    if (keys['p'] && game_over == false) {
         pause = !pause;
         if (pause == true) {
             context.font = "20px 'Courier New', Courier, monospace";  
@@ -201,12 +201,10 @@ function loop() {
         handle_moves();
         bounce_ball();
         if (score1 == 10 || score2 == 10) {
-            if (score1 == 10) {
+            if (score1 == 10)
                 x = canvas.width / 4; 
-            }
-            else {
+            else
                 x = canvas.width / 2 + canvas.width / 4;
-            }
             context.font = "50px 'Courier New', Courier, monospace";  
             context.textAlign = "center"; 
             context.fillStyle = "white";
