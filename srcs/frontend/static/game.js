@@ -13,6 +13,8 @@ let game_over = false;
 let pause = false;
 let init = 0;
 let ai = 0;
+let deltaTime = 1;
+let AiLastUpdateTime = 0;
 
 window.addEventListener("keydown", key_down, false);
 
@@ -179,8 +181,9 @@ function loop() {
     }
     if (game_over == false && pause == false && init == 1) {
         bounce_ball();
-		if (ai)
-			moveAI(); // Call the AI movement function
+		if (ai) {
+			aiLogic(deltaTime); // Call the AI movement function
+		}
         if (score1 == 10 || score2 == 10) {
             context.font = "20px Arial";
             context.textAlign = "center";
