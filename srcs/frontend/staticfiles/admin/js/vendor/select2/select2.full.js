@@ -6543,7 +6543,7 @@ S2.define('select2/selection/stopPropagation',[
         toBind = ( 'onwheel' in document || document.documentMode >= 9 ) ?
                     ['wheel'] : ['mousewheel', 'DomMouseScroll', 'MozMousePixelScroll'],
         slice  = Array.prototype.slice,
-        nullLowestDeltaTimeout, lowestDelta;
+        nullLowestAiRefreshViewout, lowestDelta;
 
     if ( $.event.fixHooks ) {
         for ( var i = toFix.length; i; ) {
@@ -6717,8 +6717,8 @@ S2.define('select2/selection/stopPropagation',[
         // handle multiple device types that give different
         // a different lowestDelta
         // Ex: trackpad = 3 and mouse wheel = 120
-        if (nullLowestDeltaTimeout) { clearTimeout(nullLowestDeltaTimeout); }
-        nullLowestDeltaTimeout = setTimeout(nullLowestDelta, 200);
+        if (nullLowestAiRefreshViewout) { clearTimeout(nullLowestAiRefreshViewout); }
+        nullLowestAiRefreshViewout = setTimeout(nullLowestDelta, 200);
 
         return ($.event.dispatch || $.event.handle).apply(this, args);
     }
