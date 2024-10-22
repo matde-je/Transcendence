@@ -93,9 +93,9 @@ window.addEventListener("keydown", (e) => {
     }
 	if (keys['1']) {
 		ai = 1;
-		context.fillText("PLAYER 1 - S AND X", canvas.width / 2, 90);
-		context.fillText("P - PAUSE", canvas.width / 2, 120);
-		context.fillText("G - START", canvas.width / 2, 150);
+		context.fillText("PLAYER 1 - S AND X", canvas.width / 2, 290);
+		context.fillText("P - PAUSE", canvas.width / 2, 320);
+		context.fillText("G - START", canvas.width / 2, 350);
 	}
     if ((game_over == true || init == 0) && (keys['g'])) {
         window.cancelAnimationFrame(ani);
@@ -126,9 +126,9 @@ function handle_moves() {
             player1.y -= player1.gravity * 2; //up
         if (keys['x'] && player1.y + player1.height < canvas.height)
             player1.y += player1.gravity * 2; //down
-        if (keys['ArrowUp'] && player2.y > 0)
+        if (keys['ArrowUp'] && player2.y > 0 && !ai)
             player2.y -= player2.gravity * 2; //up
-        if (keys['ArrowDown'] && player2.y + player2.height < canvas.height)
+        if (keys['ArrowDown'] && player2.y + player2.height < canvas.height && !ai)
             player2.y += player2.gravity * 2; //down
     }
 }
@@ -171,31 +171,38 @@ function draw_all(){
     score_2();
 }
 
-function collision() {
+function paddleCollision() {
 	if (game_over == true)
 		return ;
 	if (ball.x <= player1.x + player1.width && ball.y + ball.height >= player1.y &&
-		ball.y <= player1.y + player1.height && ball.speed < 0) {
+			ball.y <= player1.y + player1.height && ball.speed < 0) { // There is collision!!
 		ball.speed *= -1;
-		if (ball.y >= player1.y + player1.height / 8 || ball.y <= player1.y + player1.height * 7 / 8)
-			ball.gravity = Math.min(ball.gravity *2, maxGravity);
+		if ((ball.y <= player1.y + (ball.height / 2) + (player1.height / 8)) ||
+				(ball.y >= player1.y + (ball.height / 2) + (player1.height * 7 / 8))) // Thouch the eadges!!
+			ball.gravity = ball.initialBallGravity * 2;
+		else
+			ball.gravity = ball.initialBallGravity;
 	}
 	else if (ball.x + ball.width >= player2.x && ball.y + ball.height >= player2.y &&
-		ball.y <= player2.y + player2.height && ball.speed > 0) {
+			ball.y <= player2.y + player2.height && ball.speed > 0) { // There is collision!!
 		ball.speed *= -1;
-		if (ball.y >= player2.y + player2.height / 8 || ball.y <= player2.y + player2.height * 7 / 8)
-			ball.gravity = Math.min(ball.gravity *2, maxGravity);
+		if ((ball.y <= player2.y + (ball.height / 2) + (player2.height / 8)) ||
+				(ball.y >= player2.y + (ball.height / 2) + (player2.height * 7 / 8))) // Thouch the eadges!!
+			ball.gravity = ball.initialBallGravity * 2;
+		else
+			ball.gravity = ball.initialBallGravity;
 	}
-
-
+	let randomSign = Math.random() < 0.5 ? -1 : 1;
 	if (ball.x + ball.width < 0) {
 		score2 += 1;
 		ball.x = canvas.width / 2 - ball.width / 2;
 		ball.y = canvas.height / 2 - ball.height / 2;
+		ball.gravity = initialBallGravity * randomSign;
 	} else if (ball.x > canvas.width) {
 		score1 += 1;
 		ball.x = canvas.width / 2 - ball.width / 2;
 		ball.y = canvas.height / 2 - ball.height / 2;
+		ball.gravity = initialBallGravity * randomSign;
 	}
 	//ball.gravity += (Math.random() -0.5);
 	draw_all();
@@ -213,7 +220,7 @@ function bounce_ball() {
 		else
 			ball.y = canvas.height - ball.height;
 	}
-	collision();
+	paddleCollision();
 }
 
 function loop() {
