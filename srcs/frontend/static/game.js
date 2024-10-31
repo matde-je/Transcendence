@@ -177,21 +177,21 @@ function paddleCollision() {
 	if (ball.x <= player1.x + player1.width && ball.y + ball.height >= player1.y &&
 			ball.y <= player1.y + player1.height && ball.speed < 0) { // There is collision!!
 		ball.speed *= -1;
-		if ((ball.y <= player1.y + (ball.height / 2) + (player1.height / 8)) ||
-				(ball.y >= player1.y + (ball.height / 2) + (player1.height * 7 / 8))) // Thouch the eadges!!
-			ball.gravity = ball.initialBallGravity * 2;
+		if ((ball.y + (ball.height / 2) <= player1.y + (player1.height / 8)) ||
+				(ball.y + (ball.height / 2) >= player1.y + (player1.height * 7) / 8)) // Thouch the edges!!
+			ball.gravity = Math.sign(ball.gravity) * maxGravity;
 		else
-			ball.gravity = ball.initialBallGravity;
+			ball.gravity = Math.sign(ball.gravity) * initialBallGravity;
 	}
 	else if (ball.x + ball.width >= player2.x && ball.y + ball.height >= player2.y &&
 			ball.y <= player2.y + player2.height && ball.speed > 0) { // There is collision!!
 		ball.speed *= -1;
-		if ((ball.y <= player2.y + (ball.height / 2) + (player2.height / 8)) ||
-				(ball.y >= player2.y + (ball.height / 2) + (player2.height * 7 / 8))) // Thouch the eadges!!
-			ball.gravity = ball.initialBallGravity * 2;
+		if ((ball.y + (ball.height / 2) <= player2.y + (player2.height / 8)) ||
+				(ball.y + (ball.height / 2) >= player2.y + (player2.height * 7) / 8)) // Thouch the edges!!
+			ball.gravity = Math.sign(ball.gravity) * maxGravity;
 		else
-			ball.gravity = ball.initialBallGravity;
-	}
+			ball.gravity = Math.sign(ball.gravity) * initialBallGravity;
+	} //point scored
 	let randomSign = Math.random() < 0.5 ? -1 : 1;
 	if (ball.x + ball.width < 0) {
 		score2 += 1;
@@ -204,7 +204,6 @@ function paddleCollision() {
 		ball.y = canvas.height / 2 - ball.height / 2;
 		ball.gravity = initialBallGravity * randomSign;
 	}
-	//ball.gravity += (Math.random() -0.5);
 	draw_all();
 }
 
