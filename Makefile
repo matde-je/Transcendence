@@ -36,7 +36,7 @@ install:
 	. venv/bin/activate && pip install -r ./srcs/requirements.txt
 
 # Create a superuser in Django
-createsuperuser:
+createsuperuser:mariadb -e
 	@clear
 	docker compose -f docker-compose.yml run backend python manage.py createsuperuser
 

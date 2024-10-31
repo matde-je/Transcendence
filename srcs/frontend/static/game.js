@@ -22,9 +22,8 @@ let ballSpeed = 3;
 
 //AI settings
 let ai = 0;
-let aiSpeed = 50;
+let aiSpeed = 70;
 let AiRefreshView = 1000; // 1 sec, 1000 ms
-let AiLastUpdateTime = 0;
 
 class Element {
 	constructor(options){
@@ -112,7 +111,6 @@ window.addEventListener("keydown", (e) => {
         }
         keys['p'] = false;
     }
-
 });
 
 window.addEventListener("keyup", (e) => {
@@ -171,27 +169,26 @@ function draw_all(){
     score_2();
 }
 
+function handleEdgeCollisions(player) {
+	ball.speed *= -1;
+	if (ball.y + (ball.height / 2) <= player.y + (player.height / 6)) //Thouch upper edge!!
+		ball.gravity = -1 * maxGravity;
+	else if (ball.y + (ball.height / 2) >= player.y + (player.height * 5) / 6) // Thouch lower edge!!
+		ball.gravity = maxGravity;
+	else
+		ball.gravity = Math.sign(ball.gravity) * initialBallGravity; // Thouch center!!
+}
+
 function paddleCollision() {
 	if (game_over == true)
 		return ;
 	if (ball.x <= player1.x + player1.width && ball.y + ball.height >= player1.y &&
-			ball.y <= player1.y + player1.height && ball.speed < 0) { // There is collision!!
-		ball.speed *= -1;
-		if ((ball.y + (ball.height / 2) <= player1.y + (player1.height / 8)) ||
-				(ball.y + (ball.height / 2) >= player1.y + (player1.height * 7) / 8)) // Thouch the edges!!
-			ball.gravity = Math.sign(ball.gravity) * maxGravity;
-		else
-			ball.gravity = Math.sign(ball.gravity) * initialBallGravity;
-	}
+			ball.y <= player1.y + player1.height && ball.speed < 0) // There is collision!!
+				handleEdgeCollisions(player1);
 	else if (ball.x + ball.width >= player2.x && ball.y + ball.height >= player2.y &&
-			ball.y <= player2.y + player2.height && ball.speed > 0) { // There is collision!!
-		ball.speed *= -1;
-		if ((ball.y + (ball.height / 2) <= player2.y + (player2.height / 8)) ||
-				(ball.y + (ball.height / 2) >= player2.y + (player2.height * 7) / 8)) // Thouch the edges!!
-			ball.gravity = Math.sign(ball.gravity) * maxGravity;
-		else
-			ball.gravity = Math.sign(ball.gravity) * initialBallGravity;
-	} //point scored
+			ball.y <= player2.y + player2.height && ball.speed > 0) // There is collision!!
+				handleEdgeCollisions(player2);
+	//point scored
 	let randomSign = Math.random() < 0.5 ? -1 : 1;
 	if (ball.x + ball.width < 0) {
 		score2 += 1;
@@ -204,7 +201,6 @@ function paddleCollision() {
 		ball.y = canvas.height / 2 - ball.height / 2;
 		ball.gravity = initialBallGravity * randomSign;
 	}
-	draw_all();
 }
 
 function bounce_ball() {
@@ -219,8 +215,9 @@ function bounce_ball() {
 		else
 			ball.y = canvas.height - ball.height;
 	}
-	paddleCollision();
 }
+
+let AiLastUpdateTime = Date.now();
 
 function loop() {
     if (init == 0) {
@@ -232,9 +229,10 @@ function loop() {
     if (game_over == false && pause == false && init == 1) {
         handle_moves();
         bounce_ball();
-		if (ai) {
+		paddleCollision();
+		if (ai)
 			aiLogic(AiRefreshView); // Call the AI movement function
-		}
+		draw_all();
         if (score1 == 10 || score2 == 10) {
             if (score1 == 10)
                 x = canvas.width / 4;

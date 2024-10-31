@@ -15,35 +15,48 @@ function predictBallPosition() {
 	return { x: futureX, y: futureY };
 }
 
-function simulateAIKeyPress(player2, predictBallPosition) {
-	// Simulate pressing "i" key (move up)
+function handleAiMove() {
+	//let ramdomMoveFactor = Math.random() * 0.4 + 0.8;
+	if (keys['ArrowUp'] && player2.y > 0)
+		player2.y -= (aiSpeed); //up
+	if (keys['ArrowDown'] && player2.y + player2.height < canvas.height)
+		player2.y += (aiSpeed); //down
+}
+
+function simulateAiKeyPress(player2, predictBallPosition) {
+	let keyToPress = null;
 	if (predictBallPosition.y < player2.y + player2.height / 2)
-		player2.y -= aiSpeed;
-	// Simulate pressing "k" key (move down)
+		keyToPress = 'ArrowUp'; //move up
 	else if (predictBallPosition.y > player2.y + player2.height / 2)
-		player2.y += aiSpeed;
-	if (player2.y < 0) {
-		player2 = 0;
-	} else if (player2.y + player2.height > canvas.height) {
-		player2.y = canvas.height - player2.height;
+		keyToPress = 'ArrowDown'; //move down
+
+	keys['ArrowUp'] = false;
+	keys['ArrowDown'] = false;
+
+	if (keyToPress) {
+		keys[keyToPress] = true;
+		setTimeout(() => { // Simulate key release after a short delay
+			keys[keyToPress] = false;
+		}, 300); //100 1ms delay
 	}
+	if (player2.y < 0)
+		keys['ArrowUp'] = false;
+	else if (player2.y + player2.height > canvas.height)
+		keys['ArrowDown'] = false;
+		handleAiMove();
 }
 
 function aiLogic(AiRefreshView) {
 	const currentTime = Date.now();
-	console.log("AI last update: " + AiLastUpdateTime);
-	console.log("Current time: " + currentTime);
+	console.log("CurrentTime - AiLastUpdateTime: ", currentTime - AiLastUpdateTime);
 	// AI can only refresh once per second (1000 ms)
 	if (currentTime - AiLastUpdateTime >= AiRefreshView) {
 		const predictedPosition = predictBallPosition();
 		console.log("Predicted ball position: ", predictedPosition);
-		simulateAIKeyPress(player2, predictedPosition);
+		simulateAiKeyPress(player2, predictedPosition);
 		AiLastUpdateTime = currentTime;
-	} else {
-		console.log("AI is waiting to refresh...");
 	}
 }
-
 
 // Export moveAI function if using ES6 modules, or attach to window for global access
 window.aiLogic = aiLogic;
