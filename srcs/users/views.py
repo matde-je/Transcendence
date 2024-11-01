@@ -6,6 +6,8 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from .forms import RegistrationForm, UserUpdateForm
 from .models import UserProfile, Friendship, MatchHistory
+from .forms import UserUpdateForm, CustomPasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 
 # Email confirmation
 from django.core.mail import send_mail
@@ -20,17 +22,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.contrib.auth import get_user_model
 
-# Registration view
-#def register(request):
-#    if request.method == 'POST':
-#        form = RegistrationForm(request.POST, request.FILES)
-#        if form.is_valid():
-#            user = form.save()
-#            login(request, user)
-#            return redirect('dashboard')
-#    else:
-#        form = RegistrationForm()
-#    return render(request, 'users/register.html', {'form': form})
+# User Registration view
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -93,3 +85,16 @@ def activate(request, uidb64, token):
         return render(request, 'users/activation_successful.html')
     else:
         return render(request, 'users/activation_invalid.html')
+
+# Password change view
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = CustomPasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Mantém o usuário logado após a mudança de senha
+            return redirect('users:dashboard')
+    else:
+        form = CustomPasswordChangeForm(user=request.user)
+    return render(request, 'users/change_password.html', {'form': form})
