@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h2>Account Activated</h2>
+	<br><br>
+    <p>Your account has been successfully activated.</p>
+	<p>You can now <a href="{% url 'auth:login' %}">log in</a> and participate in a Tournament.</p>
+  </div>
+{% endblock %}

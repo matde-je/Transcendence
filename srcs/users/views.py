@@ -7,14 +7,50 @@ from django.contrib.auth.decorators import login_required
 from .forms import RegistrationForm, UserUpdateForm
 from .models import UserProfile, Friendship, MatchHistory
 
+# Email confirmation
+from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.auth.tokens import default_token_generator
+
+# User activation
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.contrib.auth import get_user_model
+
 # Registration view
+#def register(request):
+#    if request.method == 'POST':
+#        form = RegistrationForm(request.POST, request.FILES)
+#        if form.is_valid():
+#            user = form.save()
+#            login(request, user)
+#            return redirect('dashboard')
+#    else:
+#        form = RegistrationForm()
+#    return render(request, 'users/register.html', {'form': form})
 def register(request):
     if request.method == 'POST':
-        form = RegistrationForm(request.POST, request.FILES)
+        form = RegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('dashboard')
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+
+            current_site = get_current_site(request)
+            subject = 'Activate your account'
+            message = render_to_string('users/activation_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': default_token_generator.make_token(user),
+            })
+            user.email_user(subject, message)
+
+            return render(request, 'users/registration_complete.html')
+
     else:
         form = RegistrationForm()
     return render(request, 'users/register.html', {'form': form})
@@ -41,3 +77,19 @@ def friends_list(request):
 @login_required(login_url='/users/login/')
 def dashboard(request):
     return render(request, 'users/dashboard.html')
+
+# Email confirmation views
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+#        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        user = get_user_model().objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, UserProfile.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        return render(request, 'users/activation_successful.html')
+    else:
+        return render(request, 'users/activation_invalid.html')
