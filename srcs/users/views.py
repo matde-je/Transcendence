@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 # Create your views here.
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from .forms import RegistrationForm, UserUpdateForm
@@ -66,15 +66,27 @@ def friends_list(request):
     return render(request, 'users/friends_list.html', {'friends': friends})
 
 # Dashboard view
-@login_required(login_url='/users/login/')
+@login_required
 def dashboard(request):
-    return render(request, 'users/dashboard.html')
+    # Amigos e solicitações de amizade
+    friends = UserProfile.objects.filter(friendship_requests_received__from_user=request.user, friendship_requests_received__accepted=True)
+    received_requests = Friendship.objects.filter(to_user=request.user, accepted=False)
+    sent_requests = Friendship.objects.filter(from_user=request.user, accepted=False)
+    
+    # Filtra os usuários disponíveis para adicionar como amigos, excluindo o usuário atual
+    available_users = UserProfile.objects.exclude(id=request.user.id)
+    
+    return render(request, 'users/dashboard.html', {
+        'friends': friends,
+        'received_requests': received_requests,
+        'sent_requests': sent_requests,
+        'available_users': available_users,
+    })
 
 # Email confirmation views
 def activate(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
-#        uid = urlsafe_base64_encode(force_bytes(user.pk))
         user = get_user_model().objects.get(pk=uid)
     except (TypeError, ValueError, OverflowError, UserProfile.DoesNotExist):
         user = None
@@ -93,8 +105,47 @@ def change_password(request):
         form = CustomPasswordChangeForm(user=request.user, data=request.POST)
         if form.is_valid():
             user = form.save()
-            update_session_auth_hash(request, user)  # Mantém o usuário logado após a mudança de senha
+            # Keeps the user logged in after changing the password
+            update_session_auth_hash(request, user)
             return redirect('users:dashboard')
     else:
         form = CustomPasswordChangeForm(user=request.user)
     return render(request, 'users/change_password.html', {'form': form})
+
+# Invite a friend view
+@login_required
+def invite_friend(request, user_id):
+    to_user = get_object_or_404(UserProfile, id=user_id)
+    from_user = request.user
+    if from_user != to_user:
+        # Create a friend request if it doesn't already exist
+        friendship, created = Friendship.objects.get_or_create(from_user=from_user, to_user=to_user)
+        if not created:
+            # Update the request if it already exists (but not accepted)
+            friendship.accepted = False
+            friendship.save()
+    return redirect('users:friends_list')
+
+# Accept friend view
+@login_required
+def accept_friend(request, friendship_id):
+    friendship = get_object_or_404(Friendship, id=friendship_id, to_user=request.user)
+    if friendship:
+        # Update acceptance status
+        friendship.accepted = True
+        friendship.save()
+    return redirect('users:friends_list')
+
+# Friend list view
+@login_required
+def friends_list(request):
+    # Friends accepted
+    friends = UserProfile.objects.filter(friendship_requests_received__from_user=request.user, friendship_requests_received__accepted=True)
+    # Pending requests sent and received
+    received_requests = Friendship.objects.filter(to_user=request.user, accepted=False)
+    sent_requests = Friendship.objects.filter(from_user=request.user, accepted=False)
+    return render(request, 'users/friends_list.html', {
+        'friends': friends,
+        'received_requests': received_requests,
+        'sent_requests': sent_requests,
+    })

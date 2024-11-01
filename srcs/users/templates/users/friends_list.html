@@ -1,15 +1,45 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
-  <div class="container mt-5">
-    <h2>Friends List</h2>
-	<br><br>
-    <ul class="list-group">
-      {% for friend in friends %}
-        <li class="list-group-item">{{ friend.nickname }}</li>
-      {% empty %}
-        <li class="list-group-item">You have no friends added.</li>
-      {% endfor %}
-    </ul>
-  </div>
+<div class="container mt-5">
+  <h2>Friends List</h2>
+
+  <h3>Friends</h3>
+  <ul>
+    {% for friend in friends %}
+      <li>
+        {{ friend.username }} - {% if friend.online_status %}Online{% else %}Offline{% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h3>Pending Friend Requests Received</h3>
+  <ul>
+    {% for request in received_requests %}
+      <li>
+        {{ request.from_user.username }}
+        <a href="{% url 'users:accept_friend' friendship_id=request.id %}">Accept</a>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h3>Pending Friend Requests Sent</h3>
+  <ul>
+    {% for request in sent_requests %}
+      <li>
+        {{ request.to_user.username }} (Pending)
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h3>Add Friends</h3>
+  <ul>
+    {% for user in available_users %}
+      <li>
+        {{ user.username }}
+        <a href="{% url 'users:add_friend' user_id=user.id %}">Send Friend Request</a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
 {% endblock %}
