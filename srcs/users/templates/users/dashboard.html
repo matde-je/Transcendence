@@ -1,0 +1,14 @@
+<!-- templates/users/dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+  <h2>Bem-vindo ao Dashboard, {{ user.username }}!</h2>
+
+  <form method="post" action="{% url 'auth:logout' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Logout</button>
+  </form>
+
+{% endblock %}

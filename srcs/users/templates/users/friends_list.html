@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h2>Friends List</h2>
+    <ul class="list-group">
+      {% for friend in friends %}
+        <li class="list-group-item">{{ friend.nickname }}</li>
+      {% empty %}
+        <li class="list-group-item">You have no friends added.</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}

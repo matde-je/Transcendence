@@ -16,19 +16,40 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from pong import views  
+from users.views import dashboard
+from pong import views as pong_views
 from django.conf import settings
 from django.conf.urls.static import static
 
-urlpatterns = [
-    path('admin/', admin.site.urls),  #keep admin route if you need it
-    path('', include('pong.urls')),
-	path('accounts/', include('accounts.urls')),   # User-Managment
-    #path('', views.home, name='home'),  #root URL now points to a home view
-    # path('tournament/', views.tournament, name='tournament'),
- ] + static(settings.STATIC_URL , document_root=settings.STATIC_ROOT)
+from users.views import register
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-# urlpatterns += static(settings.MEDIA_URL , document_root=settings.MEDIA_ROOT)
+include('users.urls', namespace='users')
+
+urlpatterns = [
+    # Admin URL
+    path('admin/', admin.site.urls),
+
+    # Authentication URLs (login, logout, etc.)
+    path('users/', include(('django.contrib.auth.urls', 'auth'), namespace='auth')),
+
+    # User Management
+    path('users/', include(('users.urls', 'users'), namespace='users')),
+
+	# Dashboard URL
+    path('users/dashboard/', dashboard, name='dashboard'),
+
+    # Pong URL
+    path('', include('pong.urls')),
+] 
+
+# Static URLs
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # if settings.DEBUG:
 #     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+LOGIN_URL = '/users/login/'
+LOGIN_REDIRECT_URL = '/users/dashboard/'
+LOGOUT_REDIRECT_URL = '/users/login/'
