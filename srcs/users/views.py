@@ -19,17 +19,17 @@ def register(request):
         form = RegistrationForm()
     return render(request, 'users/register.html', {'form': form})
 
-# Profile view
-@login_required(login_url='/users/login/')
-def profile(request):
+# Profile update view
+@login_required
+def update_profile(request):
     if request.method == 'POST':
         form = UserUpdateForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            return redirect('profile')
+            return redirect('users:dashboard')
     else:
         form = UserUpdateForm(instance=request.user)
-    return render(request, 'users/profile.html', {'form': form})
+    return render(request, 'users/update_profile.html', {'form': form})
 
 # Friends list view
 @login_required(login_url='/users/login/')

@@ -5,9 +5,13 @@ from .models import UserProfile
 class RegistrationForm(UserCreationForm):
     class Meta:
         model = UserProfile
-        fields = ['username', 'email', 'password1', 'password2', 'nickname', 'avatar']
+        fields = ['username', 'email', 'first_name', 'last_name', 'password1', 'password2', 'nickname', 'avatar']
 
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ['nickname', 'avatar', 'email']
+        fields = ['nickname', 'email', 'first_name', 'last_name', 'avatar']
+
+    def __init__(self, *args, **kwargs):
+        super(UserUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['email'].required = True
