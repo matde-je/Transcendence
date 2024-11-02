@@ -31,12 +31,25 @@ class Friendship(models.Model):
     to_user = models.ForeignKey(UserProfile, related_name='friendship_requests_received', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     accepted = models.BooleanField(default=False)
+
     class Meta:
         unique_together = ('from_user', 'to_user')
 
     def __str__(self):
         status = "Accepted" if self.accepted else "Pending"
         return f"{self.from_user} -> {self.to_user} ({status})"
+
+    def save(self, *args, **kwargs):
+        # Checks if the instance already exists in the database
+        if self.pk:
+            # Get the previous state of the instance
+            previous = Friendship.objects.get(pk=self.pk)
+            # If friendship was not accepted before and now it is accepted
+            if not previous.accepted and self.accepted:
+                # Add users to each other's friend lists
+                self.from_user.friends.add(self.to_user)
+                self.to_user.friends.add(self.from_user)
+        super(Friendship, self).save(*args, **kwargs)
 
 class MatchHistory(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)

@@ -1,10 +1,11 @@
-{% extends "base.html" %}
-
 {% block content %}
 <div class="container mt-5">
-  <h2>Friends List</h2>
+	<center>
+		<p><b>Friends List</b></p>
+	</center>
 
-  <h3>Friends</h3>
+	<br>
+	<p>&emsp;&emsp;<b>Friends</b></p>
   <ul>
     {% for friend in friends %}
       <li>
@@ -13,7 +14,8 @@
     {% endfor %}
   </ul>
 
-  <h3>Pending Friend Requests Received</h3>
+  <hr>
+  <p>&emsp;&emsp;<b>Pending Friend Requests Received</b></p>
   <ul>
     {% for request in received_requests %}
       <li>
@@ -22,8 +24,9 @@
       </li>
     {% endfor %}
   </ul>
-
-  <h3>Pending Friend Requests Sent</h3>
+  
+  <hr>
+  <p>&emsp;&emsp;<b>Pending Friend Requests Sent</b></p>
   <ul>
     {% for request in sent_requests %}
       <li>
@@ -32,14 +35,16 @@
     {% endfor %}
   </ul>
 
-  <h3>Add Friends</h3>
+  <hr>
+  <p>&emsp;&emsp;<b>Add Friends</b></p>
   <ul>
-    {% for user in available_users %}
-      <li>
-        {{ user.username }}
-        <a href="{% url 'users:add_friend' user_id=user.id %}">Send Friend Request</a>
-      </li>
-    {% endfor %}
+	{% for user in available_users %}
+	  <li>
+		{{ user.username }}
+		<a href="{% url 'users:add_friend' user_id=user.id %}">Send Friend Request</a>
+	  </li>
+	{% endfor %}
   </ul>
+  <hr>
 </div>
 {% endblock %}

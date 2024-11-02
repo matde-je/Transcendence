@@ -68,13 +68,15 @@ def friends_list(request):
 # Dashboard view
 @login_required
 def dashboard(request):
-    # Amigos e solicitações de amizade
+   # Friends and friend requests
     friends = UserProfile.objects.filter(friendship_requests_received__from_user=request.user, friendship_requests_received__accepted=True)
     received_requests = Friendship.objects.filter(to_user=request.user, accepted=False)
     sent_requests = Friendship.objects.filter(from_user=request.user, accepted=False)
     
-    # Filtra os usuários disponíveis para adicionar como amigos, excluindo o usuário atual
-    available_users = UserProfile.objects.exclude(id=request.user.id)
+    # Filters available users to add as friends, excluding the current user and those who already have a pending invite
+    available_users = UserProfile.objects.exclude(id=request.user.id).exclude(is_superuser=True).exclude(is_active=False).exclude(id__in=Friendship.objects.filter(from_user=request.user).values_list('to_user', flat=True)).exclude(id__in=Friendship.objects.filter(to_user=request.user, accepted=True).values_list('from_user', flat=True)).exclude(id__in=request.user.friends.values_list('id', flat=True)).exclude(is_active=False).exclude(id__in=Friendship.objects.filter(to_user=request.user).values_list('from_user', flat=True)).exclude(
+        id__in=Friendship.objects.filter(from_user=request.user, accepted=False).values_list('to_user', flat=True)
+    )
     
     return render(request, 'users/dashboard.html', {
         'friends': friends,
@@ -124,17 +126,16 @@ def invite_friend(request, user_id):
             # Update the request if it already exists (but not accepted)
             friendship.accepted = False
             friendship.save()
-    return redirect('users:friends_list')
+    return redirect('users:dashboard')
 
 # Accept friend view
 @login_required
 def accept_friend(request, friendship_id):
     friendship = get_object_or_404(Friendship, id=friendship_id, to_user=request.user)
-    if friendship:
-        # Update acceptance status
-        friendship.accepted = True
-        friendship.save()
-    return redirect('users:friends_list')
+    # Update acceptance status
+    friendship.accepted = True
+    friendship.save()
+    return redirect('users:dashboard')
 
 # Friend list view
 @login_required
