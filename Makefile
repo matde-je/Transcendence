@@ -11,12 +11,12 @@ stop:
 # Stop and remove all containers and networks defined in docker-compose.yml
 down:
 	@clear
-	docker compose -f srcs/docker-compose.yml down --remove-orphans
+	docker compose -f srcs/docker-compose.yml down 
 
 # Stop and remove all containers, network, images and volumes defined in docker-compose.yml
 clean:
 	@clear
-	docker compose -f srcs/docker-compose.yml down --rmi all --volumes
+	docker compose -f srcs/docker-compose.yml down --rmi all --volumes --remove-orphans
 
 # Remove all containers, images and volumes not used
 fclean: clean

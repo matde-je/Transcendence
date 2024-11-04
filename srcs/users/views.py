@@ -8,6 +8,9 @@ from .forms import RegistrationForm, UserUpdateForm
 from .models import UserProfile, Friendship, MatchHistory
 from .forms import UserUpdateForm, CustomPasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from django.contrib import messages
+from django.utils import timezone
+from django.db import models
 
 # Email confirmation
 from django.core.mail import send_mail
@@ -121,10 +124,11 @@ def invite_friend(request, user_id):
     from_user = request.user
     if from_user != to_user:
         # Create a friend request if it doesn't already exist
-        friendship, created = Friendship.objects.get_or_create(from_user=from_user, to_user=to_user)
+        friendship, created = Friendship.objects.get_or_create(from_user=from_user, to_user=to_user, defaults={'requested_by': from_user})
         if not created:
             # Update the request if it already exists (but not accepted)
             friendship.accepted = False
+            friendship.requested_by = from_user
             friendship.save()
     return redirect('users:dashboard')
 
@@ -132,21 +136,39 @@ def invite_friend(request, user_id):
 @login_required
 def accept_friend(request, friendship_id):
     friendship = get_object_or_404(Friendship, id=friendship_id, to_user=request.user)
-    # Update acceptance status
-    friendship.accepted = True
-    friendship.save()
+    if not friendship.accepted:
+		# Update acceptance status
+        friendship.accepted = True
+        friendship.accepted_at = timezone.now()
+        friendship.accepted_by = request.user
+        friendship.save()
+        messages.success(request, 'Friend request accepted successfully!')
     return redirect('users:dashboard')
 
 # Friend list view
 @login_required
 def friends_list(request):
-    # Friends accepted
-    friends = UserProfile.objects.filter(friendship_requests_received__from_user=request.user, friendship_requests_received__accepted=True)
+    # Filter all Friends
+    friends = request.user.friends.all()
+
     # Pending requests sent and received
-    received_requests = Friendship.objects.filter(to_user=request.user, accepted=False)
-    sent_requests = Friendship.objects.filter(from_user=request.user, accepted=False)
+    received_requests = Friendship.objects.filter(to_user=request.user, accepted=False).select_related('from_user')
+    sent_requests = Friendship.objects.filter(from_user=request.user, accepted=False).select_related('to_user')
+
+    # Search friends and accepted requests to display who they were accepted for
+    friendships = Friendship.objects.filter((models.Q(from_user=request.user) | models.Q(to_user=request.user)), accepted=True).select_related('from_user', 'to_user')
+
     return render(request, 'users/friends_list.html', {
         'friends': friends,
         'received_requests': received_requests,
         'sent_requests': sent_requests,
+        'friendships': friendships,
     })
+
+# Remove friend view
+@login_required
+def remove_friend(request, user_id):
+    friend = get_object_or_404(UserProfile, id=user_id)
+    request.user.friends.remove(friend)
+    friend.friends.remove(request.user)
+    return redirect('users:dashboard')
