@@ -7,14 +7,17 @@
 	<br>
 	<p>&emsp;&emsp;<b>Friends</b></p>
 	<ul>
-	  {% for friend in friends %}
-		<li>
-		  {{ friend.username }} - {% if friend.online_status %}Online{% else %}Offline{% endif %}
-		</li>
-	  {% endfor %}
+		{% for friend in friends %}
+		  <li>
+			{{ friend.username }} - {% if friend.online_status %}Online{% else %}Offline{% endif %}
+			<form action="{% url 'users:remove_friend' user_id=friend.id %}" method="post" style="display:inline;">
+			  {% csrf_token %}
+			  <button type="submit" class="btn btn-danger btn-sm">Remove Friend</button>
+			</form>
+		  </li>
+		{% endfor %}
+	  </ul>
 	  <p>You have {{ friends|length }} friend{{ friends|length|pluralize }}.</p>
-	</ul>
-	
   <hr>
   <p>&emsp;&emsp;<b>Pending Friend Requests Received</b></p>
 <ul>

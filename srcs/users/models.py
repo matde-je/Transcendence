@@ -67,6 +67,16 @@ class Friendship(models.Model):
                 # Define who sent the requestsss
                 self.requested_by = self.from_user
             super(Friendship, self).save(*args, **kwargs)
+    
+    def remove_friendship(self):
+        with transaction.atomic():
+            # Remove friendship relationship
+            Friendship.objects.filter(from_user=self.from_user, to_user=self.to_user).delete()
+            Friendship.objects.filter(from_user=self.to_user, to_user=self.from_user).delete()
+            # Remove from UserProfile's friend list
+            self.from_user.friends.remove(self.to_user)
+            self.to_user.friends.remove(self.from_user)
+
 
 class MatchHistory(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)

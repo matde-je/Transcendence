@@ -168,7 +168,18 @@ def friends_list(request):
 # Remove friend view
 @login_required
 def remove_friend(request, user_id):
+    # Get the user to be removed
     friend = get_object_or_404(UserProfile, id=user_id)
-    request.user.friends.remove(friend)
-    friend.friends.remove(request.user)
+
+    # Try to get the friendship in both directions
+    try:
+        # Get the friendship from the current user to the friend
+        friendship = Friendship.objects.get(from_user=request.user, to_user=friend, accepted=True)
+        friendship.remove_friendship()
+        messages.success(request, f"You have successfully removed {friend.username} from your friends.")
+    except Friendship.DoesNotExist:
+        messages.error(request, f"No active friendship found with {friend.username}.")
+
     return redirect('users:dashboard')
+
+
