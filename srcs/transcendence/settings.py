@@ -175,3 +175,13 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'pviegas.at.42@gmail.com'
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'pviegas.at.42@gmail.com'
+
+# ASGI configuration to support Django channels
+ASGI_APPLICATION = 'transcendence.asgi.application'
+
+# Backend Channel Configuration (using in-memory channels for development)
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    },
+}

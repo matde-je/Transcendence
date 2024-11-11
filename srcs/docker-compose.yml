@@ -29,9 +29,7 @@ services:
                echo 'Waiting for Postgres...';
                sleep 2;
              done &&
-             python manage.py makemigrations &&
-             python manage.py migrate &&
-             python manage.py runserver_plus --cert-file cert.pem 0.0.0.0:8000"
+             daphne -b 0.0.0.0 -p 8000 transcendence.asgi:application"
     volumes:
       - .:/app
     ports:
@@ -40,6 +38,8 @@ services:
       - transcendence
     env_file:
       - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=transcendence.settings
     restart: unless-stopped
     depends_on:
       - db
@@ -48,6 +48,3 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-
-
-
