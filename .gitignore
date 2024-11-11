@@ -1,3 +1,6 @@
 /srcs/.env
-.venv/
 /srcs/media/
+.venv/
+cert.pem
+key.pem
+db.sqlite3
