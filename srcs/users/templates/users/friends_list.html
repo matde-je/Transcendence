@@ -1,28 +1,4 @@
 {% block content %}
-<script>
-    const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
-    const wsUrl = wsProtocol + window.location.host + "/ws/online_status/";
-    const socket = new WebSocket(wsUrl);
-
-    socket.onopen = function (event) {
-        console.log("WebSocket is connected.");
-    };
-
-    socket.onclose = function (event) {
-        console.log("WebSocket is closed.");
-    };
-
-    socket.onmessage = function (event) {
-        const data = JSON.parse(event.data);
-        // Implementar lógica para atualizar o status dos amigos com base na resposta
-        console.log("Message from server ", data);
-    };
-
-    socket.onerror = function (error) {
-        console.error("WebSocket error: ", error);
-    };
-</script>
-
 <div class="container mt-5">
 	<center>
 		<p><b>Friends List</b></p>

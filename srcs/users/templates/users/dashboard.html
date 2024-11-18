@@ -4,30 +4,6 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-
-<script>
-    const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
-    const wsUrl = wsProtocol + window.location.host + "/ws/online_status/";
-    const socket = new WebSocket(wsUrl);
-
-    socket.onopen = function (event) {
-        console.log("WebSocket is connected.");
-    };
-
-    socket.onclose = function (event) {
-        console.log("WebSocket is closed.");
-    };
-
-    socket.onmessage = function (event) {
-        const data = JSON.parse(event.data);
-        console.log("Message from server ", data);
-    };
-
-    socket.onerror = function (error) {
-        console.error("WebSocket error: ", error);
-    };
-</script>
-
   {% csrf_token %}
   <center>
 	<h2>Bem-vindo {{ user.username }}!</h2>
