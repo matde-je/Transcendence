@@ -1,5 +1,12 @@
 /srcs/.env
 /srcs/media/
+/srcs/cert.crt
+/srcs/cert.key
+/srcs/pong/__pycache__/
+/srcs/pong/migrations/__pycache__/
+/srcs/transcendence/__pycache__/
+/srcs/users/__pycache__/
+/srcs/users/migrations/__pycache__/
 .venv/
 cert.pem
 key.pem
