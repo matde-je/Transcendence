@@ -1,39 +1,15 @@
-from django.shortcuts import render
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework import status
+from .serializers import UserProfileSerializer
 
-# Create your views here.
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.decorators import login_required
-from .forms import RegistrationForm, UserUpdateForm
-from .models import UserProfile, Friendship, MatchHistory
-from .forms import UserUpdateForm, CustomPasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
-from django.contrib import messages
-from django.utils import timezone
-from django.db import models
-
-# Email confirmation
-from django.core.mail import send_mail
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.template.loader import render_to_string
-from django.contrib.sites.shortcuts import get_current_site
-from django.contrib.auth.tokens import default_token_generator
-
-# User activation
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_str
-from django.contrib.auth import get_user_model
-
-# User Registration view
+@api_view(['POST'])
 def register(request):
     if request.method == 'POST':
-        form = RegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.is_active = False
-            user.save()
-
+        serializer = UserProfileSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save(is_active=False)  # Usuário será ativado via email
+            # Enviar email de ativação (manter essa lógica)
             current_site = get_current_site(request)
             subject = 'Activate your account'
             message = render_to_string('users/activation_email.html', {
@@ -43,143 +19,153 @@ def register(request):
                 'token': default_token_generator.make_token(user),
             })
             user.email_user(subject, message)
+            return Response({'message': 'Registration complete. Please check your email to activate your account.'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            return render(request, 'users/registration_complete.html')
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 
-    else:
-        form = RegistrationForm()
-    return render(request, 'users/register.html', {'form': form})
-
-# Profile update view
-@login_required
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def update_profile(request):
-    if request.method == 'POST':
-        form = UserUpdateForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect('users:dashboard')
-    else:
-        form = UserUpdateForm(instance=request.user)
-    return render(request, 'users/update_profile.html', {'form': form})
+    serializer = UserProfileSerializer(instance=request.user, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# Friends list view
-@login_required(login_url='/users/login/')
-def friends_list(request):
-    friends = request.user.friends.all()
-    return render(request, 'users/friends_list.html', {'friends': friends})
-
-# Dashboard view
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def dashboard(request):
-   # Friends and friend requests
-    friends = UserProfile.objects.filter(friendship_requests_received__from_user=request.user, friendship_requests_received__accepted=True)
-    received_requests = Friendship.objects.filter(to_user=request.user, accepted=False)
-    sent_requests = Friendship.objects.filter(from_user=request.user, accepted=False)
-    
-    # Filters available users to add as friends, excluding the current user and those who already have a pending invite
-    available_users = UserProfile.objects.exclude(id=request.user.id).exclude(is_superuser=True).exclude(is_active=False).exclude(id__in=Friendship.objects.filter(from_user=request.user).values_list('to_user', flat=True)).exclude(id__in=Friendship.objects.filter(to_user=request.user, accepted=True).values_list('from_user', flat=True)).exclude(id__in=request.user.friends.values_list('id', flat=True)).exclude(is_active=False).exclude(id__in=Friendship.objects.filter(to_user=request.user).values_list('from_user', flat=True)).exclude(
-        id__in=Friendship.objects.filter(from_user=request.user, accepted=False).values_list('to_user', flat=True)
-    )
-    
-    return render(request, 'users/dashboard.html', {
-        'friends': friends,
-        'received_requests': received_requests,
-        'sent_requests': sent_requests,
-        'available_users': available_users,
-    })
+    friends = UserProfileSerializer(request.user.friends.all(), many=True)
+    received_requests = FriendshipSerializer(Friendship.objects.filter(to_user=request.user, accepted=False), many=True)
+    sent_requests = FriendshipSerializer(Friendship.objects.filter(from_user=request.user, accepted=False), many=True)
+    available_users = UserProfileSerializer(UserProfile.objects.exclude(id=request.user.id).exclude(is_superuser=True).exclude(is_active=False), many=True)
 
-# Email confirmation views
+    return Response({
+        'friends': friends.data,
+        'received_requests': received_requests.data,
+        'sent_requests': sent_requests.data,
+        'available_users': available_users.data,
+    }, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def invite_friend(request, user_id):
+    to_user = get_object_or_404(UserProfile, id=user_id)
+    from_user = request.user
+    if from_user != to_user:
+        friendship, created = Friendship.objects.get_or_create(from_user=from_user, to_user=to_user, defaults={'accepted': False})
+        if created:
+            return Response({'message': 'Friend request sent successfully.'}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'message': 'Friend request already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'message': 'Cannot add yourself as a friend.'}, status=status.HTTP_400_BAD_REQUEST)
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.contrib import messages
+
 def activate(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
-        user = get_user_model().objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, UserProfile.DoesNotExist):
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        return render(request, 'users/activation_successful.html')
+        messages.success(request, 'Your account has been activated successfully!')
+        return redirect('login')
     else:
-        return render(request, 'users/activation_invalid.html')
+        messages.error(request, 'Activation link is invalid or has expired.')
+        return render(request, 'registration/activation_invalid.html')
 
-# Password change view
-@login_required
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def change_password(request):
-    if request.method == 'POST':
-        form = CustomPasswordChangeForm(user=request.user, data=request.POST)
-        if form.is_valid():
-            user = form.save()
-            # Keeps the user logged in after changing the password
-            update_session_auth_hash(request, user)
-            return redirect('users:dashboard')
-    else:
-        form = CustomPasswordChangeForm(user=request.user)
-    return render(request, 'users/change_password.html', {'form': form})
+    form = PasswordChangeForm(user=request.user, data=request.data)
+    if form.is_valid():
+        user = form.save()
+        update_session_auth_hash(request, user)  # Atualiza a sessão para evitar logout
+        return Response({'message': 'Password updated successfully.'}, status=status.HTTP_200_OK)
+    return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# Invite a friend view
-@login_required
-def invite_friend(request, user_id):
-    to_user = get_object_or_404(UserProfile, id=user_id)
-    from_user = request.user
-    if from_user != to_user:
-        # Create a friend request if it doesn't already exist
-        friendship, created = Friendship.objects.get_or_create(from_user=from_user, to_user=to_user, defaults={'requested_by': from_user})
-        if not created:
-            # Update the request if it already exists (but not accepted)
-            friendship.accepted = False
-            friendship.requested_by = from_user
-            friendship.save()
-    return redirect('users:dashboard')
 
-# Accept friend view
-@login_required
+from django.shortcuts import get_object_or_404, redirect
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Friendship, UserProfile
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def accept_friend(request, friendship_id):
     friendship = get_object_or_404(Friendship, id=friendship_id, to_user=request.user)
+    
+    # Verifique se o pedido de amizade não foi aceito anteriormente
     if not friendship.accepted:
-		# Update acceptance status
         friendship.accepted = True
-        friendship.accepted_at = timezone.now()
-        friendship.accepted_by = request.user
         friendship.save()
-        messages.success(request, 'Friend request accepted successfully!')
-    return redirect('users:dashboard')
 
-# Friend list view
+        # Adiciona ambos usuários à lista de amigos um do outro
+        friendship.from_user.friends.add(friendship.to_user)
+        friendship.to_user.friends.add(friendship.from_user)
+
+    return Response({'message': 'Friend request accepted.'}, status=status.HTTP_200_OK)
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import UserProfile
+
 @login_required
 def friends_list(request):
-    # Filter all Friends
-    friends = request.user.friends.all()
+    # Lista de amigos do usuário atual
+    user = request.user
+    friends = user.friends.all()
+    
+    return render(request, 'users/friends_list.html', {'friends': friends})
 
-    # Pending requests sent and received
-    received_requests = Friendship.objects.filter(to_user=request.user, accepted=False).select_related('from_user')
-    sent_requests = Friendship.objects.filter(from_user=request.user, accepted=False).select_related('to_user')
 
-    # Search friends and accepted requests to display who they were accepted for
-    friendships = Friendship.objects.filter((models.Q(from_user=request.user) | models.Q(to_user=request.user)), accepted=True).select_related('from_user', 'to_user')
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import UserProfile, Friendship
 
-    return render(request, 'users/friends_list.html', {
-        'friends': friends,
-        'received_requests': received_requests,
-        'sent_requests': sent_requests,
-        'friendships': friendships,
-    })
-
-# Remove friend view
 @login_required
 def remove_friend(request, user_id):
-    # Get the user to be removed
-    friend = get_object_or_404(UserProfile, id=user_id)
+    # Obtém o usuário a ser removido da lista de amigos
+    user_to_remove = get_object_or_404(UserProfile, id=user_id)
 
-    # Try to get the friendship in both directions
-    try:
-        # Get the friendship from the current user to the friend
-        friendship = Friendship.objects.get(from_user=request.user, to_user=friend, accepted=True)
-        friendship.remove_friendship()
-        messages.success(request, f"You have successfully removed {friend.username} from your friends.")
-    except Friendship.DoesNotExist:
-        messages.error(request, f"No active friendship found with {friend.username}.")
+    # Remove a amizade em ambas as direções
+    request.user.friends.remove(user_to_remove)
+    user_to_remove.friends.remove(request.user)
 
-    return redirect('users:dashboard')
+    # Opcionalmente, remova o registro de Friendship, se existir
+    Friendship.objects.filter(from_user=request.user, to_user=user_to_remove).delete()
+    Friendship.objects.filter(from_user=user_to_remove, to_user=request.user).delete()
 
+    return redirect('users:friends_list')
+
+
+from rest_framework import viewsets
+from .models import UserProfile  # Substitua pelo seu modelo
+from .serializers import UserProfileSerializer  # Substitua pelo seu serializer
+
+class MyViewSet(viewsets.ModelViewSet):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
 

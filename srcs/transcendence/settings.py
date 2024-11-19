@@ -143,8 +143,10 @@ LOGOUT_REDIRECT_URL = '/users/login/'
 
 # Django REST Framework (DRF) and JWT
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework.renderers.BrowsableAPIRenderer', # Se precisar do navegador da API, descomente esta linha.
     ),
 }
 
