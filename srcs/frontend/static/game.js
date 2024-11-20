@@ -17,7 +17,7 @@ let init = 0;
 //Gameplay / Speeds
 let initialBallGravity = 1;
 let maxGravity = initialBallGravity * 2;
-let ballSpeed = 3;
+let ballSpeed = 7;
 
 
 //AI settings
@@ -101,7 +101,7 @@ window.addEventListener("keydown", (e) => {
         reset_game();
         init = 1;
     }
-    if (keys['p'] && game_over == false) {
+    if (keys['p'] && game_over == false && init == 1) {
         pause = !pause;
         if (pause == true) {
             context.font = "20px 'Courier New', Courier, monospace";
@@ -234,6 +234,7 @@ function loop() {
 			aiLogic(AiRefreshView); // Call the AI movement function
 		draw_all();
         if (score1 == 10 || score2 == 10) {
+			let x;
             if (score1 == 10)
                 x = canvas.width / 4;
             else
