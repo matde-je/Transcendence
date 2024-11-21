@@ -21,7 +21,7 @@ from pong import views as pong_views
 from django.conf import settings
 from django.conf.urls.static import static
 
-from users.views import register
+from users.views import register_user
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 include('users.urls', namespace='users')
@@ -38,6 +38,8 @@ urlpatterns = [
 
 	# Dashboard URL
     path('users/dashboard/', dashboard, name='dashboard'),
+
+	path('api/', include('users.urls')),
 
     # Pong URL
     path('', include('pong.urls')),
