@@ -23,12 +23,4 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),  #keep admin route if you need it
     path('', include('pong.urls')),
-	path('accounts/', include('accounts.urls')),   # User-Managment
-    #path('', views.home, name='home'),  #root URL now points to a home view
-    # path('tournament/', views.tournament, name='tournament'),
  ] + static(settings.STATIC_URL , document_root=settings.STATIC_ROOT)
-
-# urlpatterns += static(settings.MEDIA_URL , document_root=settings.MEDIA_ROOT)
-
-# if settings.DEBUG:
-#     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

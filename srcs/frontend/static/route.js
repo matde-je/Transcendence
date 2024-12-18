@@ -1,6 +1,7 @@
 const navigate_to = (url) => {
-    history.pushState(null, null, url); // push url to history
-    router();
+    if (location.pathname !== url) //push state if URL is different from the current path
+        history.pushState(null, null, url);
+    router(); // update the display
 };
 
 const router = async () => {
@@ -9,31 +10,19 @@ const router = async () => {
         {path : "/tournament", elementId: "tournament"},
     ];
 
-    // const potential_matches = routes.map( route => {
-    //     return {
-    //         route : route,
-    //         isMatch: location.pathname == route.path
-    //     };
-    // });
-
-    // let match = potential_matches.find(potential_match => potential_match.isMatch);
-    // if (!match) {
-    //     match = {
-    //         route: routes[0],
-    //         isMatch: true
-    //     };
-    // }
-
     const match = routes.find(route => route.path === location.pathname) || routes[0]; // find matching path, if not points to home
 
-    //hide everything
     document.querySelectorAll(".page").forEach(page => {
-        page.style.display = "none";
+        page.style.display = "none"; //hide everything
     });
     const matchedElement = document.getElementById(match.elementId);
     if (matchedElement)
         matchedElement.style.display = "block"; // block displays when its set to none
-
+    if (match.path === "/") {
+        init = 0;
+        context.clearRect(0, 0, canvas.width, canvas.height);
+		ani = window.requestAnimationFrame(loop);
+    }
 };
 
 //back and forward buttons 

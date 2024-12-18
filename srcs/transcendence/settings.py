@@ -17,18 +17,26 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-$pac=6n7_)#x$lr()2g2$qm65kj75c(v932ze97kltnw=4%t)('
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+SECURE_BROWSER_XSS_FILTER = True  # Prevent cross-site scripting attacks
+SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent browser content sniffing
 
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Include subdomains in HSTS
+
+SESSION_COOKIE_SECURE = True  # Enforce secure cookies
+CSRF_COOKIE_SECURE = True  # Enforce secure CSRF cookies
+
+SECURE_SSL_REDIRECT = True
+
+ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -41,7 +49,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'pong',
-	'accounts',
 ]
 
 MIDDLEWARE = [
@@ -116,8 +123,6 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 
-
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -142,7 +147,3 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# User Authentication pages
-LOGIN_REDIRECT_URL = '/accounts/dashboard/'
-LOGOUT_REDIRECT_URL = '/accounts/login/'
