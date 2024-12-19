@@ -8,4 +8,5 @@ key.pem
 /transcendence/transcendence/__pycache__/
 /transcendence/users/__pycache__/
 /transcendence/users/migrations/__pycache__/
-
+/transcendence/tournament/__pycache__/
+/transcendence/tournament/migrations/__pycache__/
