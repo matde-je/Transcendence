@@ -1,0 +1,11 @@
+.env
+.code-style.md
+cert.pem
+key.pem
+/transcendence/cert.crt
+/transcendence/cert.key
+/transcendence/__pycache__/
+/transcendence/transcendence/__pycache__/
+/transcendence/users/__pycache__/
+/transcendence/users/migrations/__pycache__/
+

@@ -1,0 +1,28 @@
+<!-- transcendence/templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong42 Arena</title>
+    {% load static %}
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script defer type="module" src="{% static 'js/app.js' %}"></script>
+	<script defer type="module" src="{% static 'js/utils.js' %}"></script>
+    <script defer type="module" src="{% static 'js/friendship.js' %}"></script>
+    <script defer type="module" src="{% static 'js/dashboard.js' %}"></script>
+	<script defer type="module" src="{% static 'js/route.js' %}"></script>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <ul class="nav" id="nav-links">
+                <!-- Dynamic Links here -->
+            </ul>
+        </nav>
+        <div id="content">
+            <!-- Dynamic Content here -->
+        </div>
+    </div>
+</body>
+</html>
