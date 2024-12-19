@@ -6,11 +6,12 @@ services:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - transcendence
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,7 +23,7 @@ services:
       dockerfile: Dockerfile
     command: >
       sh -c "
-        until pg_isready -h db -p 5432 -U $${POSTGRES_USER}; do
+        until pg_isready -h db -p 5432 -U $${POSTGRES_USER} -d $${POSTGRES_DB}; do
           echo 'Waiting for Postgres...';
           sleep 2;
         done &&
@@ -42,6 +43,36 @@ services:
       - db
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  tournament:
+    container_name: tournament
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "
+        until pg_isready -h db -p 5432 -U $${POSTGRES_USER} -d $${TOURNAMENT_DB_NAME}; do
+          echo 'Waiting for Postgres...';
+          sleep 2;
+        done &&
+        python manage.py migrate --database=tournament &&
+        python manage.py runserver_plus --cert-file cert.pem 0.0.0.0:8001"
+    volumes:
+      - ./transcendence:/app:cached
+    ports:
+      - "8001:8001"
+    networks:
+      - transcendence
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8001 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5

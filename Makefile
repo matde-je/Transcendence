@@ -75,4 +75,19 @@ logs:
 	@clear
 	docker compose --file docker-compose.yml logs
 
-.PHONY: run stop down clean venv activate install createsuperuser migrate info backend-it db-it logs #fclean 
+# Generate SSL certificates (only if they don't exist)
+generate-certs:
+	@clear
+	@echo "Generating SSL certificates..."
+	@openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/C=PT/ST=Lisboa/L=Lisboa/O=42/OU=42/CN=matde-je.42.fr"
+	@echo "Certificates generated and saved..."
+
+# Copy the certificates to the app directory
+copy-certs:
+	@clear
+	@echo "Copying certificates to the app directory..."
+	@cp cert.pem ./transcendence/cert.crt
+	@cp key.pem ./transcendence/cert.key
+	@echo "Certificates copied."
+
+.PHONY: run stop down clean fclean venv activate install createsuperuser migrate info backend-it db-it logs generate-certs copy-certs

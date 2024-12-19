@@ -1,5 +1,7 @@
 .env
 .code-style.md
+cert.pem
+key.pem
 /transcendence/cert.crt
 /transcendence/cert.key
 /transcendence/__pycache__/
