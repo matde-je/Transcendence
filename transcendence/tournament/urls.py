@@ -1,10 +1,10 @@
 # tournament/urls.py
 
 from django.urls import path
-from .views import TournamentCreate, TournamentMatches, TournamentFinish
+from . import views
 
 urlpatterns = [
-    path('create/', TournamentCreate.as_view(), name='tournament_create'),
-    path('<int:tournamentId>/matches/', TournamentMatches.as_view(), name='tournament_matches'),
-    path('<int:tournamentId>/finish/', TournamentFinish.as_view(), name='tournament_finish'),
+    path('create/', views.create_tournament, name='create_tournament'),
+    path('list/', views.list_open_tournaments, name='list_open_tournaments'),
+    path('results/', views.tournament_results, name='tournament_results'),
 ]

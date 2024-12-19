@@ -6,6 +6,7 @@ import { showDashboard, showEditUserForm } from './dashboard.js';
 import { getCookie } from './utils.js';
 import { showSinglePlayer, showMultiplayer } from './rps.js';
 import { playSinglePlayerGame } from './rps-singleplayer.js';
+import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthentication();
@@ -34,6 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'rock-paper-scissors-multiplayer':
                     showMultiplayer();
                     break;
+                case 'create_tournament':
+                    showCreateTournamentForm();
+                    break;
                 default:
                     showHome();
                     break;
@@ -56,6 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showSinglePlayer();
     } else if (path === '/rock-paper-scissors/multiplayer') {
         showMultiplayer();
+    } else if (path === '/tournament/create/') {
+        showCreateTournamentForm();
     } else {
         showHome();
     }
@@ -114,6 +120,17 @@ export function checkAuthentication() {
                     showDashboard();
                     history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard');
                 });
+
+				const tournamentLink = document.createElement('li');
+				tournamentLink.className = 'nav-item';
+				tournamentLink.innerHTML = '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
+				navLinks.appendChild(tournamentLink);
+
+				document.getElementById('tournament').addEventListener('click', (e) => {
+				    e.preventDefault();
+				    showTournamentMenu();
+				    history.pushState({ page: 'tournament' }, 'Tournament', '/tournament');
+				});
             } else {
                 const loginLink = document.createElement('li');
                 loginLink.className = 'nav-item';

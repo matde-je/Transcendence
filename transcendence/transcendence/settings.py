@@ -88,7 +88,9 @@ WSGI_APPLICATION = 'transcendence.wsgi.application'
 # Use environment variables
 load_dotenv()
 
-# Database configuration (PostgreSQL)
+# Database configurations
+DATABASE_ROUTERS = ['users.routers.TournamentRouter']
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -108,8 +110,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT'),
     }
 }
-
-DATABASE_ROUTERS = ['users.routers.TournamentRouter']
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

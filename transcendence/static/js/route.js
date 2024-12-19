@@ -2,13 +2,15 @@
 
 import { showHome, showRPS } from './app.js';
 import { showSinglePlayer, showMultiplayer } from './rps.js';
+import { showTournamentMenu } from './tournament.js';
 
 /**
- * Navigates to the specified URL and updates the view.
+ * Navigates to the specified URL by updating the browser's history state and invoking the router function.
+ *
  * @param {string} url - The URL to navigate to.
  */
 const navigateTo = (url) => {
-    history.pushState(null, null, url); // Push URL to history
+    history.pushState(null, null, url);
     router();
 };
 
@@ -21,22 +23,25 @@ const router = async () => {
         { path: '/rock-paper-scissors', elementId: 'rockPaperScissors' },
         { path: '/rock-paper-scissors/singleplayer', elementId: 'rockPaperScissorsSinglePlayer' },
         { path: '/rock-paper-scissors/multiplayer', elementId: 'rockPaperScissorsMultiplayer' },
+        { path: '/tournament', elementId: 'tournament' }, // Rota adicionada
     ];
 
-    const match = routes.find((route) => route.path === location.pathname) || routes[0]; // Default to home if no match
+    const match = routes.find((route) => route.path === location.pathname) || routes[0]; // Padrão para home se não houver correspondência
 
-    // Hide all pages
+	// Hide all pages
     document.querySelectorAll('.page').forEach((page) => {
         page.style.display = 'none';
     });
 
-    // Show the matched page
+	// Show the page based on the matched elementId
     if (match.elementId === 'rockPaperScissors') {
         showRPS();
     } else if (match.elementId === 'rockPaperScissorsSinglePlayer') {
         showSinglePlayer();
     } else if (match.elementId === 'rockPaperScissorsMultiplayer') {
         showMultiplayer();
+    } else if (match.elementId === 'tournament') {
+        showTournamentMenu();
     } else if (match.elementId === 'home') {
         showHome();
     } else {
@@ -58,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     router();
 });
 
-// Prevent default behavior for ArrowUp and ArrowDown keys
+// Blocks default behavior for ArrowUp and ArrowDown keys
 document.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
         event.preventDefault();

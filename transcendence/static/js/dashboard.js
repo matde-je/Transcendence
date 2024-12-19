@@ -89,15 +89,15 @@ export function showDashboard() {
             }).then(response => response.json())
         ])
         .then(([users, sentRequests, receivedRequests, friends]) => {
-            const currentUserId = data.id;
+            const currentuser_id = data.id;
 
-            const sentUserIds = sentRequests.map(request => request.to_user.id);
+            const sentuser_ids = sentRequests.map(request => request.to_user.id);
 			// Get IDs of received requests
-            const receivedUserIds = receivedRequests.map(request => request.from_user.id);
+            const receiveduser_ids = receivedRequests.map(request => request.from_user.id);
             const friendIds = friends.map(friend => friend.id);
 
 			// Combines IDs of sent and received requests
-            const invalidUserIds = new Set([...sentUserIds, ...receivedUserIds, ...friendIds]);
+            const invaliduser_ids = new Set([...sentuser_ids, ...receiveduser_ids, ...friendIds]);
 
 			// Filter users to exclude:
 			// - The user himself
@@ -105,9 +105,9 @@ export function showDashboard() {
 			// - Users who have already sent or received friend requests
 			// - Users who are already friends
             const filteredUsers = users.filter(user => 
-                user.id !== currentUserId && 
+                user.id !== currentuser_id && 
                 !user.is_superuser && 
-                !invalidUserIds.has(user.id)
+                !invaliduser_ids.has(user.id)
             );
 
             if (filteredUsers.length > 0) {

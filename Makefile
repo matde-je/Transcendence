@@ -70,6 +70,10 @@ db-it:
 	@clear
 	docker exec -it postgres /bin/bash
 
+tournament-it:
+	@clear
+	docker exec -it tournament /bin/bash
+
 # Display containers logs
 logs:
 	@clear
