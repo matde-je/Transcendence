@@ -8,19 +8,22 @@ import { playMultiplayerGame } from './rps-multiplayer.js';
  */
 export function showSinglePlayer() {
     const singlePlayerContent = `
-        <h1>Single Player - Rock Paper Scissors</h1>
-        <div class='choices'>
-            <button class='btn btn-success' id='rockBtn'>👊 Rock</button>
-            <button class='btn btn-info' id='paperBtn'>✋ Paper</button>
-            <button class='btn btn-danger' id='scissorsBtn'>✌️ Scissors</button>
+    <div class="container" style="margin-top: 150px;">
+        <h1 class="text-center mb-5">Single Player - Rock Paper Scissors</h1>
+        <div class="d-flex justify-content-center mb-4">
+            <button class="btn btn-success mx-3" id="rockBtn" style="font-size: 1.5rem;">👊 Rock</button>
+            <button class="btn btn-info mx-3" id="paperBtn" style="font-size: 1.5rem;">✋ Paper</button>
+            <button class="btn btn-danger mx-3" id="scissorsBtn" style="font-size: 1.5rem;">✌️ Scissors</button>
         </div>
-        <div id='singlePlayerDisplay'>
-            <p id='playerDisplay'>PLAYER:</p>
-            <p id='computerDisplay'>COMPUTER:</p>
-            <p id='resultDisplay'></p>
-            <p>Player Score: <span id='playerScoreDisplay'>0</span></p>
-            <p>Computer Score: <span id='computerScoreDisplay'>0</span></p>
+        <div id="singlePlayerDisplay" class="text-center">
+            <p id="playerDisplay" class="mb-3">PLAYER:</p>
+            <p id="computerDisplay" class="mb-3">COMPUTER:</p>
+            <p id="resultDisplay" class="mb-3"></p>
+            <p class="mb-3">Player Score: <span id="playerScoreDisplay">0</span></p>
+            <p>Computer Score: <span id="computerScoreDisplay">0</span></p>
         </div>
+    </div>
+
     `;
     document.getElementById('content').innerHTML = singlePlayerContent;
 
@@ -52,23 +55,35 @@ export function showSinglePlayer() {
  */
 export function showMultiplayer() {
     const multiplayerContent = `
-        <h1>Multiplayer - Rock Paper Scissors</h1>
-        <div class="choices">
-            <button class="btn btn-success" id="player1RockBtn">👊 Player 1 - Rock</button>
-            <button class="btn btn-info" id="player1PaperBtn">✋ Player 1 - Paper</button>
-            <button class="btn btn-danger" id="player1ScissorsBtn">✌️ Player 1 - Scissors</button>
+    <div class="container" style="margin-top: 150px;">
+        <h1 class="text-center mb-5">Multiplayer - Rock Paper Scissors</h1>
+         <div class="row justify-content-center mb-4">
+        <div class="col-md-4 text-center">
+            <h4>Player 1</h4>
+            <button class="btn btn-success mb-2 w-100" id="player1RockBtn">👊 Rock</button>
+            <button class="btn btn-info mb-2 w-100" id="player1PaperBtn">✋ Paper</button>
+            <button class="btn btn-danger mb-2 w-100" id="player1ScissorsBtn">✌️ Scissors</button>
         </div>
-        <div class="choices">
-            <button class="btn btn-success" id="player2RockBtn">👊 Player 2 - Rock</button>
-            <button class="btn btn-info" id="player2PaperBtn">✋ Player 2 - Paper</button>
-            <button class="btn btn-danger" id="player2ScissorsBtn">✌️ Player 2 - Scissors</button>
+    </div>
+    
+    <!-- Player 2 Choices -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-4 text-center">
+            <h4>Player 2</h4>
+            <button class="btn btn-success mb-2 w-100" id="player2RockBtn">👊 Rock</button>
+            <button class="btn btn-info mb-2 w-100" id="player2PaperBtn">✋ Paper</button>
+            <button class="btn btn-danger mb-2 w-100" id="player2ScissorsBtn">✌️ Scissors</button>
         </div>
-        <div id="multiplayerDisplay">
-            <p id="player1Display">PLAYER 1:</p>
-            <p id="player2Display">PLAYER 2:</p>
-            <p id="resultDisplay"></p>
-            <p>Player 1 Score: <span id="player1ScoreDisplay">0</span></p>
-            <p>Player 2 Score: <span id="player2ScoreDisplay">0</span></p>
+    </div>
+    
+    <!-- Multiplayer Display -->
+    <div id="multiplayerDisplay" class="text-center">
+        <p id="player1Display" class="mb-2">PLAYER 1:</p>
+        <p id="player2Display" class="mb-2">PLAYER 2:</p>
+        <p id="resultDisplay" class="mb-3"></p>
+        <p class="mb-2">Player 1 Score: <span id="player1ScoreDisplay">0</span></p>
+        <p>Player 2 Score: <span id="player2ScoreDisplay">0</span></p>
+    </div>
         </div>
     `;
     document.getElementById('content').innerHTML = multiplayerContent;

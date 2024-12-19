@@ -1,18 +1,18 @@
 "use strict"
 
-window.canvas = document.getElementById("game");
-window.context = window.canvas.getContext("2d");
+export const canvas = document.getElementById("game");
+export const context = canvas.getContext("2d");
 
-window.canvas.width = 650;
-window.canvas.height = 400;
+canvas.width = 650;
+canvas.height = 400;
 
 let score1 = 0;
 let score2 = 0;
 
-let ani;
+export let ani;
 let gameOver = false;
 let pause = false;
-let init = 0;
+export let init = 0;
 
 //Gameplay / Speeds
 let initialBallGravity = 1;
@@ -310,7 +310,7 @@ function drawAll(){
 
 let AiLastUpdateTime = Date.now();
 
-function loop() {
+export function loop() {
     if (init === 0) {
         context.font = '20px \'Courier New\', Courier, monospace';
         context.textAlign = 'center';

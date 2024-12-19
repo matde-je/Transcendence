@@ -9,6 +9,7 @@ let computerScore = 0;
  * @param {string} playerChoice - The player's choice ('rock', 'paper', 'scissors').
  */
 export function playSinglePlayerGame(playerChoice) {
+    
     const playerDisplay = document.getElementById('playerDisplay');
     const computerDisplay = document.getElementById('computerDisplay');
     const resultDisplay = document.getElementById('resultDisplay');

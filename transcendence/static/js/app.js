@@ -79,19 +79,31 @@ export function checkAuthentication() {
             return response.json();
         })
         .then((data) => {
-            const navLinks = document.getElementById('nav-links');
-            navLinks.innerHTML = '';
+            const navBarContainer = document.createElement('nav');
+            navBarContainer.className ='navbar navbar-expand-lg navbar-light bg-light fixed-top'; // Add fixed-top class here
 
-            const homeLink = document.createElement('li');
-            homeLink.className = 'nav-item';
-            homeLink.innerHTML = '<a class="nav-link" href="/" id="home" data-link>Home</a>';
-            navLinks.appendChild(homeLink);
+            const container = document.createElement('div');
+            container.className = 'container-fluid';
 
-			document.getElementById('home').addEventListener('click', (e) => {
-                e.preventDefault();
-                showHome();
-                history.pushState({ page: 'home' }, 'Home', '/');
+            const navbarBrand = document.createElement('a');
+            navbarBrand.className = 'navbar-brand';
+            navbarBrand.href = '/'; // This will be used for the link text, but we handle the click event to prevent reload
+            navbarBrand.innerText = 'Pong'; 
+
+            navbarBrand.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent the default behavior (page reload)
+                showHome(); // Your function to show the home content
+                history.pushState({ page: 'home' }, 'Home', '/'); // Update the URL
             });
+
+            container.appendChild(navbarBrand);
+
+            const navbarCollapse = document.createElement('div');
+            navbarCollapse.className = 'collapse navbar-collapse';
+            navbarCollapse.id = 'navbarNav';
+
+            const navLinks = document.getElementById('nav-links');
+            navLinks.className = 'navbar-nav';
 
             if (data.is_authenticated) {
                 const logoutLink = document.createElement('li');
@@ -140,7 +152,7 @@ export function checkAuthentication() {
 
 			const rpsLink = document.createElement('li');
 			rpsLink.className = 'nav-item';
-			rpsLink.innerHTML = '<a class="nav-link" href="/rock-paper-scissors" id="rockPaperScissors" data-link>Rock Paper Scissors</a>';
+			rpsLink.innerHTML = '<a class="nav-link" href="/rock-paper-scissors" id="rockPaperScissors">Rock Paper Scissors</a>';
 			navLinks.appendChild(rpsLink);
 
             document.getElementById('rockPaperScissors').addEventListener('click', (e) => {
@@ -148,6 +160,12 @@ export function checkAuthentication() {
                 showRPS();
                 history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
             });
+            navbarCollapse.appendChild(navLinks);
+
+            // Append the navbarCollapse and brand to the navbar container
+            container.appendChild(navbarCollapse);
+            navBarContainer.appendChild(container);
+            document.body.appendChild(navBarContainer);
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -160,9 +178,13 @@ export function checkAuthentication() {
  */
 export function showHome() {
     document.getElementById('content').innerHTML = `
-        <h1>Welcome to The Pong42 Arena</h1>
-        <canvas id="game" width="650" height="400" style="background-color: black; max-width: 100%; display: block; margin: auto;"></canvas>
-    `;
+        <div class="text-center" style="margin-top: 80px;"> 
+            <h1 class="display-5">Pong Game</h1>
+        </div>
+        <div class="text-center" style="margin-top: 50px;"> 
+            <canvas id="game" width="650" height="500" style="background-color: black; display: block; margin: 0 auto;"></canvas>
+        </div>
+            `;
 
     // Add the game script first
     if (!document.getElementById('gameScript')) {
@@ -170,6 +192,11 @@ export function showHome() {
         gameScript.type = 'module';
         gameScript.src = '/static/js/game.js';
         gameScript.id = 'gameScript';
+        gameScript.onload = () => {
+            init = 0; 
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            ani = window.requestAnimationFrame(loop);
+        };
         document.body.appendChild(gameScript);
     }
 
@@ -189,10 +216,12 @@ export function showHome() {
 export function showRPS() {
     // Define HTML content for the Rock Paper Scissors page
     const rpsContent = `
-        <h1>Rock - Paper - Scissors</h1>
-        <div class="mode-selection">
-            <button class="btn btn-primary m-2" id="singlePlayerBtn">Single Player</button>
-            <button class="btn btn-secondary m-2" id="multiplayerBtn">Multiplayer</button>
+        <div class="container text-center mt-7" style="margin-top: 150px;">
+            <h1>Rock - Paper - Scissors</h1>
+            <div class="mode-selection mt-4">
+                <button class="btn btn-secondary m-3" id="singlePlayerBtn" style="font-size: 1.2rem;">Single Player</button>
+                <button class="btn btn-secondary m-3" id="multiplayerBtn" style="font-size: 1.2rem;">Multiplayer</button>
+            </div>
         </div>
     `;
 
@@ -221,8 +250,6 @@ export function showRPS() {
         );
     });
 
-    // Update history
-    history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
 }
 
 /**

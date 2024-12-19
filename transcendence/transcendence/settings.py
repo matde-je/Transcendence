@@ -1,5 +1,3 @@
-# transcendence/settings.py
-
 """
 Django settings for transcendence project.
 
@@ -11,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+# transcendence/settings.py
 from pathlib import Path
 from dotenv import load_dotenv
 import os
@@ -19,18 +17,24 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# Use environment variables
-load_dotenv()
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+SECURE_BROWSER_XSS_FILTER = True  # Prevent cross-site scripting attacks
+SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent browser content sniffing
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Include subdomains in HSTS
+
+SESSION_COOKIE_SECURE = True  # Enforce secure cookies
+CSRF_COOKIE_SECURE = True  # Enforce secure CSRF cookies
+
+SECURE_SSL_REDIRECT = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -47,7 +51,6 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'users',
-	'tournament',
 ]
 
 MIDDLEWARE = [
@@ -92,24 +95,13 @@ load_dotenv()
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('POSTGRES_DB'),
-        'USER': os.getenv('POSTGRES_USER'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
-    },
-	# Tournament database configuration
-    'tournament': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('TOURNAMENT_DB_NAME'),
+        'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         'HOST': os.getenv('DB_HOST'),
         'PORT': os.getenv('DB_PORT'),
     }
 }
-
-DATABASE_ROUTERS = ['users.routers.TournamentRouter']
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -129,6 +121,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -140,7 +137,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
