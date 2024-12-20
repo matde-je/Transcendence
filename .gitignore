@@ -1,5 +1,5 @@
 .env
-.code-style.md
+code-style.md
 cert.pem
 key.pem
 /transcendence/cert.crt

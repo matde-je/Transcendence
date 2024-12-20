@@ -6,14 +6,14 @@ from users.models import CustomUser
 
 @admin.register(Tournament)
 class TournamentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'get_creator_username', 'get_winner_username', 'is_started', 'is_finished', 'created_on')
+    list_display = ('id', 'name', 'get_creator_username', 'get_winner_username', 'is_started', 'is_finished', 'created_on')
 
     def get_creator_username(self, obj):
         try:
             user = CustomUser.objects.get(id=obj.creator_id)
             return user.username
         except CustomUser.DoesNotExist:
-            return 'Unknown'
+            return 'Unknown Creator'
     get_creator_username.short_description = 'Creator'
 
     def get_winner_username(self, obj):
@@ -21,7 +21,7 @@ class TournamentAdmin(admin.ModelAdmin):
             user = CustomUser.objects.get(id=obj.winner_id)
             return user.username
         except CustomUser.DoesNotExist:
-            return 'Unknown'
+            return 'Unknown Winner'
     get_winner_username.short_description = 'Winner'
 
 @admin.register(TournamentUser)

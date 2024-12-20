@@ -67,16 +67,22 @@ export async function listOpenTournaments() {
                 .then(res => res.json())
                 .then(participants => {
                     const isEnrolled = participants.some(participant => participant.user_id === currentUserId);
+					const isCreator = tournament.creator_id === currentUserId;
                     let actionButton;
+					let deleteTournamentButton = '';
                     if (isEnrolled) {
-                        actionButton = `<button onclick="removeUserFromTournament(${tournament.id})" class="btn btn-danger btn-sm">Remove</button>`;
+                        actionButton = `<button onclick="removeUserFromTournament(${tournament.id})" class="btn btn-danger btn-sm">Quit Tournament</button>`;
                     } else {
                         actionButton = `<button onclick="addUserToTournament(${tournament.id})" class="btn btn-primary btn-sm">Add</button>`;
                     }
+
+					if (isCreator && !tournament.is_started) {
+						deleteTournamentButton = `<button onclick="deleteTournament(${tournament.id})" class="btn btn-danger btn-sm">Delete Tournament</button>`;
+					}
                     
                     const listItem = document.createElement('li');
                     listItem.innerHTML = `
-                        <strong>${tournament.name}</strong> - Created by ID ${tournament.creator_id}
+                        <strong>${tournament.name}</strong> - Created by ${tournament.creator_username} - ${deleteTournamentButton}
                         <br>
                         Participants: ${participants.map(p => p.username).join(', ')}
                         <br>
@@ -168,7 +174,7 @@ export function showTournamentResults() {
             const list = document.createElement('ul');
             data.forEach(tournament => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `${tournament.name} - Winner ID ${tournament.winner_id}`;
+                listItem.textContent = `${tournament.name} - Winner ${tournament.winner_username}`;
                 list.appendChild(listItem);
             });
             tournamentContent.appendChild(list);
@@ -225,5 +231,32 @@ export function showCreateTournamentForm() {
     });
 }
 
+async function deleteTournament(tournamentId) {
+    const csrftoken = getCookie('csrftoken');
+    if (!confirm('Are you sure you want to delete this tournament?')) {
+        return;
+    }
+    try {
+        const response = await fetch(`/tournament/tournaments/${tournamentId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            credentials: 'include',
+        });
+        if (response.ok) {
+            alert('Tournament deleted successfully!');
+            listOpenTournaments();
+        } else {
+            const data = await response.json();
+            alert('Error when deleting tournament: ' + JSON.stringify(data));
+        }
+    } catch (error) {
+        console.error('Error when deleting tournament:', error);
+        alert('Error when deleting tournament.');
+    }
+}
+
 window.addUserToTournament = addUserToTournament;
 window.removeUserFromTournament = removeUserFromTournament;
+window.deleteTournament = deleteTournament;

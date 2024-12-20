@@ -19,7 +19,7 @@ class Tournament(models.Model):
         return f'{self.name} (created by {CustomUser.objects.get(id=self.creator_id).username})'
 
 class TournamentUser(models.Model):
-    tournament = models.ForeignKey(Tournament, on_delete=models.SET_NULL, null=True, related_name='tournamentUsers')
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='tournamentUsers')
     user_id = models.IntegerField()
     is_accepted = models.BooleanField(default=False)
     is_canceled = models.BooleanField(default=False)
@@ -27,4 +27,7 @@ class TournamentUser(models.Model):
     position = models.IntegerField(default=0)
 
     def __str__(self):
-        return f'Tournament User ID {self.user_id} in Tournament #{self.tournament.id}'
+        if self.tournament:
+            return f'Tournament User ID {self.user_id} in Tournament #{self.tournament.id}'
+        else:
+            return f'Tournament User ID {self.user_id} without a Tournament'
