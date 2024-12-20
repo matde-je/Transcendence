@@ -10,7 +10,7 @@ import { getCookie } from './utils.js';
  */
 export function sendFriendRequest(user_id) {
 	// Send a POST request to the server to create a new friendship request
-    fetch('/users/api/friendships/', {
+    fetch('/users/friendships/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ export function sendFriendRequest(user_id) {
  * and shows the dashboard. If there is an error, it logs the error and alerts the user.
  */
 export function acceptFriendRequest(requestId) {
-    fetch(`/users/api/friendships/${requestId}/accept/`, {
+    fetch(`/users/friendships/${requestId}/accept/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': getCookie('csrftoken')
@@ -81,7 +81,7 @@ export function acceptFriendRequest(requestId) {
  * @returns {void}
  */
 export function removeFriend(user_id) {
-    fetch(`/users/api/friends/${user_id}/remove/`, {
+    fetch(`/users/friends/${user_id}/remove/`, {
         method: 'DELETE',
         headers: {
             'X-CSRFToken': getCookie('csrftoken')

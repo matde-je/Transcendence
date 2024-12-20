@@ -23,10 +23,11 @@ const router = async () => {
         { path: '/rock-paper-scissors', elementId: 'rockPaperScissors' },
         { path: '/rock-paper-scissors/singleplayer', elementId: 'rockPaperScissorsSinglePlayer' },
         { path: '/rock-paper-scissors/multiplayer', elementId: 'rockPaperScissorsMultiplayer' },
-        { path: '/tournament', elementId: 'tournament' }, // Rota adicionada
+        { path: '/tournament', elementId: 'tournament' },
     ];
 
-    const match = routes.find((route) => route.path === location.pathname) || routes[0]; // Padrão para home se não houver correspondência
+	// Find the route that matches the current path
+    const match = routes.find((route) => route.path === location.pathname) || routes[0];
 
 	// Hide all pages
     document.querySelectorAll('.page').forEach((page) => {

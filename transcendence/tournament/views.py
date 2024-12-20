@@ -1,12 +1,13 @@
 # tournament/views.py
 
 from django.shortcuts import render
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import Tournament
-from .serializers import TournamentSerializer
+from .models import Tournament, TournamentUser
+from .serializers import TournamentSerializer, TournamentUserSerializer
+from users.models import CustomUser
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -30,3 +31,61 @@ def tournament_results(request):
     tournaments = Tournament.objects.filter(is_finished=True)
     serializer = TournamentSerializer(tournaments, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def join_tournament(request, tournament_id):
+    try:
+        tournament = Tournament.objects.get(id=tournament_id)
+        # Checks if the user is already enrolled in the tournament
+        if TournamentUser.objects.filter(tournament=tournament, user_id=request.user.id).exists():
+            return Response({'detail': 'You are already registered for this tournament.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get the value of is_accepted from the request data, default to False
+        is_accepted = request.data.get('is_accepted', False)
+        
+        # Create the TournamentUser object with is_accepted
+        TournamentUser.objects.create(
+            tournament=tournament,
+            user_id=request.user.id,
+            is_accepted=is_accepted
+        )
+
+        return Response({'detail': 'Successfully added to the tournament!'}, status=status.HTTP_200_OK)
+    except Tournament.DoesNotExist:
+        return Response({'detail': 'Tournament not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'detail': 'Error adding to tournament.', 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def leave_tournament(request, tournament_id):
+    try:
+        tournament = Tournament.objects.get(id=tournament_id)
+        TournamentUser.objects.filter(tournament=tournament, user_id=request.user.id).delete()
+        return Response({'detail': 'Successfully removed from the tournament!'}, status=status.HTTP_200_OK)
+    except Tournament.DoesNotExist:
+        return Response({'detail': 'Tournament not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'detail': 'Error removing from tournament.', 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def tournament_participants(request, tournament_id):
+    try:
+        tournament = Tournament.objects.get(id=tournament_id)
+        participants = TournamentUser.objects.filter(tournament=tournament, is_accepted=True)
+        serializer = TournamentUserSerializer(participants, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Tournament.DoesNotExist:
+        return Response({'detail': 'Tournament not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+class TournamentViewSet(viewsets.ModelViewSet):
+    queryset = Tournament.objects.all()
+    serializer_class = TournamentSerializer
+    permission_classes = [IsAuthenticated]
+
+class TournamentUserViewSet(viewsets.ModelViewSet):
+    queryset = TournamentUser.objects.all()
+    serializer_class = TournamentUserSerializer
+    permission_classes = [IsAuthenticated]

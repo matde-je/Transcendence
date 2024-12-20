@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.utils import timezone
+from users.models import CustomUser
 
 class Tournament(models.Model):
     id = models.AutoField(primary_key=True)
@@ -15,7 +16,7 @@ class Tournament(models.Model):
     is_finished = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'Tournament #{self.id} - {self.name} created by por User ID {self.creator_id}'
+        return f'{self.name} (created by {CustomUser.objects.get(id=self.creator_id).username})'
 
 class TournamentUser(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.SET_NULL, null=True, related_name='tournamentUsers')
