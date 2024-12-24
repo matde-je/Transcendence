@@ -160,7 +160,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.CustomUser'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",
     "https://localhost:8000",
 ]
 
@@ -169,6 +168,5 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-     "http://localhost:8000",
      "https://localhost:8000",
 ]

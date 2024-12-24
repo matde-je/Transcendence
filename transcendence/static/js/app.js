@@ -9,13 +9,9 @@ import { playSinglePlayerGame } from './rps-singleplayer.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthentication();
-
     window.addEventListener('popstate', (event) => {
         if (event.state) {
             switch (event.state.page) {
-                case 'home':
-                    showHome();
-                    break;
                 case 'login':
                     showLogin();
                     break;
@@ -37,12 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 default:
                     showHome();
                     break;
-            }
+             }
         } else {
             showHome();
         }
     });
-
     const path = window.location.pathname;
     if (path === '/login') {
         showLogin();
@@ -61,9 +56,93 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-/**
- * Checks the user's authentication status.
- */
+// Function to initialize and update the navbar
+function initializeNavbar(authenticated, username) {
+    let navBarContainer = document.getElementById('navbar');
+    navBarContainer = document.createElement('nav');
+    navBarContainer.id = 'navbar';
+    navBarContainer.className = 'navbar navbar-expand-lg navbar-light bg-light fixed-top';
+    const container = document.createElement('div');
+    container.className = 'container-fluid';
+
+    const navbarBrand = document.createElement('a');
+    navbarBrand.className = 'navbar-brand';
+    navbarBrand.href = '/';
+    navbarBrand.innerText = 'Pong';
+    navbarBrand.addEventListener('click', (e) => {
+        e.preventDefault();
+        showHome();
+        history.pushState({ page: 'home' }, 'Home', '/');
+    });
+    container.appendChild(navbarBrand);
+    const navbarCollapse = document.createElement('div');
+    navbarCollapse.className = 'collapse navbar-collapse';
+    navbarCollapse.id = 'navbarNav';
+    const navLinks = document.createElement('ul');
+    navLinks.id = 'nav-links';
+    navLinks.className = 'navbar-nav';
+
+    navbarCollapse.appendChild(navLinks);
+    container.appendChild(navbarCollapse);
+    navBarContainer.appendChild(container);
+    document.body.appendChild(navBarContainer);
+
+    if (authenticated) {
+        const logoutLink = document.createElement('li');
+        logoutLink.className = 'nav-item';
+        logoutLink.innerHTML = '<a class="nav-link" href="#" id="logout" data-link>Logout</a>';
+        navLinks.appendChild(logoutLink);
+
+        logoutLink.querySelector('#logout').addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
+        });
+        const usernameLink = document.createElement('li');
+        usernameLink.className = 'nav-item';
+        usernameLink.innerHTML = `<a class="nav-link" href="/dashboard" data-link>${username}</a>`;
+        navLinks.appendChild(usernameLink);
+        usernameLink.querySelector('a').addEventListener('click', (e) => {
+            e.preventDefault();
+            showDashboard();
+            history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard');
+        });
+    } else {
+        const loginLink = document.createElement('li');
+        loginLink.className = 'nav-item';
+        loginLink.innerHTML = '<a class="nav-link" href="/login" data-link>Login</a>';
+        navLinks.appendChild(loginLink);
+
+        const registerLink = document.createElement('li');
+        registerLink.className = 'nav-item';
+        registerLink.innerHTML = '<a class="nav-link" href="/register" data-link>Register</a>';
+        navLinks.appendChild(registerLink);
+
+        loginLink.querySelector('a').addEventListener('click', (e) => {
+            e.preventDefault();
+            showLogin();
+            history.pushState({ page: 'login' }, 'Login', '/login');
+            console.log("login log");
+        });
+        registerLink.querySelector('a').addEventListener('click', (e) => {
+            e.preventDefault();
+           showRegister();
+            history.pushState({ page: 'register' }, 'Register', '/register');
+            console.log("register log");
+        });
+    }
+    const rpsLink = document.createElement('li');
+    rpsLink.className = 'nav-item';
+    rpsLink.innerHTML = '<a class="nav-link" href="/rock-paper-scissors" data-link>Rock Paper Scissors</a>';
+    navLinks.appendChild(rpsLink);
+    rpsLink.querySelector('a').addEventListener('click', (e) => {
+        e.preventDefault();
+        showRPS();
+        history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
+        console.log("rps log");
+    });
+}
+
+// Function to check authentication and update navbar
 export function checkAuthentication() {
     fetch('/users/check-auth/', {
         method: 'GET',
@@ -79,93 +158,7 @@ export function checkAuthentication() {
             return response.json();
         })
         .then((data) => {
-            const navBarContainer = document.createElement('nav');
-            navBarContainer.className ='navbar navbar-expand-lg navbar-light bg-light fixed-top'; // Add fixed-top class here
-
-            const container = document.createElement('div');
-            container.className = 'container-fluid';
-
-            const navbarBrand = document.createElement('a');
-            navbarBrand.className = 'navbar-brand';
-            navbarBrand.href = '/'; // This will be used for the link text, but we handle the click event to prevent reload
-            navbarBrand.innerText = 'Pong'; 
-
-            navbarBrand.addEventListener('click', (e) => {
-                e.preventDefault(); // Prevent the default behavior (page reload)
-                showHome(); // Your function to show the home content
-                history.pushState({ page: 'home' }, 'Home', '/'); // Update the URL
-            });
-
-            container.appendChild(navbarBrand);
-
-            const navbarCollapse = document.createElement('div');
-            navbarCollapse.className = 'collapse navbar-collapse';
-            navbarCollapse.id = 'navbarNav';
-
-            const navLinks = document.getElementById('nav-links');
-            navLinks.className = 'navbar-nav';
-
-            if (data.is_authenticated) {
-                const logoutLink = document.createElement('li');
-                logoutLink.className = 'nav-item';
-                logoutLink.innerHTML = '<a class="nav-link" href="#" id="logout" data-link>Logout</a>';
-                navLinks.appendChild(logoutLink);
-
-				document.getElementById('logout').addEventListener('click', (e) => {
-					e.preventDefault();
-					logout();
-				});
-
-                const usernameLink = document.createElement('li');
-                usernameLink.className = 'nav-item';
-                usernameLink.innerHTML = `<a class="nav-link" href="/dashboard" id="dashboard" data-link>${data.username}</a>`;
-                navLinks.appendChild(usernameLink);
-				
-                document.getElementById('dashboard').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showDashboard();
-                    history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard');
-                });
-            } else {
-                const loginLink = document.createElement('li');
-                loginLink.className = 'nav-item';
-                loginLink.innerHTML = '<a class="nav-link" href="#" id="login">Login</a>';
-                navLinks.appendChild(loginLink);
-
-                const registerLink = document.createElement('li');
-                registerLink.className = 'nav-item';
-                registerLink.innerHTML = '<a class="nav-link" href="#" id="register">Register</a>';
-                navLinks.appendChild(registerLink);
-
-                document.getElementById('login').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showLogin();
-                    history.pushState({ page: 'login' }, 'Login', '/login');
-                });
-
-                document.getElementById('register').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showRegister();
-                    history.pushState({ page: 'register' }, 'Register', '/register');
-                });
-            }
-
-			const rpsLink = document.createElement('li');
-			rpsLink.className = 'nav-item';
-			rpsLink.innerHTML = '<a class="nav-link" href="/rock-paper-scissors" id="rockPaperScissors">Rock Paper Scissors</a>';
-			navLinks.appendChild(rpsLink);
-
-            document.getElementById('rockPaperScissors').addEventListener('click', (e) => {
-                e.preventDefault();
-                showRPS();
-                history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
-            });
-            navbarCollapse.appendChild(navLinks);
-
-            // Append the navbarCollapse and brand to the navbar container
-            container.appendChild(navbarCollapse);
-            navBarContainer.appendChild(container);
-            document.body.appendChild(navBarContainer);
+            initializeNavbar(data.is_authenticated, data.username || '');
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -176,30 +169,44 @@ export function checkAuthentication() {
 /**
  * Displays the Home page.
  */
+
+import { initializeGame, startGame } from './game.js';
+
 export function showHome() {
-    document.getElementById('content').innerHTML = `
+    let contentElement = document.getElementById('content');
+    if (!contentElement) {
+        contentElement = document.createElement('div');
+        contentElement.id = 'content';
+        document.body.appendChild(contentElement);  // Append to body or to a specific container
+    }
+    else 
+        contentElement.innerHTML = '';
+    document.getElementById('gameScript')?.remove();
+    document.getElementById('aiScript')?.remove();
+    contentElement.innerHTML = `
         <div class="text-center" style="margin-top: 80px;"> 
             <h1 class="display-5">Pong Game</h1>
         </div>
+        
         <div class="text-center" style="margin-top: 50px;"> 
-            <canvas id="game" width="650" height="500" style="background-color: black; display: block; margin: 0 auto;"></canvas>
+            <canvas id="game" width="650" height="400" style="background-color: black; display: block; margin: 0 auto;"></canvas>
+        </div>
+        <div class="text-center" style="margin-top: 50px;">
+        <p>To play different games or to play remotely,</p>
+        <p>Register your user and login!</p>
         </div>
             `;
-
-    // Add the game script first
-    if (!document.getElementById('gameScript')) {
         const gameScript = document.createElement('script');
         gameScript.type = 'module';
         gameScript.src = '/static/js/game.js';
         gameScript.id = 'gameScript';
         gameScript.onload = () => {
-            init = 0; 
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            ani = window.requestAnimationFrame(loop);
+            console.log('Game script loaded!');
+            // Call your game initialization or start functions here
+            initializeGame(); // Ensure this function is defined in game.js
+            startGame();      // Ensure this function is defined in game.js
         };
         document.body.appendChild(gameScript);
-    }
-
     // Then add the AI opponent script
     if (!document.getElementById('aiScript')) {
         const aiScript = document.createElement('script');
@@ -249,7 +256,6 @@ export function showRPS() {
             '/rock-paper-scissors/multiplayer'
         );
     });
-
 }
 
 /**
