@@ -8,7 +8,7 @@ import { playMultiplayerGame } from './rps-multiplayer.js';
  */
 export function showSinglePlayer() {
     const singlePlayerContent = `
-    <div class="container" style="margin-top: 150px;">
+    <div class="container" style="margin-top: 100px;">
         <h1 class="text-center mb-5">Single Player - Rock Paper Scissors</h1>
         <div class="d-flex justify-content-center mb-4">
             <button class="btn btn-success mx-3" id="rockBtn" style="font-size: 1.5rem;">👊 Rock</button>
@@ -55,7 +55,7 @@ export function showSinglePlayer() {
  */
 export function showMultiplayer() {
     const multiplayerContent = `
-    <div class="container" style="margin-top: 150px;">
+    <div class="container" style="margin-top: 100px;">
         <h1 class="text-center mb-5">Multiplayer - Rock Paper Scissors</h1>
          <div class="row justify-content-center mb-4">
         <div class="col-md-4 text-center">

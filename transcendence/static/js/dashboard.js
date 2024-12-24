@@ -6,7 +6,6 @@ import { sendFriendRequest, acceptFriendRequest, removeFriend } from './friendsh
 
 // Exporting functions so they can be used in other modules
 export { sendFriendRequest, acceptFriendRequest, removeFriend };
-
 window.sendFriendRequest = sendFriendRequest;
 window.acceptFriendRequest = acceptFriendRequest;
 window.removeFriend = removeFriend;
@@ -19,17 +18,53 @@ window.showDashboard = showDashboard;
  * @param {string} title - The title of the list section.
  * @param {string[]} items - An array of strings representing the items to be included in the list section.
  */
+// function createList(content, title, items) {
+//     const section = document.createElement('section');
+//     section.className = 'mb-4';
+//     const heading = document.createElement('h3');
+//     heading.textContent = title;
+//     section.appendChild(heading);
+
+//     for (let item of items) {
+//         const div = document.createElement('div');
+//         div.innerHTML = item;
+//         section.appendChild(div);
+//     }
+//     content.appendChild(section);
+// }
+
 function createList(content, title, items) {
+    // Create a Bootstrap-styled section
     const section = document.createElement('section');
+    section.className = 'mb-4';
+
+    // Add a styled heading
     const heading = document.createElement('h3');
     heading.textContent = title;
+    heading.className = 'mb-3 text-center ';
     section.appendChild(heading);
 
-    for (let item of items) {
-        const div = document.createElement('div');
-        div.innerHTML = item;
-        section.appendChild(div);
+    // Create a Bootstrap-styled list group
+    const listGroup = document.createElement('div');
+    listGroup.className = 'list-group';
+
+    // Add items to the list group
+    if (items.length > 0) {
+        for (let item of items) {
+            const listItem = document.createElement('a');
+            listItem.className = 'list-group-item text-center list-group-item-action';
+            listItem.href = '#'; // Optionally, add functionality here
+            listItem.textContent = item;
+            listGroup.appendChild(listItem);
+        }
+    } else {
+        // Add a placeholder if the list is empty
+        const emptyItem = document.createElement('div');
+        emptyItem.className = 'list-group-item text-muted text-center';
+        emptyItem.textContent = 'No items found.';
+        listGroup.appendChild(emptyItem);
     }
+    section.appendChild(listGroup);
     content.appendChild(section);
 }
 
@@ -48,28 +83,41 @@ export function showDashboard() {
     .then(response => response.json())
     .then(data => {
         content.innerHTML = `
-            <h2>Dashboard</h2>
-            <p>Avatar: <img src="${data.avatar}" alt="Avatar" width="100"></p>
-            <p>ID: ${data.id}</p>
-            <p>Email: ${data.email}</p>
-            <p>Username: ${data.username}</p>
-            <p>Nickname: ${data.nickname}</p>
-            <p>Nome: ${data.first_name} ${data.last_name}</p>
-            <p>Registration date: ${new Date(data.date_joined).toLocaleString('pt-PT')}</p>
-            <p>Last login: ${new Date(data.last_login).toLocaleString('pt-PT')}</p>
-            <button id="edit-user" class="btn btn-primary">Edit Profile</button>
-            <hr>
-        `;
-
+            <div style="margin-top: 100px;">
+            <div class="container my-5">
+            <h2 class="text-center mb-4">Dashboard</h2>
+            <div class="card shadow-sm">
+            <div class="card-body">
+            <div class="text-center mb-3">
+                    <img src="${data.avatar}" alt="Avatar" width="100">
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>ID:</strong> ${data.id}</li>
+                        <li class="list-group-item"><strong>Email:</strong> ${data.email}</li>
+                        <li class="list-group-item"><strong>Username:</strong> ${data.username}</li>
+                        <li class="list-group-item"><strong>Nickname:</strong> ${data.nickname}</li>
+                        <li class="list-group-item"><strong>Nome:</strong> ${data.first_name} ${data.last_name}</li>
+                        <li class="list-group-item">
+                            <strong>Registration Date:</strong> ${new Date(data.date_joined).toLocaleString('pt-PT')}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Last Login:</strong> ${new Date(data.last_login).toLocaleString('pt-PT')}
+                        </li>
+                    </ul>
+                    <div class="text-center mt-4">
+                        <button id="edit-user" class="btn btn-secondary btn-lg">Edit Profile</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
         checkAuthentication();
-
         document.getElementById('edit-user').addEventListener('click', (e) => {
             e.preventDefault();
             showEditUserForm(data);
         });
-
-		// Uses Promise.all to fetch users, sent friend requests, and friends simultaneously
-        Promise.all([
+		
+        Promise.all([ // Uses Promise.all to fetch users, sent friend requests, and friends simultaneously
             fetch('/users/api/users/', {
                 method: 'GET',
                 credentials: 'include',
@@ -114,7 +162,7 @@ export function showDashboard() {
                 const userItems = filteredUsers.map(user => {
                     return `
                         ${user.username} 
-                        <button onclick="sendFriendRequest(${user.id})" class="btn btn-sm btn-primary">
+                        <button onclick="sendFriendRequest(${user.id})" class="btn btn-sm btn-secondary">
                             Send Friend Request
                         </button>
                     `;
@@ -194,6 +242,7 @@ export function showDashboard() {
  */
 export function showEditUserForm(userData) {
     document.getElementById('content').innerHTML = `
+        <div style="margin-top: 100px;">
         <h2>Editar Perfil</h2>
         <form id="edit-user-form" enctype="multipart/form-data">
             <div class="form-group">
@@ -220,7 +269,6 @@ export function showEditUserForm(userData) {
             <button type="button" id="cancel-edit" class="btn btn-secondary">Cancel</button>
         </form>
     `;
-
     document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const nickname = document.getElementById('nickname').value;

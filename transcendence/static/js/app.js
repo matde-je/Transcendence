@@ -1,5 +1,4 @@
 // static/js/app.js
-
 import { showLogin } from './login.js';
 import { showRegister } from './register.js';
 import { showDashboard, showEditUserForm } from './dashboard.js';
@@ -99,7 +98,7 @@ function initializeNavbar(authenticated, username) {
         });
         const usernameLink = document.createElement('li');
         usernameLink.className = 'nav-item';
-        usernameLink.innerHTML = `<a class="nav-link" href="/dashboard" data-link>${username}</a>`;
+        usernameLink.innerHTML = `<a class="nav-link" href="/dashboard" data-link>My User</a>`;
         navLinks.appendChild(usernameLink);
         usernameLink.querySelector('a').addEventListener('click', (e) => {
             e.preventDefault();
@@ -169,7 +168,6 @@ export function checkAuthentication() {
 /**
  * Displays the Home page.
  */
-
 import { initializeGame, startGame } from './game.js';
 
 export function showHome() {
@@ -184,30 +182,28 @@ export function showHome() {
     document.getElementById('gameScript')?.remove();
     document.getElementById('aiScript')?.remove();
     contentElement.innerHTML = `
-        <div class="text-center" style="margin-top: 80px;"> 
-            <h1 class="display-5">Pong Game</h1>
+        <div class="text-center" style="margin-top: 80px; font-family: 'Arial', sans-serif;"> 
+            <h1 class="display-5 text-dark fw-bold">Pong Game</h1>
         </div>
-        
-        <div class="text-center" style="margin-top: 50px;"> 
+
+        <div class="text-center" style="margin-top: 50px; font-family: 'Arial', sans-serif;"> 
             <canvas id="game" width="650" height="400" style="background-color: black; display: block; margin: 0 auto;"></canvas>
         </div>
-        <div class="text-center" style="margin-top: 50px;">
-        <p>To play different games or to play remotely,</p>
-        <p>Register your user and login!</p>
+
+        <div class="text-center" style="margin-top: 50px; font-family: 'Arial', sans-serif;">
+            <p class="fs-4 fw-bold text-dark">To unlock features and games,</p>
+            <p class="fs-5 text-dark fst-italic">Register your User and Login!</p>
         </div>
-            `;
+        `;
         const gameScript = document.createElement('script');
         gameScript.type = 'module';
         gameScript.src = '/static/js/game.js';
         gameScript.id = 'gameScript';
         gameScript.onload = () => {
-            console.log('Game script loaded!');
-            // Call your game initialization or start functions here
-            initializeGame(); // Ensure this function is defined in game.js
-            startGame();      // Ensure this function is defined in game.js
+            initializeGame(); 
+            startGame(); 
         };
         document.body.appendChild(gameScript);
-    // Then add the AI opponent script
     if (!document.getElementById('aiScript')) {
         const aiScript = document.createElement('script');
         aiScript.type = 'module';
@@ -221,7 +217,6 @@ export function showHome() {
  * Displays the Rock Paper Scissors interface.
  */
 export function showRPS() {
-    // Define HTML content for the Rock Paper Scissors page
     const rpsContent = `
         <div class="container text-center mt-7" style="margin-top: 150px;">
             <h1>Rock - Paper - Scissors</h1>
@@ -231,7 +226,6 @@ export function showRPS() {
             </div>
         </div>
     `;
-
     // Insert content into the main content area
     document.getElementById('content').innerHTML = rpsContent;
 

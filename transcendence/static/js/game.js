@@ -1,6 +1,5 @@
 "use strict"
 
-// Initialize game variables
 let canvas;
 let context;
 let score1 = 0;
@@ -14,10 +13,9 @@ let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
 let multiplayer = 0;
 
-// Initialize the game
 export function initializeGame() {
-    // Get canvas and context after DOM is loaded
-    canvas = document.getElementById("game");
+    
+    canvas = document.getElementById("game"); // Get canvas and context after DOM is loaded
     if (!canvas) {
         console.error('Canvas element not found');
         return;
@@ -27,12 +25,10 @@ export function initializeGame() {
         console.error('Context not found');
         return;
     }
-    // Set canvas size
     canvas.width = 650;
     canvas.height = 400;
 	window.canvas = canvas;
     window.context = context;
-    // Reset score and game state
     score1 = 0;
     score2 = 0;
     init = 0;
@@ -41,63 +37,26 @@ export function initializeGame() {
 	ballSpeed = 7;
 	multiplayer = 0;
 	
-	//AI settings
 	window.ai = 0;
 	window.aiSpeed = 70;
 	window.aiRefreshView = 1000; // 1 sec, 1000 ms
-	
-	// Initialize the global aiLastUpdateTime variable
 	window.aiLastUpdateTime = Date.now();
 }
-
-// Start the game loop
-
-// document.addEventListener('DOMContentLoaded', () => {
-	// 	window.canvas = document.getElementById("game");
-	// 	window.context = canvas.getContext("2d");
-	
-	// 	window.canvas.width = 650;
-	// 	window.canvas.height = 400;
-	
-	// 	let score1 = 0;
-	// 	let score2 = 0;
-	
-	// 	let ani;
-	// 	let gameOver = false;
-	// 	let pause = false;
-	// 	let init = 0;
-	
-	// 	//Gameplay / Speeds
-	// 	let initialBallGravity = 1;
-	// 	let maxGravity = initialBallGravity * 2;
-	// 	let ballSpeed = 7;
-	
-	// 	let multiplayer = 0;
-	
-	// 	//AI settings
-	// 	window.ai = 0;
-	// 	window.aiSpeed = 70;
-	// 	window.aiRefreshView = 1000; // 1 sec, 1000 ms
-	
-	// 	// Initialize the global aiLastUpdateTime variable
-	// 	window.aiLastUpdateTime = Date.now();
-	// });
-	
-	class Element {
-		constructor(options){
-		this.x = options.x;
-		this.y = options.y;
-		this.width = options.width;
-		this.height = options.height;
-		this.color = options.color;
-		this.speed = options.speed || 2;
-		this.gravity = options.gravity;
+class Element {
+	constructor(options) {
+	this.x = options.x;
+	this.y = options.y;
+	this.width = options.width;
+	this.height = options.height;
+	this.color = options.color;
+	this.speed = options.speed || 2;
+	this.gravity = options.gravity;
 	}
 }
 
 const player1 = new Element ( {
 	x: 10,
-	y: 70,
+    y: 170,
 	width: 12,
 	height: 60,
 	color: "#fff",
@@ -106,7 +65,7 @@ const player1 = new Element ( {
 
 window.player2 = new Element ( {
 	x: 625,
-	y: 230,
+    y: 170, // Center vertically
 	width: 12,
 	height: 60,
 	color: "#fff",
@@ -256,7 +215,6 @@ function preventPaddleOverlap(paddle1, paddle2) {
 	}
 }
 
-
 function handleEdgeCollisions(player) {
 	ball.speed *= -1;
 	if (ball.y + (ball.height / 2) <= player.y + (player.height / 6)) //Thouch upper edge!!
@@ -306,18 +264,18 @@ function paddleCollision() {
 				}
 			}
 			
-			function bounceBall() {
-				if (gameOver == true)
-					return ;
-				ball.x += ball.speed;
-				ball.y += ball.gravity;
-				if (ball.y <= 0 || ball.y + ball.height >= canvas.height) {
+function bounceBall() {
+	if (gameOver == true)
+		return ;
+	ball.x += ball.speed;
+	ball.y += ball.gravity;
+	if (ball.y <= 0 || ball.y + ball.height >= canvas.height) {
 		ball.gravity *= -1;
 		if (ball.y <= 0)
 			ball.y = 0;
 		else
-		ball.y = canvas.height - ball.height;
-}
+			ball.y = canvas.height - ball.height;
+	}
 }
 
 function center_line() {
@@ -371,6 +329,9 @@ export function loop() {
         context.textAlign = 'center';
         context.fillStyle = 'white';
         context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2, 50);
+		draw(ball);
+		draw(player1);
+		draw(player2);
     }
     if (!gameOver && !pause && init === 1) {
 		handleMoves();
@@ -396,9 +357,8 @@ export function loop() {
             window.cancelAnimationFrame(ani);
         }
     }
-    if (!gameOver && score1 < 10 && score2 < 10 && init === 1) {
+    if (!gameOver && score1 < 10 && score2 < 10 && init === 1) 
 		ani = window.requestAnimationFrame(loop);
-    }
 }
 
 export function startGame() {
