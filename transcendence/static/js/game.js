@@ -14,17 +14,8 @@ let ballSpeed = 7;
 let multiplayer = 0;
 
 export function initializeGame() {
-    
     canvas = document.getElementById("game"); // Get canvas and context after DOM is loaded
-    if (!canvas) {
-        console.error('Canvas element not found');
-        return;
-    }
     context = canvas.getContext("2d");
-    if (!context) {
-        console.error('Context not found');
-        return;
-    }
     canvas.width = 650;
     canvas.height = 400;
 	window.canvas = canvas;
@@ -325,6 +316,7 @@ let AiLastUpdateTime = Date.now();
 export function loop() {
 	console.log("Loop running...");
 	if (init === 0) {
+		context.clearRect(0, 0, canvas.width, canvas.height);
 		context.font = '20px \'Courier New\', Courier, monospace';
         context.textAlign = 'center';
         context.fillStyle = 'white';

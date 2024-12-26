@@ -182,15 +182,15 @@ export function showHome() {
     document.getElementById('gameScript')?.remove();
     document.getElementById('aiScript')?.remove();
     contentElement.innerHTML = `
-        <div class="text-center" style="margin-top: 80px; font-family: 'Arial', sans-serif;"> 
+        <div class="text-center" style="margin-top: 100px;">
             <h1 class="display-5 text-dark fw-bold">Pong Game</h1>
         </div>
-
-        <div class="text-center" style="margin-top: 50px; font-family: 'Arial', sans-serif;"> 
-            <canvas id="game" width="650" height="400" style="background-color: black; display: block; margin: 0 auto;"></canvas>
+        <div class="text-center mt-5"> 
+            <div class="d-flex justify-content-center">
+                <canvas id="game" width="650" height="400" style="background-color: #000;"></canvas>
+            </div>
         </div>
-
-        <div class="text-center" style="margin-top: 50px; font-family: 'Arial', sans-serif;">
+        <div class="text-center mt-5">
             <p class="fs-4 fw-bold text-dark">To unlock features and games,</p>
             <p class="fs-5 text-dark fst-italic">Register your User and Login!</p>
         </div>
@@ -228,7 +228,6 @@ export function showRPS() {
     `;
     // Insert content into the main content area
     document.getElementById('content').innerHTML = rpsContent;
-
     // Add listener for the Single Player button
     document.getElementById('singlePlayerBtn').addEventListener('click', (e) => {
         e.preventDefault();
@@ -239,7 +238,6 @@ export function showRPS() {
             '/rock-paper-scissors/singleplayer'
         );
     });
-
     // Add listener for the Multiplayer button
     document.getElementById('multiplayerBtn').addEventListener('click', (e) => {
         e.preventDefault();
@@ -257,7 +255,6 @@ export function showRPS() {
  */
 function logout() {
     const csrftoken = getCookie('csrftoken');
-
     fetch('/users/logout/', {
         method: 'POST',
         headers: {
