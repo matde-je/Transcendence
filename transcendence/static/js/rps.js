@@ -60,9 +60,9 @@ export function showMultiplayer() {
          <div class="row justify-content-center mb-4">
         <div class="col-md-4 text-center">
             <h4>Player 1</h4>
-            <button class="btn btn-success mb-2 w-100" id="player1RockBtn">👊 Rock</button>
-            <button class="btn btn-info mb-2 w-100" id="player1PaperBtn">✋ Paper</button>
-            <button class="btn btn-danger mb-2 w-100" id="player1ScissorsBtn">✌️ Scissors</button>
+            <button class="btn btn-success mb-2 w-100" id="player1RockBtn">👊 Rock (q)</button>
+            <button class="btn btn-info mb-2 w-100" id="player1PaperBtn">✋ Paper (w)</button>
+            <button class="btn btn-danger mb-2 w-100" id="player1ScissorsBtn">✌️ Scissors (e)</button>
         </div>
     </div>
     
@@ -70,9 +70,9 @@ export function showMultiplayer() {
     <div class="row justify-content-center mb-4">
         <div class="col-md-4 text-center">
             <h4>Player 2</h4>
-            <button class="btn btn-success mb-2 w-100" id="player2RockBtn">👊 Rock</button>
-            <button class="btn btn-info mb-2 w-100" id="player2PaperBtn">✋ Paper</button>
-            <button class="btn btn-danger mb-2 w-100" id="player2ScissorsBtn">✌️ Scissors</button>
+            <button class="btn btn-success mb-2 w-100" id="player2RockBtn">👊 Rock (Arrow left)</button>
+            <button class="btn btn-info mb-2 w-100" id="player2PaperBtn">✋ Paper (Arrow down)</button>
+            <button class="btn btn-danger mb-2 w-100" id="player2ScissorsBtn">✌️ Scissors (Arrow right)</button>
         </div>
     </div>
     

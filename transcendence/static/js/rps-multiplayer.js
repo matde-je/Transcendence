@@ -120,3 +120,32 @@ function playGame() {
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+// Add event listener for key presses
+document.addEventListener('keydown', (event) => {
+    const key = event.key;
+    switch (key) {
+        // Player 1 keys
+        case 'q':
+            playMultiplayerGame('rock', 1);
+            break;
+        case 'w':
+            playMultiplayerGame('paper', 1);
+            break;
+        case 'e':
+            playMultiplayerGame('scissors', 1);
+            break;
+        // Player 2 keys
+        case 'ArrowLeft':
+            playMultiplayerGame('rock', 2);
+            break;
+        case 'ArrowDown':
+            playMultiplayerGame('paper', 2);
+            break;
+        case 'ArrowRight':
+            playMultiplayerGame('scissors', 2);
+            break;
+        default:
+            break;
+    }
+});
