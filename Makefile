@@ -39,9 +39,14 @@ install:
 	.venv/bin/activate && pip install -r ./srcs/requirements.txt
 
 # Create a superuser in Django
-createsuperuser:
+create_superuser:
 	@clear
 	docker compose --file docker-compose.yml run backend python manage.py createsuperuser
+
+# Create users
+create_users:
+	@clear
+	docker compose --file docker-compose.yml run backend python manage.py create_users
 
 # Migrate the database
 migrate:
@@ -94,4 +99,5 @@ copy-certs:
 	@cp key.pem ./transcendence/cert.key
 	@echo "Certificates copied."
 
-.PHONY: run stop down clean fclean venv activate install createsuperuser migrate info backend-it db-it logs generate-certs copy-certs
+
+.PHONY: run stop down clean fclean venv activate install create_superuser create_users migrate info backend-it db-it logs generate-certs copy-certs

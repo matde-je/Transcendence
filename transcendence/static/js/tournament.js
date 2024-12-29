@@ -70,15 +70,22 @@ export async function listOpenTournaments() {
 					const isCreator = tournament.creator_id === currentUserId;
                     let actionButton;
 					let deleteTournamentButton = '';
+                    let startTournamentButton = '';
+
                     if (isEnrolled) {
                         actionButton = `<button onclick="removeUserFromTournament(${tournament.id})" class="btn btn-danger btn-sm">Quit Tournament</button>`;
-                    } else {
-                        actionButton = `<button onclick="addUserToTournament(${tournament.id})" class="btn btn-primary btn-sm">Add</button>`;
+                    } 
+					if (!isEnrolled && !tournament.is_started) {
+                        actionButton = `<button onclick="addUserToTournament(${tournament.id})" class="btn btn-primary btn-sm">Participate</button>`;
                     }
 
 					if (isCreator && !tournament.is_started) {
 						deleteTournamentButton = `<button onclick="deleteTournament(${tournament.id})" class="btn btn-danger btn-sm">Delete Tournament</button>`;
 					}
+
+                    if (isEnrolled && !tournament.is_started) {
+                        startTournamentButton = `<button onclick="startTournament(${tournament.id})" class="btn btn-success btn-sm">Start Tournament</button>`;
+                    }
                     
                     const listItem = document.createElement('li');
                     listItem.innerHTML = `
@@ -86,7 +93,7 @@ export async function listOpenTournaments() {
                         <br>
                         Participants: ${participants.map(p => p.username).join(', ')}
                         <br>
-                        ${actionButton}
+                        ${actionButton} - ${startTournamentButton}
                     `;
                     list.appendChild(listItem);
                 })
@@ -257,6 +264,66 @@ async function deleteTournament(tournamentId) {
     }
 }
 
+async function startTournament(tournamentId) {
+    console.log('Iniciando torneio ID:', tournamentId);
+    const csrftoken = getCookie('csrftoken');
+    try {
+        // Get participants
+        const participantsResponse = await fetch(`/tournament/tournaments/${tournamentId}/participants/`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (!participantsResponse.ok) {
+            const data = await participantsResponse.json();
+            alert('Error getting participants: ' + JSON.stringify(data));
+            return;
+        }
+        const participants = await participantsResponse.json();
+        const count = participants.length;
+
+        // Checks if the number of participants is a power of 2
+        if (!isPowerOfTwo(count)) {
+            const needed = nextPowerOfTwo(count) - count;
+            alert(`The tournament cannot be started with ${count} players. \n\nIt's needed more ${needed} players.`);
+            return;
+        }
+
+        // Starts the tournament
+        const names = participants.map((p) => p.username).join('\n');
+        alert(`Tournament started successfully! \n\nParticipants: ${names}`);
+
+        const response = await fetch(`/tournament/tournaments/${tournamentId}/start/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            credentials: 'include',
+        });
+        if (response.ok) {
+            listOpenTournaments();
+        } else {
+            const data = await response.json();
+            alert('Error starting tournament: ' + JSON.stringify(data));
+        }
+    } catch (error) {
+        console.error('Error starting tournament:', error);
+        alert('Error starting tournament.');
+    }
+}
+
+function isPowerOfTwo(n) {
+    return n > 0 && (n & (n - 1)) === 0;
+}
+
+function nextPowerOfTwo(n) {
+    let power = 1;
+    while (power < n) {
+        power <<= 1;
+    }
+    return power;
+}
+
 window.addUserToTournament = addUserToTournament;
 window.removeUserFromTournament = removeUserFromTournament;
 window.deleteTournament = deleteTournament;
+window.startTournament = startTournament;

@@ -80,6 +80,22 @@ def tournament_participants(request, tournament_id):
     except Tournament.DoesNotExist:
         return Response({'detail': 'Tournament not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def start_tournament(request, tournament_id):
+    try:
+        tournament = Tournament.objects.get(id=tournament_id)
+        if tournament.is_started:
+            return Response({'detail': 'Tournament already started.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        tournament.is_started = True
+        tournament.save(update_fields=['is_started'])
+        return Response({'detail': 'Tournament started successfully!'}, status=status.HTTP_200_OK)
+    except Tournament.DoesNotExist:
+        return Response({'detail': 'Tournament not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'detail': 'Error starting tournament.', 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer

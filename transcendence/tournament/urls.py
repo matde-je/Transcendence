@@ -10,7 +10,8 @@ from .views import (
     tournament_results,
     join_tournament, 
     leave_tournament, 
-    tournament_participants
+    tournament_participants,
+	start_tournament
 )
 
 router = DefaultRouter()
@@ -25,4 +26,5 @@ urlpatterns = [
     path('tournaments/<int:tournament_id>/join/', join_tournament, name='join_tournament'),
     path('tournaments/<int:tournament_id>/leave/', leave_tournament, name='leave_tournament'),
     path('tournaments/<int:tournament_id>/participants/', tournament_participants, name='tournament_participants'),
+	path('tournaments/<int:tournament_id>/start/', start_tournament, name='start_tournament'),
 ]
