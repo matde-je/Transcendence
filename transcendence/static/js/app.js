@@ -190,7 +190,7 @@ export function showHome() {
             </div>
         </div>
         <div class="text-center mt-5">
-            <p class="fs-4 fw-bold text-dark">To unlock features and games,</p>
+            <p class="fs-4 fw-bold text-dark">To unlock new features and games,</p>
             <p class="fs-5 text-dark fst-italic">Register your User and Login!</p>
         </div>
         `;

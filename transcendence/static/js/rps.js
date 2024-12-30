@@ -27,7 +27,7 @@ export function showSinglePlayer() {
                 <p id="computerScoreDisplay" class="fs-4">Score: 0</p>
             </div>
         </div>
-        <p id="resultDisplay" class="mb-4 fs-5 fw-bold"></p>
+        <p id="resultDisplay" class="mb-4 fw-bold" style="font-size: 2rem;" ></p>
     </div>
         `;
 
@@ -88,7 +88,7 @@ export function showMultiplayer() {
                 <p id="player2ScoreDisplay" class="fs-4">Score: 0</p>
             </div>
         </div>
-        <p id="resultDisplay" class="mb-4 fs-5 fw-bold"></p>
+        <p id="resultDisplay" class="mb-4 fw-bold" style="font-size: 2rem"></p> 
     </div>
     `;
     document.getElementById('content').innerHTML = multiplayerContent;

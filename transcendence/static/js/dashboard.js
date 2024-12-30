@@ -22,21 +22,17 @@ window.showDashboard = showDashboard;
 function createList(content, title, items) {
     const section = document.createElement('section');
     section.className = 'mb-4';
-    // Add a styled heading
     const heading = document.createElement('h3');
     heading.textContent = title;
     heading.className = 'mb-3 text-center ';
     section.appendChild(heading);
-    // Create a Bootstrap-styled list group
     const listGroup = document.createElement('div');
     listGroup.className = 'list-group';
-    // Add items to the list group
     if (items.length > 0) {
         items.forEach(item => {
             listGroup.appendChild(item);
         });
     } else {
-        // Add a placeholder if the list is empty
         const emptyItem = document.createElement('div');
         emptyItem.className = 'list-group-item text-muted text-center';
         emptyItem.textContent = 'No users found.';

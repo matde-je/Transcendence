@@ -329,6 +329,7 @@ export function loop() {
 		draw(player1);
 		draw(player2);
     }
+	console.log()
     if (!gameOver && !pause && init === 1) {
 		console.log("loop game");
 		handleMoves();

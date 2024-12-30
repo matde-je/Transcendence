@@ -28,5 +28,4 @@ urlpatterns = [
     path('users/', include('users.urls')),
     #path('', views.index, name='index'),
     re_path(r'^(?!admin|users|media/|static/).*$', views.index, name='index'),
-    #path('<path:any>/', views.index, name='index'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
