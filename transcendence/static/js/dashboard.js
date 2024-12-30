@@ -6,7 +6,6 @@ import { sendFriendRequest, acceptFriendRequest, removeFriend } from './friendsh
 
 // Exporting functions so they can be used in other modules
 export { sendFriendRequest, acceptFriendRequest, removeFriend };
-
 window.sendFriendRequest = sendFriendRequest;
 window.acceptFriendRequest = acceptFriendRequest;
 window.removeFriend = removeFriend;
@@ -19,17 +18,27 @@ window.showDashboard = showDashboard;
  * @param {string} title - The title of the list section.
  * @param {string[]} items - An array of strings representing the items to be included in the list section.
  */
+
 function createList(content, title, items) {
     const section = document.createElement('section');
+    section.className = 'mb-4';
     const heading = document.createElement('h3');
     heading.textContent = title;
+    heading.className = 'mb-3 text-center ';
     section.appendChild(heading);
-
-    for (let item of items) {
-        const div = document.createElement('div');
-        div.innerHTML = item;
-        section.appendChild(div);
+    const listGroup = document.createElement('div');
+    listGroup.className = 'list-group';
+    if (items.length > 0) {
+        items.forEach(item => {
+            listGroup.appendChild(item);
+        });
+    } else {
+        const emptyItem = document.createElement('div');
+        emptyItem.className = 'list-group-item text-muted text-center';
+        emptyItem.textContent = 'No users found.';
+        listGroup.appendChild(emptyItem);
     }
+    section.appendChild(listGroup);
     content.appendChild(section);
 }
 
@@ -39,7 +48,6 @@ function createList(content, title, items) {
 export function showDashboard() {
     const content = document.getElementById('content');
     content.innerHTML = '';
-    
 	// Fetch user data
     fetch('/users/api/user/', {
         method: 'GET',
@@ -48,28 +56,40 @@ export function showDashboard() {
     .then(response => response.json())
     .then(data => {
         content.innerHTML = `
-            <h2>Dashboard</h2>
-            <p>Avatar: <img src="${data.avatar}" alt="Avatar" width="100"></p>
-            <p>ID: ${data.id}</p>
-            <p>Email: ${data.email}</p>
-            <p>Username: ${data.username}</p>
-            <p>Nickname: ${data.nickname}</p>
-            <p>Nome: ${data.first_name} ${data.last_name}</p>
-            <p>Registration date: ${new Date(data.date_joined).toLocaleString('pt-PT')}</p>
-            <p>Last login: ${new Date(data.last_login).toLocaleString('pt-PT')}</p>
-            <button id="edit-user" class="btn btn-primary">Edit Profile</button>
-            <hr>
-        `;
-
+            <div style="margin-top: 100px;">
+            <div class="container my-5">
+            <h2 class="text-center mb-4">Dashboard</h2>
+            <div class="card shadow-sm">
+            <div class="card-body">
+            <div class="text-center mb-3">
+                    <img src="${data.avatar}" alt="Avatar" width="100">
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>ID:</strong> ${data.id}</li>
+                        <li class="list-group-item"><strong>Email:</strong> ${data.email}</li>
+                        <li class="list-group-item"><strong>Username:</strong> ${data.username}</li>
+                        <li class="list-group-item"><strong>Nickname:</strong> ${data.nickname}</li>
+                        <li class="list-group-item"><strong>Nome:</strong> ${data.first_name} ${data.last_name}</li>
+                        <li class="list-group-item">
+                            <strong>Registration Date:</strong> ${new Date(data.date_joined).toLocaleString('pt-PT')}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Last Login:</strong> ${new Date(data.last_login).toLocaleString('pt-PT')}
+                        </li>
+                    </ul>
+                    <div class="text-center mt-4">
+                        <button id="edit-user" class="btn btn-secondary btn-lg">Edit Profile</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
         checkAuthentication();
-
         document.getElementById('edit-user').addEventListener('click', (e) => {
             e.preventDefault();
             showEditUserForm(data);
         });
-
-		// Uses Promise.all to fetch users, sent friend requests, and friends simultaneously
-        Promise.all([
+        Promise.all([ // Uses Promise.all to fetch users, sent friend requests, and friends simultaneously
             fetch('/users/api/users/', {
                 method: 'GET',
                 credentials: 'include',
@@ -90,15 +110,12 @@ export function showDashboard() {
         ])
         .then(([users, sentRequests, receivedRequests, friends]) => {
             const currentUserId = data.id;
-
             const sentUserIds = sentRequests.map(request => request.to_user.id);
 			// Get IDs of received requests
             const receivedUserIds = receivedRequests.map(request => request.from_user.id);
             const friendIds = friends.map(friend => friend.id);
-
 			// Combines IDs of sent and received requests
             const invalidUserIds = new Set([...sentUserIds, ...receivedUserIds, ...friendIds]);
-
 			// Filter users to exclude:
 			// - The user himself
 			// - Superusers
@@ -109,34 +126,50 @@ export function showDashboard() {
                 !user.is_superuser && 
                 !invalidUserIds.has(user.id)
             );
-
             if (filteredUsers.length > 0) {
                 const userItems = filteredUsers.map(user => {
-                    return `
-                        ${user.username} 
-                        <button onclick="sendFriendRequest(${user.id})" class="btn btn-sm btn-primary">
-                            Send Friend Request
-                        </button>
-                    `;
+                    const listItem = document.createElement('a');
+                    listItem.className = 'list-group-item text-center list-group-item-action d-flex justify-content-between align-items-center gap-2';
+                    const usernameText = document.createElement('span');
+                    usernameText.textContent = user.username;
+                    listItem.appendChild(usernameText);
+                    const button = document.createElement('button');
+                    button.textContent = 'Send Friend Request';
+                    button.className = 'btn btn-sm btn-secondary';
+                    button.onclick = function() {
+                        sendFriendRequest(user.id); // Use the user.id when the button is clicked
+                    };
+                    listItem.appendChild(button);
+                    return listItem;
                 });
                 createList(content, 'All Users', userItems);
             } else {
-                createList(content, 'All Users', ['No users found.']);
+                const noUsersItem = document.createElement('div');
+                noUsersItem.className = 'list-group-item text-muted text-center';
+                noUsersItem.textContent = 'No users found.';
+                createList(content, 'All Users', [noUsersItem]); 
             }
         })
         .catch(error => alert('Error fetching users and friend requests:', error));
-
 		// fetch friends and received friend requests
         fetch('/users/api/friends/')
             .then(response => response.json())
             .then(friends => {
                 const friendItems = friends.map(friend => {
-                    return `
-                        ${friend.username} 
-                        <button onclick="removeFriend(${friend.id})" class="btn btn-sm btn-danger">
-                            Remove Friendship
-                        </button>
-                    `;
+                    const listItem = document.createElement('a');
+                    listItem.className = 'list-group-item text-center list-group-item-action d-flex justify-content-between align-items-center gap-3'; 
+                    const usernameText = document.createElement('span');
+                    usernameText.textContent = friend.username;
+                    // usernameText.className = 'me-3'; // Margin for spacing between username and button
+                    listItem.appendChild(usernameText);
+                    const button = document.createElement('button');
+                    button.textContent = 'Remove Friendship';
+                    button.className = 'btn btn-sm btn-danger';
+                    button.onclick = function() {
+                        removeFriend(friend.id); // Use the friend.id when the button is clicked
+                    };
+                    listItem.appendChild(button);
+                    return listItem;
                 });
                 createList(content, 'Friends', friendItems);
             });
@@ -152,23 +185,34 @@ export function showDashboard() {
                             ...receivedRequests.map(request => ({ ...request, type: 'received' })),
                             ...sentRequests.map(request => ({ ...request, type: 'sent' }))
                         ];
-
                         const requestItems = allRequests.map(request => {
                             const formattedDate = new Date(request.created_at).toLocaleString();
+                            // Create the list item (DOM element)
+                            const listItem = document.createElement('a');
+                            listItem.className = 'list-group-item text-center list-group-item-action d-flex justify-content-between align-items-center';
+                            // Check if the request is received or sent
                             if (request.type === 'received') {
-                                return `
-                                    ${request.from_user.username} - Received: ${formattedDate}
-                                    <button onclick="acceptFriendRequest(${request.id})" class="btn btn-sm btn-success">
-                                        Accept
-                                    </button>
-                                `;
+                                // Create the text for the received request
+                                const textContent = document.createElement('span');
+                                textContent.textContent = `${request.from_user.username} - Received: ${formattedDate}`;
+                                listItem.appendChild(textContent);
+                                // Create the 'Accept' button
+                                const acceptButton = document.createElement('button');
+                                acceptButton.textContent = 'Accept';
+                                acceptButton.className = 'btn btn-sm btn-success';
+                                acceptButton.onclick = function() {
+                                    acceptFriendRequest(request.id); // Call the function when the button is clicked
+                                };
+                                listItem.appendChild(acceptButton);
                             } else {
-                                return `
-                                    To: ${request.to_user.username} - Sent: ${formattedDate}
-                                `;
+                                // For sent requests, just display the text
+                                const textContent = document.createElement('span');
+                                textContent.textContent = `To: ${request.to_user.username} - Sent: ${formattedDate}`;
+                                textContent.className = 'd-block text-center w-100';
+                                listItem.appendChild(textContent);
                             }
+                            return listItem; // Return the DOM element
                         });
-
                         createList(content, 'Friend Requests', requestItems);
                     });
             })
@@ -178,7 +222,6 @@ export function showDashboard() {
             });
     })
     .catch(error => console.error('Erro:', error));
-
 	// Get CSRF token
     const csrftoken = getCookie('csrftoken');
 }
@@ -194,6 +237,7 @@ export function showDashboard() {
  */
 export function showEditUserForm(userData) {
     document.getElementById('content').innerHTML = `
+        <div style="margin-top: 100px;">
         <h2>Editar Perfil</h2>
         <form id="edit-user-form" enctype="multipart/form-data">
             <div class="form-group">
@@ -220,7 +264,6 @@ export function showEditUserForm(userData) {
             <button type="button" id="cancel-edit" class="btn btn-secondary">Cancel</button>
         </form>
     `;
-
     document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const nickname = document.getElementById('nickname').value;
@@ -237,9 +280,7 @@ export function showEditUserForm(userData) {
         if (avatar) {
             formData.append('avatar', avatar);
         }
-
         const csrfToken = getCookie('csrftoken');
-
         try {
             const response = await fetch('/users/api/user/update/', {
                 method: 'PUT',
@@ -263,7 +304,6 @@ export function showEditUserForm(userData) {
             alert('Error updating data.');
         }
     });
-
     document.getElementById('cancel-edit').addEventListener('click', (e) => {
         e.preventDefault();
         showDashboard();

@@ -34,12 +34,12 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Include subdomains in HSTS
 SESSION_COOKIE_SECURE = True  # Enforce secure cookies
 CSRF_COOKIE_SECURE = True  # Enforce secure CSRF cookies
 
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
-
+#channels 
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
@@ -160,7 +160,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.CustomUser'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",
     "https://localhost:8000",
 ]
 
@@ -169,6 +168,5 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-     "http://localhost:8000",
      "https://localhost:8000",
 ]

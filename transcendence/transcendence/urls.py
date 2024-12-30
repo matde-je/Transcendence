@@ -21,11 +21,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, re_path
-from users.views import index
+from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
-    path('', index, name='index'),
-    re_path(r'^(?!admin|users).*$', index, name='index'),
+    #path('', views.index, name='index'),
+    re_path(r'^(?!admin|users|media/|static/).*$', views.index, name='index'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
