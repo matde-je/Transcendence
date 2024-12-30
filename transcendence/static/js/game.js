@@ -27,11 +27,11 @@ export function initializeGame() {
 	maxGravity = initialBallGravity * 2;
 	ballSpeed = 7;
 	multiplayer = 0;
-	
 	window.ai = 0;
 	window.aiSpeed = 70;
 	window.aiRefreshView = 1000; // 1 sec, 1000 ms
 	window.aiLastUpdateTime = Date.now();
+	ani = window.requestAnimationFrame(loop);
 }
 class Element {
 	constructor(options) {
@@ -54,7 +54,7 @@ const player1 = new Element ( {
 	gravity: 2,
 });
 
-window.player2 = new Element ( {
+const player2 = new Element ( {
 	x: 625,
     y: 170, // Center vertically
 	width: 12,
@@ -91,16 +91,19 @@ window.ball = new Element ( {
 	gravity: initialBallGravity,
 });
 
+
 function reset_game() {
 	score1 = 0;
 	score2 = 0;
+	player1.x = 10;
+	player1.y = 170;
+	player2.x = 625;
+	player2.y = 170;
 	ball.x = canvas.width / 2 - ball.width / 2;
 	ball.y = canvas.height / 2 - ball.height / 2;
 	ball.speed = ballSpeed;
 	ball.gravity = initialBallGravity;
 	gameOver = false;
-	context.clearRect(0, 0, canvas.width, canvas.height);
-	ani = window.requestAnimationFrame(loop);
 }
 
 window.keys = {};
@@ -140,7 +143,10 @@ window.addEventListener("keydown", (e) => {
 	if ((gameOver == true || init == 0) && (keys['g'])) {
 		window.cancelAnimationFrame(ani);
 		reset_game();
+		context.clearRect(0, 0, canvas.width, canvas.height);
+	    ani = window.requestAnimationFrame(loop);
 		init = 1;
+		console.log("reset game g clicked");
 	}
 	if (keys['p'] && gameOver == false && init == 1) {
 		pause = !pause;
@@ -169,9 +175,8 @@ function handleMoves() {
 			newY += player1.gravity * 2; //down
 		if (!multiplayer || preventPaddleOverlap({...player1, y: newY}, player3))
 			player1.y = newY;
-		
 		newY = player2.y;
-		if (keys['ArrowUp'] && player2.y - player1.height > 0 && !ai)
+		if (keys['ArrowUp'] && player2.y > 0 && !ai)
 			newY -= player2.gravity * 2; //up
 		if (keys['ArrowDown'] && player2.y + player1.height < canvas.height && !ai)
 			newY += player2.gravity * 2; //down
@@ -314,9 +319,8 @@ function drawAll(){
 let AiLastUpdateTime = Date.now();
 
 export function loop() {
-	console.log("Loop running...");
 	if (init === 0) {
-		context.clearRect(0, 0, canvas.width, canvas.height);
+		reset_game();
 		context.font = '20px \'Courier New\', Courier, monospace';
         context.textAlign = 'center';
         context.fillStyle = 'white';
@@ -326,11 +330,12 @@ export function loop() {
 		draw(player2);
     }
     if (!gameOver && !pause && init === 1) {
+		console.log("loop game");
 		handleMoves();
         bounceBall();
         paddleCollision();
         if (window.ai) {
-			window.aiLogic(window.aiRefreshView); // Chama a função de lógica AI
+			window.aiLogic(window.aiRefreshView); 
         }
         drawAll();
         if (score1 === 10 || score2 === 10) {
@@ -339,7 +344,7 @@ export function loop() {
                 x = canvas.width / 4;
             else
 			x = (canvas.width / 2) + (canvas.width / 4);
-		context.font = '50px \'Courier New\', Courier, monospace';
+			context.font = '50px \'Courier New\', Courier, monospace';
             context.textAlign = 'center';
             context.fillStyle = 'white';
             context.fillText('WIN', x, 80);
@@ -351,9 +356,4 @@ export function loop() {
     }
     if (!gameOver && score1 < 10 && score2 < 10 && init === 1) 
 		ani = window.requestAnimationFrame(loop);
-}
-
-export function startGame() {
-	console.log("start game running...");
-	ani = window.requestAnimationFrame(loop);
 }

@@ -34,7 +34,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Include subdomains in HSTS
 SESSION_COOKIE_SECURE = True  # Enforce secure cookies
 CSRF_COOKIE_SECURE = True  # Enforce secure CSRF cookies
 
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 

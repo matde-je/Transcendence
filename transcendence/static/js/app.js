@@ -58,13 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
 // Function to initialize and update the navbar
 function initializeNavbar(authenticated, username) {
     let navBarContainer = document.getElementById('navbar');
-    navBarContainer = document.createElement('nav');
+    navBarContainer = document.createElement('nav'); //navigation
     navBarContainer.id = 'navbar';
     navBarContainer.className = 'navbar navbar-expand-lg navbar-light bg-light fixed-top';
-    const container = document.createElement('div');
+    const container = document.createElement('div'); //group
     container.className = 'container-fluid';
-
-    const navbarBrand = document.createElement('a');
+    const navbarBrand = document.createElement('a'); //hyperlink
     navbarBrand.className = 'navbar-brand';
     navbarBrand.href = '/';
     navbarBrand.innerText = 'Pong';
@@ -77,7 +76,7 @@ function initializeNavbar(authenticated, username) {
     const navbarCollapse = document.createElement('div');
     navbarCollapse.className = 'collapse navbar-collapse';
     navbarCollapse.id = 'navbarNav';
-    const navLinks = document.createElement('ul');
+    const navLinks = document.createElement('ul'); //unordered list
     navLinks.id = 'nav-links';
     navLinks.className = 'navbar-nav';
 
@@ -106,7 +105,7 @@ function initializeNavbar(authenticated, username) {
             history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard');
         });
     } else {
-        const loginLink = document.createElement('li');
+        const loginLink = document.createElement('li'); //list 
         loginLink.className = 'nav-item';
         loginLink.innerHTML = '<a class="nav-link" href="/login" data-link>Login</a>';
         navLinks.appendChild(loginLink);
@@ -168,7 +167,7 @@ export function checkAuthentication() {
 /**
  * Displays the Home page.
  */
-import { initializeGame, startGame } from './game.js';
+import { initializeGame } from './game.js';
 
 export function showHome() {
     let contentElement = document.getElementById('content');
@@ -200,8 +199,7 @@ export function showHome() {
         gameScript.src = '/static/js/game.js';
         gameScript.id = 'gameScript';
         gameScript.onload = () => {
-            initializeGame(); 
-            startGame(); 
+            initializeGame();
         };
         document.body.appendChild(gameScript);
     if (!document.getElementById('aiScript')) {
