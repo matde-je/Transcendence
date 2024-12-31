@@ -31,3 +31,19 @@ class TournamentUser(models.Model):
             return f'Tournament User ID {self.user_id} in Tournament #{self.tournament.id}'
         else:
             return f'Tournament User ID {self.user_id} without a Tournament'
+        
+class TournamentMatch(models.Model):
+    class Meta:
+        verbose_name = 'Tournament Match'
+        verbose_name_plural = 'Tournament Matches'
+        
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='matches')
+    player1 = models.IntegerField()
+    player2 = models.IntegerField()
+    round = models.IntegerField(default=0)
+    winner = models.IntegerField(null=True, blank=True)
+    started_at = models.DateTimeField()
+    completed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.player1} vs {self.player2} - Winner: {self.winner}'

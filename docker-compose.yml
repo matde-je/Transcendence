@@ -71,6 +71,7 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+      - backend
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8001 || exit 1"]
       interval: 30s

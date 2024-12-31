@@ -7,7 +7,11 @@ key.pem
 /transcendence/__pycache__/
 /transcendence/media/avatars/
 /transcendence/users/__pycache__/
+/transcendence/users/management/commands/__pycache__/
 /transcendence/users/migrations/__pycache__/
+/transcendence/users/services/__pycache__/
 /transcendence/tournament/__pycache__/
 /transcendence/tournament/migrations/__pycache__/
+/transcendence/tournament/services/__pycache__/
 /transcendence/transcendence/__pycache__/
+

@@ -48,6 +48,11 @@ create_users:
 	@clear
 	docker compose --file docker-compose.yml run backend python manage.py create_users
 
+# Enroll all users in all open tournaments
+enroll-users:
+	@clear
+	docker compose --file docker-compose.yml run backend python manage.py enroll_users
+
 # Migrate the database
 migrate:
 	@clear
@@ -100,4 +105,4 @@ copy-certs:
 	@echo "Certificates copied."
 
 
-.PHONY: run stop down clean fclean venv activate install create_superuser create_users migrate info backend-it db-it logs generate-certs copy-certs
+.PHONY: run stop down clean fclean venv activate install create_superuser create_users enroll-users migrate info backend-it db-it logs generate-certs copy-certs

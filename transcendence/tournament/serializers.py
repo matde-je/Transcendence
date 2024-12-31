@@ -1,7 +1,7 @@
 # transcendence/tournament/serializers.py
 
 from rest_framework import serializers
-from .models import Tournament, TournamentUser
+from .models import Tournament, TournamentUser, TournamentMatch
 from users.models import CustomUser
 
 class TournamentSerializer(serializers.ModelSerializer):
@@ -40,3 +40,12 @@ class TournamentUserSerializer(serializers.ModelSerializer):
             return user.username
         except CustomUser.DoesNotExist:
             return 'Unknown'
+        
+class TournamentMatchSerializer(serializers.ModelSerializer):
+    player1_username = serializers.CharField(source='player1.username', read_only=True)
+    player2_username = serializers.CharField(source='player2.username', read_only=True)
+    winner_username = serializers.CharField(source='winner.username', read_only=True)
+
+    class Meta:
+        model = TournamentMatch
+        fields = ['id', 'tournament', 'player1', 'player2', 'round', 'winner', 'started_at', 'completed', 'player1_username', 'player2_username', 'winner_username']

@@ -5,9 +5,10 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import Tournament, TournamentUser
-from .serializers import TournamentSerializer, TournamentUserSerializer
+from .models import Tournament, TournamentUser, TournamentMatch
+from .serializers import TournamentSerializer, TournamentUserSerializer, TournamentMatchSerializer
 from users.models import CustomUser
+from .services.matchmaking import create_knockout_matches
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -95,6 +96,28 @@ def start_tournament(request, tournament_id):
         return Response({'detail': 'Tournament not found.'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'detail': 'Error starting tournament.', 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def manage_matches(request, tournament_id):
+    if request.method == 'GET':
+        matches = TournamentMatch.objects.filter(tournament_id=tournament_id)
+        serializer = TournamentMatchSerializer(matches, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer = TournamentMatchSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(tournament_id=tournament_id)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def start_matchmaking(request, tournament_id):
+    result = create_knockout_matches(tournament_id)
+    if 'error' in result:
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'detail': 'Matchmaking started successfully.'}, status=status.HTTP_200_OK)
 
 class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.all()

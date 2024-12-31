@@ -17,14 +17,14 @@ Including another URLconf
 
 # transcendence/urls.py
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
-from users.views import index
+from users import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('tournament/', include('tournament.urls')),
-    path('', index, name='index'),
+    re_path(r'^(?!admin|users|media/|static/).*$', views.index, name='index'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

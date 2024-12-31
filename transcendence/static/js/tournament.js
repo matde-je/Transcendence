@@ -1,6 +1,6 @@
 // static/js/tournament.js
 
-import { getCookie } from './utils.js';
+import { getCookie, isPowerOfTwo, nextPowerOfTwo } from './utils.js';
 
 /**
  * Shows Tournament Menu
@@ -265,8 +265,9 @@ async function deleteTournament(tournamentId) {
 }
 
 async function startTournament(tournamentId) {
-    console.log('Iniciando torneio ID:', tournamentId);
-    const csrftoken = getCookie('csrftoken');
+    console.log('PFV - Iniciando torneio ID:', tournamentId);
+    
+	const csrftoken = getCookie('csrftoken');
     try {
         // Get participants
         const participantsResponse = await fetch(`/tournament/tournaments/${tournamentId}/participants/`, {
@@ -278,8 +279,12 @@ async function startTournament(tournamentId) {
             alert('Error getting participants: ' + JSON.stringify(data));
             return;
         }
+
         const participants = await participantsResponse.json();
         const count = participants.length;
+
+		console.log('PFV - Participantes:', count);
+		console.log('PFV - Potencia de 2:', isPowerOfTwo(count));
 
         // Checks if the number of participants is a power of 2
         if (!isPowerOfTwo(count)) {
@@ -290,7 +295,7 @@ async function startTournament(tournamentId) {
 
         // Starts the tournament
         const names = participants.map((p) => p.username).join('\n');
-        alert(`Tournament started successfully! \n\nParticipants: ${names}`);
+        alert(`Tournament started successfully! \n\nParticipants: \n\n${names}`);
 
         const response = await fetch(`/tournament/tournaments/${tournamentId}/start/`, {
             method: 'POST',
@@ -300,7 +305,7 @@ async function startTournament(tournamentId) {
             credentials: 'include',
         });
         if (response.ok) {
-            listOpenTournaments();
+            startMatchmaking(tournamentId);
         } else {
             const data = await response.json();
             alert('Error starting tournament: ' + JSON.stringify(data));
@@ -311,16 +316,123 @@ async function startTournament(tournamentId) {
     }
 }
 
-function isPowerOfTwo(n) {
-    return n > 0 && (n & (n - 1)) === 0;
+export async function getMatches() {
+    try {
+        const response = await fetch('/api/matches/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error(`Request error: ${response.statusText}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error getting matches:', error);
+        throw error;
+    }
 }
 
-function nextPowerOfTwo(n) {
-    let power = 1;
-    while (power < n) {
-        power <<= 1;
+export async function startMatchmaking(tournamentId) {
+	const csrftoken = getCookie('csrftoken');
+
+    try {
+        // Get all participants of the started tournament
+        const participantsResponse = await fetch(`/tournament/tournaments/${tournamentId}/participants/`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (!participantsResponse.ok) {
+            throw new Error(`Error fetching participants: ${participantsResponse.status}`);
+        }
+        const participants = await participantsResponse.json();
+
+        const numberOfParticipants = participants.length;
+        const numberOfMatches = numberOfParticipants - 1;
+
+		console.log('PFV - Numero de Participantes:', numberOfParticipants);
+		console.log('PFV - Numero de Jogos:', numberOfMatches);
+
+        // Calculate the number of rounds based on the number of participants
+        const numberOfRounds = Math.log2(numberOfParticipants);
+
+		console.log('PFV - Numero de Rounds:', numberOfRounds);
+
+		if (!Number.isInteger(numberOfRounds)) {
+            alert('The number of participants must be a power of 2.');
+            return;
+        }
+
+        const roundNames = {
+            1: 'Final',
+            2: 'Semi-final',
+            3: 'Quarter-final',
+            4: 'Round of 16',
+            5: 'Round of 32',
+        };
+
+		// Function to get the round name
+		function getRoundName(round) {
+		    const maxDefinedRound = 5;
+		    if (roundNames[round]) {
+		        return roundNames[round];
+		    } else if (round > maxDefinedRound) {
+		        return `Round of ${Math.pow(2, 9 - round)}`;
+		    } else {
+		        return 'Unknown Round';
+		    }
+		}
+
+		console.log('PFV - Participantes antes de embaralhados:', participants);
+
+        // Shuffle the participants
+        for (let i = participants.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [participants[i], participants[j]] = [participants[j], participants[i]];
+        }
+
+		console.log('PFV - Participantes depois de embaralhados:', participants);
+
+        // Assign pairs of players
+        const matches = [];
+        let currentRound = numberOfRounds;
+        for (let i = 0; i < participants.length; i += 2) {
+            const player1 = participants[i].user_id;
+            const player2 = participants[i + 1].user_id;
+            matches.push({
+                player1: player1,
+                player2: player2,
+                round: currentRound,
+                tournament: tournamentId,
+                started_at: new Date().toISOString(),
+                completed: false,
+            });
+        }
+
+        // Send the matches to the API
+        for (const match of matches) {
+            const response = await fetch(`/tournament/tournaments/${tournamentId}/matches/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                credentials: 'include',
+                body: JSON.stringify(match),
+            });
+            if (!response.ok) {
+                throw new Error(`Error creating match: ${response.status}`);
+            }
+        }
+
+        alert('Matchmaking successfully started!');
+    } catch (error) {
+        console.error('Matchmaking error:', error);
+        alert('Matchmaking error: ' + error.message);
     }
-    return power;
 }
 
 window.addUserToTournament = addUserToTournament;
