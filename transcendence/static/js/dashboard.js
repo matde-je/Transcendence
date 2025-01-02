@@ -41,7 +41,7 @@ export function showDashboard() {
     content.innerHTML = '';
     
 	// Fetch user data
-    fetch('/users/api/user/', {
+    fetch('/users/user/', {
         method: 'GET',
         credentials: 'include',
     })
@@ -70,34 +70,34 @@ export function showDashboard() {
 
 		// Uses Promise.all to fetch users, sent friend requests, and friends simultaneously
         Promise.all([
-            fetch('/users/api/users/', {
+            fetch('/users/users/', {
                 method: 'GET',
                 credentials: 'include',
             }).then(response => response.json()),
-            fetch('/users/api/friend_requests/sent/', {
+            fetch('/users/friend_requests/sent/', {
                 method: 'GET',
                 credentials: 'include',
             }).then(response => response.json()),
 			// Fetch received friend requests
-            fetch('/users/api/friend_requests/received/', {
+            fetch('/users/friend_requests/received/', {
                 method: 'GET',
                 credentials: 'include',
             }).then(response => response.json()),
-            fetch('/users/api/friends/', {
+            fetch('/users/friends/', {
                 method: 'GET',
                 credentials: 'include',
             }).then(response => response.json())
         ])
         .then(([users, sentRequests, receivedRequests, friends]) => {
-            const currentUserId = data.id;
+            const currentuser_id = data.id;
 
-            const sentUserIds = sentRequests.map(request => request.to_user.id);
+            const sentuser_ids = sentRequests.map(request => request.to_user.id);
 			// Get IDs of received requests
-            const receivedUserIds = receivedRequests.map(request => request.from_user.id);
+            const receiveduser_ids = receivedRequests.map(request => request.from_user.id);
             const friendIds = friends.map(friend => friend.id);
 
 			// Combines IDs of sent and received requests
-            const invalidUserIds = new Set([...sentUserIds, ...receivedUserIds, ...friendIds]);
+            const invaliduser_ids = new Set([...sentuser_ids, ...receiveduser_ids, ...friendIds]);
 
 			// Filter users to exclude:
 			// - The user himself
@@ -105,9 +105,9 @@ export function showDashboard() {
 			// - Users who have already sent or received friend requests
 			// - Users who are already friends
             const filteredUsers = users.filter(user => 
-                user.id !== currentUserId && 
+                user.id !== currentuser_id && 
                 !user.is_superuser && 
-                !invalidUserIds.has(user.id)
+                !invaliduser_ids.has(user.id)
             );
 
             if (filteredUsers.length > 0) {
@@ -127,7 +127,7 @@ export function showDashboard() {
         .catch(error => alert('Error fetching users and friend requests:', error));
 
 		// fetch friends and received friend requests
-        fetch('/users/api/friends/')
+        fetch('/users/friends/')
             .then(response => response.json())
             .then(friends => {
                 const friendItems = friends.map(friend => {
@@ -141,11 +141,11 @@ export function showDashboard() {
                 createList(content, 'Friends', friendItems);
             });
 
-        fetch('/users/api/friend_requests/received/')
+        fetch('/users/friend_requests/received/')
             .then(response => response.json())
             .then(receivedRequests => {
 				// Fetch sent friend requests
-                fetch('/users/api/friend_requests/sent/')
+                fetch('/users/friend_requests/sent/')
                     .then(response => response.json())
                     .then(sentRequests => {
                         const allRequests = [
@@ -241,7 +241,7 @@ export function showEditUserForm(userData) {
         const csrfToken = getCookie('csrftoken');
 
         try {
-            const response = await fetch('/users/api/user/update/', {
+            const response = await fetch('/users/user/update/', {
                 method: 'PUT',
                 headers: {
                     'X-CSRFToken': csrfToken

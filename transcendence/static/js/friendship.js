@@ -5,19 +5,19 @@ import { getCookie } from './utils.js';
 /**
  * Sends a friend request to the specified user.
  *
- * @param {number} userId - The ID of the user to whom the friend request is being sent.
+ * @param {number} user_id - The ID of the user to whom the friend request is being sent.
  * @returns {void}
  */
-export function sendFriendRequest(userId) {
+export function sendFriendRequest(user_id) {
 	// Send a POST request to the server to create a new friendship request
-    fetch('/users/api/friendships/', {
+    fetch('/users/friendships/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCookie('csrftoken')
         },
         credentials: 'include',
-        body: JSON.stringify({ to_user_id: userId })
+        body: JSON.stringify({ to_user_id: user_id })
     })
 	// Handle the response from the server
     .then(response => {
@@ -48,7 +48,7 @@ export function sendFriendRequest(userId) {
  * and shows the dashboard. If there is an error, it logs the error and alerts the user.
  */
 export function acceptFriendRequest(requestId) {
-    fetch(`/users/api/friendships/${requestId}/accept/`, {
+    fetch(`/users/friendships/${requestId}/accept/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': getCookie('csrftoken')
@@ -77,11 +77,11 @@ export function acceptFriendRequest(requestId) {
 /**
  * Removes a friend by sending a DELETE request to the server.
  *
- * @param {number} userId - The ID of the user to remove from friends.
+ * @param {number} user_id - The ID of the user to remove from friends.
  * @returns {void}
  */
-export function removeFriend(userId) {
-    fetch(`/users/api/friends/${userId}/remove/`, {
+export function removeFriend(user_id) {
+    fetch(`/users/friends/${user_id}/remove/`, {
         method: 'DELETE',
         headers: {
             'X-CSRFToken': getCookie('csrftoken')

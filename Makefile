@@ -39,9 +39,19 @@ install:
 	.venv/bin/activate && pip install -r ./srcs/requirements.txt
 
 # Create a superuser in Django
-createsuperuser:
+create_superuser:
 	@clear
 	docker compose --file docker-compose.yml run backend python manage.py createsuperuser
+
+# Create users
+create_users:
+	@clear
+	docker compose --file docker-compose.yml run backend python manage.py create_users
+
+# Enroll all users in all open tournaments
+enroll-users:
+	@clear
+	docker compose --file docker-compose.yml run backend python manage.py enroll_users
 
 # Migrate the database
 migrate:
@@ -70,9 +80,29 @@ db-it:
 	@clear
 	docker exec -it postgres /bin/bash
 
+tournament-it:
+	@clear
+	docker exec -it tournament /bin/bash
+
 # Display containers logs
 logs:
 	@clear
 	docker compose --file docker-compose.yml logs
 
-.PHONY: run stop down clean fclean venv activate install createsuperuser migrate info backend-it db-it logs  
+# Generate SSL certificates (only if they don't exist)
+generate-certs:
+	@clear
+	@echo "Generating SSL certificates..."
+	@openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/C=PT/ST=Lisboa/L=Lisboa/O=42/OU=42/CN=matde-je.42.fr"
+	@echo "Certificates generated and saved..."
+
+# Copy the certificates to the app directory
+copy-certs:
+	@clear
+	@echo "Copying certificates to the app directory..."
+	@cp cert.pem ./transcendence/cert.crt
+	@cp key.pem ./transcendence/cert.key
+	@echo "Certificates copied."
+
+
+.PHONY: run stop down clean fclean venv activate install create_superuser create_users enroll-users migrate info backend-it db-it logs generate-certs copy-certs
