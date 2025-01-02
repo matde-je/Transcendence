@@ -1,6 +1,6 @@
 // static/js/tournament.js
 
-import { getCookie, isPowerOfTwo, nextPowerOfTwo } from './utils.js';
+import { getCookie, isPowerOfTwo, nextPowerOfTwo, getRoundName } from './utils.js';
 
 /**
  * Shows Tournament Menu
@@ -230,7 +230,7 @@ export function showCreateTournamentForm() {
 
         if (response.ok) {
             alert('Tournament created successfully!');
-            showDashboard();
+            showTournamentMenu();
         } else {
             const data = await response.json();
             alert('Error creating tournament: ' + JSON.stringify(data));
@@ -295,7 +295,6 @@ async function startTournament(tournamentId) {
 
         // Starts the tournament
         const names = participants.map((p) => p.username).join('\n');
-        alert(`Tournament started successfully! \n\nParticipants: \n\n${names}`);
 
         const response = await fetch(`/tournament/tournaments/${tournamentId}/start/`, {
             method: 'POST',
@@ -366,26 +365,6 @@ export async function startMatchmaking(tournamentId) {
             return;
         }
 
-        const roundNames = {
-            1: 'Final',
-            2: 'Semi-final',
-            3: 'Quarter-final',
-            4: 'Round of 16',
-            5: 'Round of 32',
-        };
-
-		// Function to get the round name
-		function getRoundName(round) {
-		    const maxDefinedRound = 5;
-		    if (roundNames[round]) {
-		        return roundNames[round];
-		    } else if (round > maxDefinedRound) {
-		        return `Round of ${Math.pow(2, 9 - round)}`;
-		    } else {
-		        return 'Unknown Round';
-		    }
-		}
-
 		console.log('PFV - Participantes antes de embaralhados:', participants);
 
         // Shuffle the participants
@@ -402,9 +381,13 @@ export async function startMatchmaking(tournamentId) {
         for (let i = 0; i < participants.length; i += 2) {
             const player1 = participants[i].user_id;
             const player2 = participants[i + 1].user_id;
+			const player1_username = participants[i].username;
+			const player2_username = participants[i + 1].username;
             matches.push({
                 player1: player1,
                 player2: player2,
+				player1_username: player1_username,
+				player2_username: player2_username,
                 round: currentRound,
                 tournament: tournamentId,
                 started_at: new Date().toISOString(),
@@ -428,7 +411,17 @@ export async function startMatchmaking(tournamentId) {
             }
         }
 
-        alert('Matchmaking successfully started!');
+		// Shows the round and the names of the participants
+		content.innerHTML = `
+			<h2>Tournament Match Making</h2>
+			<p>Round: ${getRoundName(numberOfRounds)}</p>
+			<p>
+				<ul>
+					${matches.map((match, index) => `<li>Match: ${index + 1}<br>${match.player1_username} vs ${match.player2_username}</li><br>`).join('')}
+				</ul>
+			</p>
+			<button id="start-matches" class="btn btn-primary">Start Matches</button>
+		`;
     } catch (error) {
         console.error('Matchmaking error:', error);
         alert('Matchmaking error: ' + error.message);
