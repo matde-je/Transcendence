@@ -59,13 +59,12 @@ function playGame(playerChoice, playerDisplay, computerDisplay, resultDisplay, p
     playerScoreDisplay.innerText = `Player Score: ${playerScore}`;
     computerScoreDisplay.innerText = `Computer Score: ${computerScore}`;
 
-    if (playerScore === 5 || computerScore === 5) {
-        const finalResult = playerScore === 5 ? 'You won the game!' : 'You lost the game!';
-        alert(finalResult);  // Exibe um alerta com o resultado final
+    if (playerScore === 3 || computerScore === 3) {
+        const finalResult = playerScore === 3 ? 'You won the game!' : 'You lost the game!';
+        alert(finalResult);
         resultDisplay.innerText = finalResult;
         registerMatch(finalResult);
-        playerScore = 0;
-        computerScore = 0;
+        resetScores();
     }
 }
 
@@ -91,6 +90,16 @@ async function registerMatch(result) {
     } else {
         console.error('Error registering match:', data.error);
     }
+}
+
+/**
+ * Resets the scores for both players.
+ */
+function resetScores() {
+    playerScore = 0;
+    computerScore = 0;
+    document.getElementById('playerScoreDisplay').innerText = `Player Score: ${playerScore}`;
+    document.getElementById('computerScoreDisplay').innerText = `Computer Score: ${computerScore}`;
 }
 
 /**

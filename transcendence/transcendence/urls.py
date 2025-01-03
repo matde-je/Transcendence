@@ -21,7 +21,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from users.views import index
-from .views import register_match
+from .views import register_match , register_multiplayer_match
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,6 +29,7 @@ urlpatterns = [
     path('tournament/', include('tournament.urls')),
     path('', index, name='index'),
     path('api/register_match/', register_match, name='register_match'),
+    path('api/register_multiplayer_match/', register_multiplayer_match, name='register_multiplayer_match'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 from django.db import models
