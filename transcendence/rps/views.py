@@ -1,13 +1,9 @@
-# transcendence/transcendence/views.py
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from rps.models import MatchHistory
+from .models import MatchHistory
 import json
-
-def index(request):
-    return render(request, 'index.html')
 
 @login_required
 @require_POST
@@ -18,6 +14,7 @@ def register_match(request):
     if not result:
         return JsonResponse({'error': 'Invalid data'}, status=400)
 
-    MatchHistory.objects.create(player=request.user, opponent='AI', result=result)
+    # Como o oponente é o computador, não há necessidade de buscar um usuário real
+    MatchHistory.objects.create(player=request.user, opponent=None, result=result)
 
     return JsonResponse({'status': 'success'})

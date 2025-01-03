@@ -78,6 +78,37 @@ services:
       timeout: 10s
       retries: 5
 
+  rps:
+    container_name: rps
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "
+        until pg_isready -h db -p 5432 -U $${POSTGRES_USER} -d $${RPS_DB_NAME}; do
+          echo 'Waiting for Postgres...';
+          sleep 2;
+        done &&
+        python manage.py migrate --database=rps &&
+        python manage.py runserver_plus --cert-file cert.pem 0.0.0.0:8002"
+    volumes:
+      - ./transcendence:/app:cached
+    ports:
+      - "8002:8002"
+    networks:
+      - transcendence
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - db
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8002 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
 networks:
   transcendence:
 

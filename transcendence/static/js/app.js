@@ -275,3 +275,6 @@ function logout() {
 
 // Exposed the function to the global object if it is not already
 window.playSinglePlayerGame = playSinglePlayerGame;
+
+// Use a função showMultiplayer
+showMultiplayer();

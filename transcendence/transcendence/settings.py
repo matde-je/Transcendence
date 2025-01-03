@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-# transcendence/settings.py
+
 from pathlib import Path
 from dotenv import load_dotenv
 import os
@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
 	'tournament',
+	'rps',
 ]
 
 MIDDLEWARE = [
@@ -97,7 +98,7 @@ WSGI_APPLICATION = 'transcendence.wsgi.application'
 # Use environment variables
 load_dotenv()
 
-# Database configuration (PostgreSQL)
+# Database configurations
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -111,6 +112,15 @@ DATABASES = {
     'tournament': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.getenv('TOURNAMENT_DB_NAME'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
+    },
+	# rps database configuration
+    'rps': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.getenv('RPS_DB_NAME'),
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         'HOST': os.getenv('DB_HOST'),

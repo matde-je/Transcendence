@@ -12,7 +12,7 @@ let score2 = 0;
 let ani;
 let gameOver = false;
 let pause = false;
-export let init = 0;
+let init = 0;
 
 //Gameplay / Speeds
 let initialBallGravity = 1;

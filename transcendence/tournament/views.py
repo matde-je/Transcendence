@@ -5,10 +5,9 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import Tournament, TournamentUser, TournamentMatch
-from .serializers import TournamentSerializer, TournamentUserSerializer, TournamentMatchSerializer
+from .models import Tournament, TournamentUser
+from .serializers import TournamentSerializer, TournamentUserSerializer
 from users.models import CustomUser
-from .services.matchmaking import create_knockout_matches
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
