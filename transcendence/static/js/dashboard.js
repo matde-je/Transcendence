@@ -44,7 +44,7 @@ function createList(content, title, items) {
 
 /**
  * Shows user's dashboard.
- */
+  */
 export function showDashboard() {
     const content = document.getElementById('content');
     content.innerHTML = '';
@@ -65,11 +65,9 @@ export function showDashboard() {
                     <img src="${data.avatar}" alt="Avatar" width="100">
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item"><strong>ID:</strong> ${data.id}</li>
                         <li class="list-group-item"><strong>Email:</strong> ${data.email}</li>
                         <li class="list-group-item"><strong>Username:</strong> ${data.username}</li>
                         <li class="list-group-item"><strong>Nickname:</strong> ${data.nickname}</li>
-                        <li class="list-group-item"><strong>Nome:</strong> ${data.first_name} ${data.last_name}</li>
                         <li class="list-group-item">
                             <strong>Registration Date:</strong> ${new Date(data.date_joined).toLocaleString('pt-PT')}
                         </li>

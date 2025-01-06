@@ -9,7 +9,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True, blank=False, null=False)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, default='images/default.png')
     friends = models.ManyToManyField('self', symmetrical=True, blank=True)
-
+    is_online = models.BooleanField(default=False)
     def __str__(self):
         return self.username
 
