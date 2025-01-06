@@ -5,6 +5,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     TournamentViewSet, 
     TournamentUserViewSet, 
+	TournamentMatchViewSet, 
     create_tournament, 
     list_open_tournaments, 
     tournament_results,
@@ -13,12 +14,14 @@ from .views import (
     tournament_participants,
 	start_tournament,
 	manage_matches,
+	update_match,
 	start_matchmaking
 )
 
 router = DefaultRouter()
 router.register(r'tournaments', TournamentViewSet, basename='tournament')
 router.register(r'tournament-users', TournamentUserViewSet, basename='tournamentuser')
+router.register(r'matches', TournamentMatchViewSet, basename='match')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -30,6 +33,6 @@ urlpatterns = [
     path('tournaments/<int:tournament_id>/participants/', tournament_participants, name='tournament_participants'),
 	path('tournaments/<int:tournament_id>/start/', start_tournament, name='start_tournament'),
     path('tournaments/<int:tournament_id>/matches/', manage_matches, name='manage_matches'),
+    path('tournaments/<int:tournament_id>/matches/<int:match_id>/', update_match, name='update_match'),
 	path('tournaments/<int:tournament_id>/matchmaking/start/', start_matchmaking, name='start_matchmaking'),
-
 ]

@@ -293,7 +293,7 @@ async function startTournament(tournamentId) {
             return;
         }
 
-        // Starts the tournament
+        // Start tournament
         const names = participants.map((p) => p.username).join('\n');
 
         const response = await fetch(`/tournament/tournaments/${tournamentId}/start/`, {
@@ -352,9 +352,6 @@ export async function startMatchmaking(tournamentId) {
         const numberOfParticipants = participants.length;
         const numberOfMatches = numberOfParticipants - 1;
 
-		console.log('PFV - Numero de Participantes:', numberOfParticipants);
-		console.log('PFV - Numero de Jogos:', numberOfMatches);
-
         // Calculate the number of rounds based on the number of participants
         const numberOfRounds = Math.log2(numberOfParticipants);
 
@@ -365,15 +362,11 @@ export async function startMatchmaking(tournamentId) {
             return;
         }
 
-		console.log('PFV - Participantes antes de embaralhados:', participants);
-
         // Shuffle the participants
         for (let i = participants.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [participants[i], participants[j]] = [participants[j], participants[i]];
         }
-
-		console.log('PFV - Participantes depois de embaralhados:', participants);
 
         // Assign pairs of players
         const matches = [];
@@ -409,6 +402,10 @@ export async function startMatchmaking(tournamentId) {
             if (!response.ok) {
                 throw new Error(`Error creating match: ${response.status}`);
             }
+
+			// Get the created match ID
+			const createdMatch = await response.json();
+        	match.id = createdMatch.id;
         }
 
 		// Shows the round and the names of the participants
@@ -422,13 +419,115 @@ export async function startMatchmaking(tournamentId) {
 			</p>
 			<button id="start-matches" class="btn btn-primary">Start Matches</button>
 		`;
+
+		document.getElementById('start-matches').addEventListener('click', async (e) => {
+			e.preventDefault();
+			await executeMatches(matches, tournamentId, currentRound);
+		});
+
     } catch (error) {
         console.error('Matchmaking error:', error);
         alert('Matchmaking error: ' + error.message);
     }
 }
 
+/**
+ * Executes a series of matches for a given tournament round.
+ *
+ * @param {Array} matches - An array of match objects to be played.
+ * @param {number} tournamentId - The ID of the tournament.
+ * @param {number} currentRound - The current round number of the tournament.
+ * @returns {Promise<void>} A promise that resolves when all matches have been executed.
+ */
+async function executeMatches(matches, tournamentId, currentRound) {
+    for (const match of matches) {
+
+		// Check if the match ID is defined
+		if (!match.id) {
+            alert('Error: Match ID is undefined.');
+            continue;
+        }
+
+		// Inform the players who will play
+        alert(`Start a Match between ${match.player1_username} and ${match.player2_username}`);
+
+		// Simulate the match and determine the winner
+        const winnerId = await playMatch(match.player1, match.player2);
+
+		console.log('PFV - ID Vencedor da Partida:', winnerId);
+
+		// Update the match result in the backend
+        await updateMatch(tournamentId, match.id, winnerId);
+
+        // Shows the winner of the match
+        const winnerUsername = winnerId === match.player1 ? match.player1_username : match.player2_username;
+        alert(`Match Winner: ${winnerUsername}`);
+		console.log('PFV - Vencedor da Partida:', winnerUsername);
+    }
+
+    alert(`Round ${currentRound} finished.`);
+}
+
+/**
+ * Simulates a match between two players and returns the winner.
+ *
+ * @param {string} player1 - The name of the first player.
+ * @param {string} player2 - The name of the second player.
+ * @returns {Promise<string>} A promise that resolves to the name of the winning player.
+ */
+function playMatch(player1, player2) {
+    return new Promise((resolve) => {
+        // Simulates a match with a 50% chance of each player winning
+        const winner = Math.random() < 0.5 ? player1 : player2;
+        setTimeout(() => {
+            resolve(winner);
+        }, 1000);
+    });
+}
+
+/**
+ * Updates the match with the given matchId by setting the winner to the specified winnerId.
+ *
+ * @param {number} tournamentId - The ID of the tournament.
+ * @param {number} matchId - The ID of the match to update.
+ * @param {number} winnerId - The ID of the winner to set for the match.
+ * @returns {Promise<void>} A promise that resolves when the match is successfully updated.
+ * @throws {Error} Throws an error if the update request fails.
+ */
+async function updateMatch(tournamentId, matchId, winnerId) {
+    console.log('PFV - updateMatch(tournamentId):', tournamentId);
+    console.log('PFV - updateMatch(matchId):', matchId);
+    console.log('PFV - updateMatch(winnerId):', winnerId);
+
+	const csrftoken = getCookie('csrftoken');
+
+	try {
+        const response = await fetch(`/tournament/tournaments/${tournamentId}/matches/${matchId}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            credentials: 'include',
+            body: JSON.stringify({ winner: parseInt(winnerId, 10), completed: true }),
+        });
+
+        if (!response.ok) {
+            console.error('Error updating the match(response not ok):', response.status);
+        } else {
+            const updatedMatch = await response.json();
+            console.log('Match successfully updated:', updatedMatch);
+        }
+    } catch (error) {
+        console.error('PFV - Error updating the match:', error);
+        alert('Error updating the match.');
+    }
+}
+
+// Export functions
 window.addUserToTournament = addUserToTournament;
 window.removeUserFromTournament = removeUserFromTournament;
 window.deleteTournament = deleteTournament;
 window.startTournament = startTournament;
+window.executeMatches = executeMatches;
+window.updateMatch = updateMatch;

@@ -38,7 +38,7 @@ class TournamentUserAdmin(admin.ModelAdmin):
     
 @admin.register(TournamentMatch)
 class TournamentMatchAdmin(admin.ModelAdmin):
-    list_display = ('id', 'tournament', 'get_player1_name', 'get_player2_name', 'round', 'winner', 'started_at', 'completed')
+    list_display = ('id', 'tournament', 'get_player1_name', 'get_player2_name', 'round', 'get_winner_name', 'started_at', 'completed')
     list_filter = ('tournament', 'completed')
     search_fields = ('tournament__name', 'get_player1_name', 'get_player2_name', 'round', 'winner')
     
@@ -57,3 +57,11 @@ class TournamentMatchAdmin(admin.ModelAdmin):
         except CustomUser.DoesNotExist:
             return 'Unknown Player2'
     get_player2_name.short_description = 'Player 2 Name'
+    
+    def get_winner_name(self, obj):
+        try:
+            winner = CustomUser.objects.get(id=obj.winner)
+            return winner.username
+        except CustomUser.DoesNotExist:
+            return 'Unknown Winner'
+    get_winner_name.short_description = 'Winner name'

@@ -176,3 +176,19 @@ CSRF_TRUSTED_ORIGINS = [
      "http://localhost:8000",
      "https://localhost:8000",
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'transcendence.tournament.views': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}

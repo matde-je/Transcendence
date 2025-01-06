@@ -9,6 +9,9 @@ from .models import Tournament, TournamentUser, TournamentMatch
 from .serializers import TournamentSerializer, TournamentUserSerializer, TournamentMatchSerializer
 from users.models import CustomUser
 from .services.matchmaking import create_knockout_matches
+from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
+import logging
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -99,7 +102,7 @@ def start_tournament(request, tournament_id):
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-def manage_matches(request, tournament_id):
+def manage_matches(request, tournament_id, match_id=None):
     if request.method == 'GET':
         matches = TournamentMatch.objects.filter(tournament_id=tournament_id)
         serializer = TournamentMatchSerializer(matches, many=True)
@@ -110,6 +113,34 @@ def manage_matches(request, tournament_id):
             serializer.save(tournament_id=tournament_id)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+logger = logging.getLogger(__name__)
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_match(request, tournament_id, match_id=None):
+    logger.debug(f'update_match chamado com tournament_id={tournament_id} e match_id={match_id}')
+    if request.method == 'PATCH':
+
+        print(f"PFV - Request data: {request.data}")
+        print(f"PFV - Match ID: {match_id}, Tournament ID: {tournament_id}")
+
+        if not match_id:
+            return Response({'error': 'Match ID is required in the URL.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            match = TournamentMatch.objects.get(id=match_id, tournament_id=tournament_id)
+            serializer = TournamentMatchSerializer(match, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                print(f"PFV - {serializer.errors}")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except TournamentMatch.DoesNotExist:
+            return Response({'error': 'Match not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': 'An unexpected error occurred.', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -124,7 +155,18 @@ class TournamentViewSet(viewsets.ModelViewSet):
     serializer_class = TournamentSerializer
     permission_classes = [IsAuthenticated]
 
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+    
 class TournamentUserViewSet(viewsets.ModelViewSet):
     queryset = TournamentUser.objects.all()
     serializer_class = TournamentUserSerializer
+    permission_classes = [IsAuthenticated]
+
+class TournamentMatchViewSet(viewsets.ModelViewSet):
+    queryset = TournamentMatch.objects.all()
+    serializer_class = TournamentMatchSerializer
     permission_classes = [IsAuthenticated]
