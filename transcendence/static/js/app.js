@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Function to initialize and update the navbar
-function initializeNavbar(authenticated, username) {
+function initializeNavbar(authenticated) {
     let navBarContainer = document.getElementById('navbar');
     navBarContainer = document.createElement('nav'); //navigation
     navBarContainer.id = 'navbar';
@@ -76,44 +76,66 @@ function initializeNavbar(authenticated, username) {
     const navbarCollapse = document.createElement('div');
     navbarCollapse.className = 'collapse navbar-collapse';
     navbarCollapse.id = 'navbarNav';
-    const navLinks = document.createElement('ul'); //unordered list
-    navLinks.id = 'nav-links';
-    navLinks.className = 'navbar-nav';
+    const navLinksLeft = document.createElement('ul'); // Left side links
+    navLinksLeft.className = 'navbar-nav'; // Default left-aligned links
 
-    navbarCollapse.appendChild(navLinks);
+    const navLinksRight = document.createElement('ul'); // Right side links (avatar & logout)
+    navLinksRight.className = 'navbar-nav ml-auto';
+    navbarCollapse.appendChild(navLinksLeft);
+    navbarCollapse.appendChild(navLinksRight);
     container.appendChild(navbarCollapse);
     navBarContainer.appendChild(container);
     document.body.appendChild(navBarContainer);
 
     if (authenticated) {
-        const logoutLink = document.createElement('li');
-        logoutLink.className = 'nav-item';
-        logoutLink.innerHTML = '<a class="nav-link" href="#" id="logout" data-link>Logout</a>';
-        navLinks.appendChild(logoutLink);
-
-        logoutLink.querySelector('#logout').addEventListener('click', (e) => {
-            e.preventDefault();
-            logout();
-        });
-        const usernameLink = document.createElement('li');
-        usernameLink.className = 'nav-item';
-        usernameLink.innerHTML = `<a class="nav-link" href="/dashboard" data-link>My User</a>`;
-        navLinks.appendChild(usernameLink);
-        usernameLink.querySelector('a').addEventListener('click', (e) => {
-            e.preventDefault();
-            showDashboard();
-            history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard');
-        });
-    } else {
+            fetch('/users/api/user/', {
+                method: 'GET',
+                credentials: 'include',
+            })
+            .then(response => response.json())
+            .then(data => {
+                const usernameLink = document.createElement('li');
+                usernameLink.className = 'nav-item';
+                //usernameLink.innerHTML = `<a class="nav-link" href="/dashboard" data-link>My User</a>`;
+                usernameLink.innerHTML = `
+                        <a class="nav-link" href="/dashboard" data-link>
+                            <img src="${data.avatar}" alt="Avatar" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;">
+                        </a>
+                `;
+                const existingAvatar = navLinksRight.querySelector('img');
+                if (!existingAvatar) {
+                    navLinksRight.appendChild(usernameLink);
+                    usernameLink.querySelector('a').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        showDashboard();
+                        history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard'); 
+                    });
+                }
+                const logoutLink = document.createElement('li');
+                logoutLink.className = 'nav-item';
+                logoutLink.innerHTML = '<a class="nav-link" href="#" id="logout" data-link>Logout</a>';
+                navLinksRight.appendChild(logoutLink);
+        
+                logoutLink.querySelector('#logout').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    logout();
+                });
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert(`Error: ${error.message}`);
+            }); 
+    }
+    else {
         const loginLink = document.createElement('li'); //list 
         loginLink.className = 'nav-item';
         loginLink.innerHTML = '<a class="nav-link" href="/login" data-link>Login</a>';
-        navLinks.appendChild(loginLink);
+        navLinksLeft.appendChild(loginLink);
 
         const registerLink = document.createElement('li');
         registerLink.className = 'nav-item';
         registerLink.innerHTML = '<a class="nav-link" href="/register" data-link>Register</a>';
-        navLinks.appendChild(registerLink);
+        navLinksLeft.appendChild(registerLink);
 
         loginLink.querySelector('a').addEventListener('click', (e) => {
             e.preventDefault();
@@ -123,7 +145,7 @@ function initializeNavbar(authenticated, username) {
         });
         registerLink.querySelector('a').addEventListener('click', (e) => {
             e.preventDefault();
-           showRegister();
+        showRegister();
             history.pushState({ page: 'register' }, 'Register', '/register');
             console.log("register log");
         });
@@ -131,7 +153,7 @@ function initializeNavbar(authenticated, username) {
     const rpsLink = document.createElement('li');
     rpsLink.className = 'nav-item';
     rpsLink.innerHTML = '<a class="nav-link" href="/rock-paper-scissors" data-link>Rock Paper Scissors</a>';
-    navLinks.appendChild(rpsLink);
+    navLinksLeft.appendChild(rpsLink);
     rpsLink.querySelector('a').addEventListener('click', (e) => {
         e.preventDefault();
         showRPS();
@@ -156,7 +178,7 @@ export function checkAuthentication() {
             return response.json();
         })
         .then((data) => {
-            initializeNavbar(data.is_authenticated, data.username || '');
+            initializeNavbar(data.is_authenticated || '');
         })
         .catch((error) => {
             console.error('Error:', error);
