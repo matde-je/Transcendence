@@ -9,6 +9,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install project dependencies
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install PostgreSQL client to use pg_isready for checking database readiness
@@ -19,6 +20,7 @@ RUN openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -
 
 # Copy all project files to the container
 COPY ./transcendence /app
+
 
 # Set the environment variable for Django to run in non-interactive mode
 ENV PYTHONUNBUFFERED=1

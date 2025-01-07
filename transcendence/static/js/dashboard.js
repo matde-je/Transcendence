@@ -24,7 +24,8 @@ function createList(content, title, items) {
     section.className = 'mb-4';
     const heading = document.createElement('h3');
     heading.textContent = title;
-    heading.className = 'mb-3 text-center ';
+    heading.className = 'mb-3 text-center';
+    heading.style.marginTop = '20px';
     section.appendChild(heading);
     const listGroup = document.createElement('div');
     listGroup.className = 'list-group';
@@ -44,7 +45,7 @@ function createList(content, title, items) {
 
 /**
  * Shows user's dashboard.
- */
+  */
 export function showDashboard() {
     const content = document.getElementById('content');
     content.innerHTML = '';
@@ -57,19 +58,15 @@ export function showDashboard() {
     .then(data => {
         content.innerHTML = `
             <div style="margin-top: 100px;">
-            <div class="container my-5">
-            <h2 class="text-center mb-4">Dashboard</h2>
             <div class="card shadow-sm">
             <div class="card-body">
             <div class="text-center mb-3">
-                    <img src="${data.avatar}" alt="Avatar" width="100">
+                    <img src="${data.avatar}" alt="Avatar" width="100" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item"><strong>ID:</strong> ${data.id}</li>
                         <li class="list-group-item"><strong>Email:</strong> ${data.email}</li>
                         <li class="list-group-item"><strong>Username:</strong> ${data.username}</li>
                         <li class="list-group-item"><strong>Nickname:</strong> ${data.nickname}</li>
-                        <li class="list-group-item"><strong>Nome:</strong> ${data.first_name} ${data.last_name}</li>
                         <li class="list-group-item">
                             <strong>Registration Date:</strong> ${new Date(data.date_joined).toLocaleString('pt-PT')}
                         </li>

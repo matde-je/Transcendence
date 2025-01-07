@@ -54,7 +54,7 @@ const player1 = new Element ( {
 	gravity: 2,
 });
 
-const player2 = new Element ( {
+window.player2 = new Element ( {
 	x: 625,
     y: 170, // Center vertically
 	width: 12,
@@ -318,7 +318,7 @@ function drawAll(){
 
 let AiLastUpdateTime = Date.now();
 
-export function loop() {
+function loop() {
 	if (init === 0) {
 		reset_game();
 		context.font = '20px \'Courier New\', Courier, monospace';

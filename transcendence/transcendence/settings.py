@@ -34,7 +34,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Include subdomains in HSTS
 SESSION_COOKIE_SECURE = True  # Enforce secure cookies
 CSRF_COOKIE_SECURE = True  # Enforce secure CSRF cookies
 
-SECURE_SSL_REDIRECT = False
+SECURE_SSL_REDIRECT = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -51,7 +51,19 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'users',
+    'channels'
 ]
+
+ASGI_APPLICATION = 'transcendence.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)], 
+        },
+    },
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -82,8 +94,7 @@ TEMPLATES = [
     },
 ]
 
-# settings.py
-WSGI_APPLICATION = 'transcendence.wsgi.application'
+# WSGI_APPLICATION = 'transcendence.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

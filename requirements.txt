@@ -13,6 +13,8 @@ Werkzeug
 Django
 django-extensions
 django-cors-headers
+channels
+channels-redis
 djangorestframework
 djangorestframework-simplejwt
 PyJWT
