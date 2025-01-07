@@ -6,7 +6,7 @@ from users.models import CustomUser
 
 @admin.register(Tournament)
 class TournamentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'get_creator_username', 'get_winner_username', 'is_started', 'is_finished', 'created_on')
+    list_display = ('id', 'name', 'get_creator_username', 'get_winner_username', 'is_started', 'is_finished', 'created_on', 'finished_on')
 
     def get_creator_username(self, obj):
         try:

@@ -265,8 +265,6 @@ async function deleteTournament(tournamentId) {
 }
 
 async function startTournament(tournamentId) {
-    console.log('PFV - Iniciando torneio ID:', tournamentId);
-    
 	const csrftoken = getCookie('csrftoken');
     try {
         // Get participants
@@ -283,9 +281,6 @@ async function startTournament(tournamentId) {
         const participants = await participantsResponse.json();
         const count = participants.length;
 
-		console.log('PFV - Participantes:', count);
-		console.log('PFV - Potencia de 2:', isPowerOfTwo(count));
-
         // Checks if the number of participants is a power of 2
         if (!isPowerOfTwo(count)) {
             const needed = nextPowerOfTwo(count) - count;
@@ -295,7 +290,7 @@ async function startTournament(tournamentId) {
 
         // Start tournament
         const names = participants.map((p) => p.username).join('\n');
-
+		
         const response = await fetch(`/tournament/tournaments/${tournamentId}/start/`, {
             method: 'POST',
             headers: {
@@ -315,27 +310,8 @@ async function startTournament(tournamentId) {
     }
 }
 
-export async function getMatches() {
-    try {
-        const response = await fetch('/api/matches/', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-        });
-        if (!response.ok) {
-            throw new Error(`Request error: ${response.statusText}`);
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error getting matches:', error);
-        throw error;
-    }
-}
-
-export async function startMatchmaking(tournamentId) {
+export async function startMatchmaking(tournamentId) 
+{
 	const csrftoken = getCookie('csrftoken');
 
     try {
@@ -354,8 +330,6 @@ export async function startMatchmaking(tournamentId) {
 
         // Calculate the number of rounds based on the number of participants
         const numberOfRounds = Math.log2(numberOfParticipants);
-
-		console.log('PFV - Numero de Rounds:', numberOfRounds);
 
 		if (!Number.isInteger(numberOfRounds)) {
             alert('The number of participants must be a power of 2.');
@@ -440,6 +414,7 @@ export async function startMatchmaking(tournamentId) {
  * @returns {Promise<void>} A promise that resolves when all matches have been executed.
  */
 async function executeMatches(matches, tournamentId, currentRound) {
+	let winnerId;
     for (const match of matches) {
 
 		// Check if the match ID is defined
@@ -448,11 +423,30 @@ async function executeMatches(matches, tournamentId, currentRound) {
             continue;
         }
 
+		// Get most recent match data from database
+        const matchResponse = await fetch(`/tournament/tournaments/${tournamentId}/matches/${match.id}/`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+
+        if (!matchResponse.ok) {
+            alert('Error when fetching match data.');
+            continue;
+        }
+
+        const matchData = await matchResponse.json();
+
+        // Check if the match is completed
+        if (matchData.completed) {
+            alert('This game has already been completed.');
+            return;
+        }
+
 		// Inform the players who will play
         alert(`Start a Match between ${match.player1_username} and ${match.player2_username}`);
 
 		// Simulate the match and determine the winner
-        const winnerId = await playMatch(match.player1, match.player2);
+        winnerId = await simulatePlayMatch(match.player1, match.player2);
 
 		console.log('PFV - ID Vencedor da Partida:', winnerId);
 
@@ -466,6 +460,41 @@ async function executeMatches(matches, tournamentId, currentRound) {
     }
 
     alert(`Round ${currentRound} finished.`);
+
+	if(currentRound === 1) {
+		alert('The tournament has ended.');
+
+		const csrftoken = getCookie('csrftoken');
+	
+		fetch(`/tournament/tournaments/${tournamentId}/finish/`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrftoken,
+			},
+			credentials: 'include',
+			body: JSON.stringify({
+				winner_id: winnerId,
+				is_finished: true
+			}),
+		})
+		.then(response => {
+			if (!response.ok) {
+				throw new Error(`Error HTTP! status: ${response.status}`);
+			}
+			return response.json();
+		})
+		.then(data => {
+			console.log('Tournament updated successfully:', data);
+			content.innerHTML = `
+				<h1>Welcome to Pong Tournament</h1>
+				<p>The tournament has concluded. Thank you for playing!</p>
+			`;
+			})
+		.catch(error => {
+			console.error('Error updating tournament:', error);
+		});
+	}
 }
 
 /**
@@ -475,7 +504,7 @@ async function executeMatches(matches, tournamentId, currentRound) {
  * @param {string} player2 - The name of the second player.
  * @returns {Promise<string>} A promise that resolves to the name of the winning player.
  */
-function playMatch(player1, player2) {
+function simulatePlayMatch(player1, player2) {
     return new Promise((resolve) => {
         // Simulates a match with a 50% chance of each player winning
         const winner = Math.random() < 0.5 ? player1 : player2;
@@ -499,9 +528,33 @@ async function updateMatch(tournamentId, matchId, winnerId) {
     console.log('PFV - updateMatch(matchId):', matchId);
     console.log('PFV - updateMatch(winnerId):', winnerId);
 
-	const csrftoken = getCookie('csrftoken');
+    const csrftoken = getCookie('csrftoken');
 
-	try {
+    try {
+        // Get match info
+        const getResponse = await fetch(`/tournament/tournaments/${tournamentId}/matches/${matchId}/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            credentials: 'include',
+        });
+
+        if (!getResponse.ok) {
+            console.error('Error getting match:', getResponse.status);
+            alert('Error getting match.');
+            return;
+        }
+
+        const match = await getResponse.json();
+
+        if (match.completed) {
+            alert('This match has already been completed.');
+            return;
+        }
+
+        // Update match info
         const response = await fetch(`/tournament/tournaments/${tournamentId}/matches/${matchId}/`, {
             method: 'PATCH',
             headers: {
@@ -513,14 +566,14 @@ async function updateMatch(tournamentId, matchId, winnerId) {
         });
 
         if (!response.ok) {
-            console.error('Error updating the match(response not ok):', response.status);
+            console.error('Error updating match:', response.status);
+            alert('Error updating match.');
         } else {
             const updatedMatch = await response.json();
-            console.log('Match successfully updated:', updatedMatch);
         }
     } catch (error) {
-        console.error('PFV - Error updating the match:', error);
-        alert('Error updating the match.');
+        console.error('Error updating match:', error);
+        alert('Error updating match.');
     }
 }
 

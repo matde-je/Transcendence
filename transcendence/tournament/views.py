@@ -10,8 +10,8 @@ from .serializers import TournamentSerializer, TournamentUserSerializer, Tournam
 from users.models import CustomUser
 from .services.matchmaking import create_knockout_matches
 from rest_framework.decorators import action
+from django.utils import timezone
 from rest_framework.exceptions import ValidationError
-import logging
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -104,7 +104,15 @@ def start_tournament(request, tournament_id):
 @permission_classes([IsAuthenticated])
 def manage_matches(request, tournament_id, match_id=None):
     if request.method == 'GET':
-        matches = TournamentMatch.objects.filter(tournament_id=tournament_id)
+        round_number = request.query_params.get('round', None)
+        if round_number is not None:
+            try:
+                round_number = int(round_number)
+            except ValueError:
+                return Response({'error': 'Invalid round number.'}, status=status.HTTP_400_BAD_REQUEST)
+            matches = TournamentMatch.objects.filter(tournament_id=tournament_id, round=round_number)
+        else:
+            matches = TournamentMatch.objects.filter(tournament_id=tournament_id)
         serializer = TournamentMatchSerializer(matches, many=True)
         return Response(serializer.data)
     elif request.method == 'POST':
@@ -114,20 +122,21 @@ def manage_matches(request, tournament_id, match_id=None):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-logger = logging.getLogger(__name__)
-
-@api_view(['PATCH'])
+@api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def update_match(request, tournament_id, match_id=None):
-    logger.debug(f'update_match chamado com tournament_id={tournament_id} e match_id={match_id}')
-    if request.method == 'PATCH':
-
-        print(f"PFV - Request data: {request.data}")
-        print(f"PFV - Match ID: {match_id}, Tournament ID: {tournament_id}")
-
+    if request.method == 'GET':
+        try:
+            match = TournamentMatch.objects.get(id=match_id, tournament_id=tournament_id)
+            serializer = TournamentMatchSerializer(match)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except TournamentMatch.DoesNotExist:
+            return Response({'error': 'Match not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': 'An unexpected error occurred.', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    elif request.method == 'PATCH':
         if not match_id:
             return Response({'error': 'Match ID is required in the URL.'}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
             match = TournamentMatch.objects.get(id=match_id, tournament_id=tournament_id)
             serializer = TournamentMatchSerializer(match, data=request.data, partial=True)
@@ -135,7 +144,6 @@ def update_match(request, tournament_id, match_id=None):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                print(f"PFV - {serializer.errors}")
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except TournamentMatch.DoesNotExist:
             return Response({'error': 'Match not found.'}, status=status.HTTP_404_NOT_FOUND)
@@ -150,6 +158,35 @@ def start_matchmaking(request, tournament_id):
         return Response(result, status=status.HTTP_400_BAD_REQUEST)
     return Response({'detail': 'Matchmaking started successfully.'}, status=status.HTTP_200_OK)
 
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def finish_tournament(request, tournament_id):
+    try:
+        tournament = Tournament.objects.get(id=tournament_id)
+        if tournament.is_finished:
+            return Response({'detail': 'This tournament has already concluded.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        winner_id = request.data.get('winner_id')
+        if not winner_id:
+            return Response({'detail': 'Winner ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            winner = CustomUser.objects.get(id=winner_id)
+        except CustomUser.DoesNotExist:
+            return Response({'detail': 'Winner not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        tournament.winner_id = winner_id
+        tournament.is_finished = True
+        tournament.finished_on = timezone.now()
+        tournament.save(update_fields=['winner_id', 'is_finished', 'finished_on'])
+        
+        return Response({'detail': 'Tournament completed successfully.'}, status=status.HTTP_200_OK)
+        
+    except Tournament.DoesNotExist:
+        return Response({'detail': 'Tournament not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'detail': 'An error occurred while completing the tournament.', 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer

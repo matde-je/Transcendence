@@ -14,6 +14,7 @@ class Tournament(models.Model):
     winner_id = models.IntegerField(null=True, blank=True)
     is_started = models.BooleanField(default=False)
     is_finished = models.BooleanField(default=False)
+    finished_on = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.name} (created by {CustomUser.objects.get(id=self.creator_id).username})'
