@@ -105,4 +105,4 @@ copy-certs:
 	@echo "Certificates copied."
 
 
-.PHONY: run stop down clean fclean venv activate install create_superuser create_users enroll-users migrate info backend-it db-it logs generate-certs copy-certs
+.PHONY: run stop down clean fclean venv activate install create_superuser create_users migrate info backend-it db-it logs generate-certs copy-certs

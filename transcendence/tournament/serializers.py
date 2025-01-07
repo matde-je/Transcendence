@@ -39,41 +39,12 @@ class TournamentUserSerializer(serializers.ModelSerializer):
             return user.username
         except CustomUser.DoesNotExist:
             return 'Unknown'
-
+        
 class TournamentMatchSerializer(serializers.ModelSerializer):
-    player1_username = serializers.SerializerMethodField()
-    player2_username = serializers.SerializerMethodField()
-    winner_username = serializers.SerializerMethodField()
-    winner = serializers.IntegerField(required=False, allow_null=True)
+    player1_username = serializers.CharField(source='player1.username', read_only=True)
+    player2_username = serializers.CharField(source='player2.username', read_only=True)
+    winner_username = serializers.CharField(source='winner.username', read_only=True)
 
     class Meta:
         model = TournamentMatch
-        fields = ['id', 'tournament', 'player1', 'player2', 'round', 'winner', 'player1_username', 'player2_username', 'winner_username', 'started_at', 'completed']
-
-    def get_player1_username(self, obj):
-        try:
-            user = CustomUser.objects.get(id=obj.player1)
-            return user.username
-        except CustomUser.DoesNotExist:
-            return 'Unknown'
-
-    def get_player2_username(self, obj):
-        try:
-            user = CustomUser.objects.get(id=obj.player2)
-            return user.username
-        except CustomUser.DoesNotExist:
-            return 'Unknown'
-
-    def get_winner_username(self, obj):
-        if obj.winner:
-            try:
-                user = CustomUser.objects.get(id=obj.winner)
-                return user.username
-            except CustomUser.DoesNotExist:
-                return 'Unknown'
-        return None
-
-    def validate_winner(self, value):
-        if value not in [self.instance.player1, self.instance.player2]:
-            raise serializers.ValidationError("The winner must be one of the players in the match.")
-        return value
+        fields = ['id', 'tournament', 'player1', 'player2', 'round', 'winner', 'started_at', 'completed', 'player1_username', 'player2_username', 'winner_username']

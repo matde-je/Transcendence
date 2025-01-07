@@ -54,14 +54,14 @@ export function showMultiplayer() {
     const multiplayerContent = `
         <h1>Multiplayer - Rock Paper Scissors</h1>
         <div class="choices">
-            <button class="btn btn-success" id="player1RockBtn">👊 Player 1 - Rock</button>
-            <button class="btn btn-info" id="player1PaperBtn">✋ Player 1 - Paper</button>
-            <button class="btn btn-danger" id="player1ScissorsBtn">✌️ Player 1 - Scissors</button>
+            <button class="btn btn-success" id="player1RockBtn">👊 PLAYER 1 - Rock (KEY Q)</button>
+            <button class="btn btn-info" id="player1PaperBtn">✋ PLAYER 1 - Paper (KEY W)</button>
+            <button class="btn btn-danger" id="player1ScissorsBtn">✌️ PLAYER 1 - Scissors (KEY E)</button>
         </div>
         <div class="choices">
-            <button class="btn btn-success" id="player2RockBtn">👊 Player 2 - Rock</button>
-            <button class="btn btn-info" id="player2PaperBtn">✋ Player 2 - Paper</button>
-            <button class="btn btn-danger" id="player2ScissorsBtn">✌️ Player 2 - Scissors</button>
+            <button class="btn btn-success" id="player2RockBtn">👊 PLAYER 2 - Rock (ARROW LEFT)</button>
+            <button class="btn btn-info" id="player2PaperBtn">✋ PLAYER 2 - Paper (ARROW DOWN)</button>
+            <button class="btn btn-danger" id="player2ScissorsBtn">✌️ PLAYER 2 - Scissors (ARROW RIGHT)</button>
         </div>
         <div id="multiplayerDisplay">
             <p id="player1Display">PLAYER 1:</p>

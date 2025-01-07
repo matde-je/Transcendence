@@ -19,7 +19,6 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -31,6 +30,16 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+SECURE_BROWSER_XSS_FILTER = True  # Prevent cross-site scripting attacks
+SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent browser content sniffing
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Include subdomains in HSTS
+
+SESSION_COOKIE_SECURE = True  # Enforce secure cookies
+CSRF_COOKIE_SECURE = True  # Enforce secure CSRF cookies
+
+SECURE_SSL_REDIRECT = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -48,6 +57,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
 	'tournament',
+	'rps',
 ]
 
 MIDDLEWARE = [
@@ -89,8 +99,6 @@ WSGI_APPLICATION = 'transcendence.wsgi.application'
 load_dotenv()
 
 # Database configurations
-DATABASE_ROUTERS = ['users.routers.TournamentRouter']
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -104,6 +112,15 @@ DATABASES = {
     'tournament': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.getenv('TOURNAMENT_DB_NAME'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
+    },
+	# rps database configuration
+    'rps': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.getenv('RPS_DB_NAME'),
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         'HOST': os.getenv('DB_HOST'),
@@ -129,6 +146,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/

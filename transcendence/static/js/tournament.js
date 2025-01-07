@@ -45,7 +45,7 @@ export async function listOpenTournaments() {
         }
         const tournaments = await response.json();
 
-		// Get current user ID
+        // Get current user ID
         const currentUserResponse = await fetch('/users/user/', {
             method: 'GET',
             credentials: 'include',
@@ -59,47 +59,47 @@ export async function listOpenTournaments() {
         if (tournaments.length > 0) {
             const list = document.createElement('ul');
             tournaments.forEach(tournament => {
-				// Get participants in the tournament
+                // Get participants in the tournament
                 fetch(`/tournament/tournaments/${tournament.id}/participants/`, {
                     method: 'GET',
                     credentials: 'include',
                 })
-                .then(res => res.json())
-                .then(participants => {
-                    const isEnrolled = participants.some(participant => participant.user_id === currentUserId);
-					const isCreator = tournament.creator_id === currentUserId;
-                    let actionButton;
-					let deleteTournamentButton = '';
-                    let startTournamentButton = '';
+                    .then(res => res.json())
+                    .then(participants => {
+                        const isEnrolled = participants.some(participant => participant.user_id === currentUserId);
+                        const isCreator = tournament.creator_id === currentUserId;
+                        let actionButton;
+                        let deleteTournamentButton = '';
+                        let startTournamentButton = '';
 
-                    if (isEnrolled) {
-                        actionButton = `<button onclick="removeUserFromTournament(${tournament.id})" class="btn btn-danger btn-sm">Quit Tournament</button>`;
-                    } 
-					if (!isEnrolled && !tournament.is_started) {
-                        actionButton = `<button onclick="addUserToTournament(${tournament.id})" class="btn btn-primary btn-sm">Participate</button>`;
-                    }
+                        if (isEnrolled) {
+                            actionButton = `<button onclick="removeUserFromTournament(${tournament.id})" class="btn btn-danger btn-sm">Quit Tournament</button>`;
+                        }
+                        if (!isEnrolled && !tournament.is_started) {
+                            actionButton = `<button onclick="addUserToTournament(${tournament.id})" class="btn btn-primary btn-sm">Participate</button>`;
+                        }
 
-					if (isCreator && !tournament.is_started) {
-						deleteTournamentButton = `<button onclick="deleteTournament(${tournament.id})" class="btn btn-danger btn-sm">Delete Tournament</button>`;
-					}
+                        if (isCreator && !tournament.is_started) {
+                            deleteTournamentButton = `<button onclick="deleteTournament(${tournament.id})" class="btn btn-danger btn-sm">Delete Tournament</button>`;
+                        }
 
-                    if (isEnrolled && !tournament.is_started) {
-                        startTournamentButton = `<button onclick="startTournament(${tournament.id})" class="btn btn-success btn-sm">Start Tournament</button>`;
-                    }
-                    
-                    const listItem = document.createElement('li');
-                    listItem.innerHTML = `
+                        if (isEnrolled && !tournament.is_started) {
+                            startTournamentButton = `<button onclick="startTournament(${tournament.id})" class="btn btn-success btn-sm">Start Tournament</button>`;
+                        }
+
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
                         <strong>${tournament.name}</strong> - Created by ${tournament.creator_username} - ${deleteTournamentButton}
                         <br>
                         Participants: ${participants.map(p => p.username).join(', ')}
                         <br>
                         ${actionButton} - ${startTournamentButton}
                     `;
-                    list.appendChild(listItem);
-                })
-                .catch(error => {
-                    console.error(`Error when searching for tournament participants ${tournament.id}:`, error);
-                });
+                        list.appendChild(listItem);
+                    })
+                    .catch(error => {
+                        console.error(`Error when searching for tournament participants ${tournament.id}:`, error);
+                    });
             });
             tournamentContent.appendChild(list);
         } else {
@@ -173,26 +173,26 @@ export function showTournamentResults() {
         method: 'GET',
         credentials: 'include',
     })
-    .then(response => response.json())
-    .then(data => {
-        const tournamentContent = document.getElementById('tournamentContent');
-        tournamentContent.innerHTML = '<h3>Tournament Results</h3>';
-        if (data.length > 0) {
-            const list = document.createElement('ul');
-            data.forEach(tournament => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `${tournament.name} - Winner ${tournament.winner_username}`;
-                list.appendChild(listItem);
-            });
-            tournamentContent.appendChild(list);
-        } else {
-            tournamentContent.innerHTML += '<p>No results available.</p>';
-        }
-    })
-    .catch(error => {
-        console.error('Error showing results:', error);
-        alert('Error showing results.');
-    });
+        .then(response => response.json())
+        .then(data => {
+            const tournamentContent = document.getElementById('tournamentContent');
+            tournamentContent.innerHTML = '<h3>Tournament Results</h3>';
+            if (data.length > 0) {
+                const list = document.createElement('ul');
+                data.forEach(tournament => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${tournament.name} - Winner ${tournament.winner_username}`;
+                    list.appendChild(listItem);
+                });
+                tournamentContent.appendChild(list);
+            } else {
+                tournamentContent.innerHTML += '<p>No results available.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error showing results:', error);
+            alert('Error showing results.');
+        });
 }
 
 /**
@@ -299,7 +299,7 @@ async function startTournament(tournamentId) {
             credentials: 'include',
         });
         if (response.ok) {
-            startMatchmaking(tournamentId);
+            listOpenTournaments();
         } else {
             const data = await response.json();
             alert('Error starting tournament: ' + JSON.stringify(data));

@@ -1,2 +1,5 @@
 CREATE DATABASE tournament_db;
 GRANT ALL PRIVILEGES ON DATABASE tournament_db TO postuser;
+
+CREATE DATABASE rps_db;
+GRANT ALL PRIVILEGES ON DATABASE rps_db TO postuser;
