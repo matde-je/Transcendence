@@ -45,6 +45,7 @@ class TournamentMatch(models.Model):
     winner = models.IntegerField(null=True, blank=True)
     started_at = models.DateTimeField()
     completed = models.BooleanField(default=False)
+    completed_on = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.player1} vs {self.player2} - Winner: {self.winner}'

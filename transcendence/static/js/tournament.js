@@ -45,7 +45,7 @@ export async function listOpenTournaments() {
         }
         const tournaments = await response.json();
 
-        // Get current user ID
+		// Get current user ID
         const currentUserResponse = await fetch('/users/user/', {
             method: 'GET',
             credentials: 'include',
@@ -59,47 +59,47 @@ export async function listOpenTournaments() {
         if (tournaments.length > 0) {
             const list = document.createElement('ul');
             tournaments.forEach(tournament => {
-                // Get participants in the tournament
-                fetch(`/tournament/tournaments/${tournament.id}/participants/`, {
+				// Get participants in the tournament
+                fetch(`/tournament/${tournament.id}/participants/`, {
                     method: 'GET',
                     credentials: 'include',
                 })
-                    .then(res => res.json())
-                    .then(participants => {
-                        const isEnrolled = participants.some(participant => participant.user_id === currentUserId);
-                        const isCreator = tournament.creator_id === currentUserId;
-                        let actionButton;
-                        let deleteTournamentButton = '';
-                        let startTournamentButton = '';
+                .then(res => res.json())
+                .then(participants => {
+                    const isEnrolled = participants.some(participant => participant.user_id === currentUserId);
+					const isCreator = tournament.creator_id === currentUserId;
+                    let actionButton;
+					let deleteTournamentButton = '';
+                    let startTournamentButton = '';
 
-                        if (isEnrolled) {
-                            actionButton = `<button onclick="removeUserFromTournament(${tournament.id})" class="btn btn-danger btn-sm">Quit Tournament</button>`;
-                        }
-                        if (!isEnrolled && !tournament.is_started) {
-                            actionButton = `<button onclick="addUserToTournament(${tournament.id})" class="btn btn-primary btn-sm">Participate</button>`;
-                        }
+                    if (isEnrolled) {
+                        actionButton = `<button onclick="removeUserFromTournament(${tournament.id})" class="btn btn-danger btn-sm">Quit Tournament</button>`;
+                    } 
+					if (!isEnrolled && !tournament.is_started) {
+                        actionButton = `<button onclick="addUserToTournament(${tournament.id})" class="btn btn-primary btn-sm">Participate</button>`;
+                    }
 
-                        if (isCreator && !tournament.is_started) {
-                            deleteTournamentButton = `<button onclick="deleteTournament(${tournament.id})" class="btn btn-danger btn-sm">Delete Tournament</button>`;
-                        }
+					if (isCreator && !tournament.is_started) {
+						deleteTournamentButton = `<button onclick="deleteTournament(${tournament.id})" class="btn btn-danger btn-sm">Delete Tournament</button>`;
+					}
 
-                        if (isEnrolled && !tournament.is_started) {
-                            startTournamentButton = `<button onclick="startTournament(${tournament.id})" class="btn btn-success btn-sm">Start Tournament</button>`;
-                        }
-
-                        const listItem = document.createElement('li');
-                        listItem.innerHTML = `
+                    if (isEnrolled && !tournament.is_started) {
+                        startTournamentButton = `<button onclick="startTournament(${tournament.id})" class="btn btn-success btn-sm">Start Tournament</button>`;
+                    }
+                    
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
                         <strong>${tournament.name}</strong> - Created by ${tournament.creator_username} - ${deleteTournamentButton}
                         <br>
                         Participants: ${participants.map(p => p.username).join(', ')}
                         <br>
                         ${actionButton} - ${startTournamentButton}
                     `;
-                        list.appendChild(listItem);
-                    })
-                    .catch(error => {
-                        console.error(`Error when searching for tournament participants ${tournament.id}:`, error);
-                    });
+                    list.appendChild(listItem);
+                })
+                .catch(error => {
+                    console.error(`Error when searching for tournament participants ${tournament.id}:`, error);
+                });
             });
             tournamentContent.appendChild(list);
         } else {
@@ -117,7 +117,7 @@ export async function listOpenTournaments() {
 export async function addUserToTournament(tournamentId) {
     const csrftoken = getCookie('csrftoken');
     try {
-        const response = await fetch(`/tournament/tournaments/${tournamentId}/join/`, {
+        const response = await fetch(`/tournament/${tournamentId}/join/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -145,7 +145,7 @@ export async function addUserToTournament(tournamentId) {
 export async function removeUserFromTournament(tournamentId) {
     const csrftoken = getCookie('csrftoken');
     try {
-        const response = await fetch(`/tournament/tournaments/${tournamentId}/leave/`, {
+        const response = await fetch(`/tournament/${tournamentId}/leave/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': csrftoken
@@ -173,26 +173,26 @@ export function showTournamentResults() {
         method: 'GET',
         credentials: 'include',
     })
-        .then(response => response.json())
-        .then(data => {
-            const tournamentContent = document.getElementById('tournamentContent');
-            tournamentContent.innerHTML = '<h3>Tournament Results</h3>';
-            if (data.length > 0) {
-                const list = document.createElement('ul');
-                data.forEach(tournament => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = `${tournament.name} - Winner ${tournament.winner_username}`;
-                    list.appendChild(listItem);
-                });
-                tournamentContent.appendChild(list);
-            } else {
-                tournamentContent.innerHTML += '<p>No results available.</p>';
-            }
-        })
-        .catch(error => {
-            console.error('Error showing results:', error);
-            alert('Error showing results.');
-        });
+    .then(response => response.json())
+    .then(data => {
+        const tournamentContent = document.getElementById('tournamentContent');
+        tournamentContent.innerHTML = '<h3>Tournament Results</h3>';
+        if (data.length > 0) {
+            const list = document.createElement('ul');
+            data.forEach(tournament => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${tournament.name} - Winner ${tournament.winner_username}`;
+                list.appendChild(listItem);
+            });
+            tournamentContent.appendChild(list);
+        } else {
+            tournamentContent.innerHTML += '<p>No results available.</p>';
+        }
+    })
+    .catch(error => {
+        console.error('Error showing results:', error);
+        alert('Error showing results.');
+    });
 }
 
 /**
@@ -244,7 +244,7 @@ async function deleteTournament(tournamentId) {
         return;
     }
     try {
-        const response = await fetch(`/tournament/tournaments/${tournamentId}/`, {
+        const response = await fetch(`/tournament/${tournamentId}/`, {
             method: 'DELETE',
             headers: {
                 'X-CSRFToken': csrftoken
@@ -268,7 +268,7 @@ async function startTournament(tournamentId) {
 	const csrftoken = getCookie('csrftoken');
     try {
         // Get participants
-        const participantsResponse = await fetch(`/tournament/tournaments/${tournamentId}/participants/`, {
+        const participantsResponse = await fetch(`/tournament/${tournamentId}/participants/`, {
             method: 'GET',
             credentials: 'include',
         });
@@ -291,7 +291,7 @@ async function startTournament(tournamentId) {
         // Start tournament
         const names = participants.map((p) => p.username).join('\n');
 		
-        const response = await fetch(`/tournament/tournaments/${tournamentId}/start/`, {
+        const response = await fetch(`/tournament/${tournamentId}/start/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': csrftoken
@@ -299,7 +299,7 @@ async function startTournament(tournamentId) {
             credentials: 'include',
         });
         if (response.ok) {
-            listOpenTournaments();
+            startMatchmaking(tournamentId);
         } else {
             const data = await response.json();
             alert('Error starting tournament: ' + JSON.stringify(data));
@@ -316,7 +316,7 @@ export async function startMatchmaking(tournamentId)
 
     try {
         // Get all participants of the started tournament
-        const participantsResponse = await fetch(`/tournament/tournaments/${tournamentId}/participants/`, {
+        const participantsResponse = await fetch(`/tournament/${tournamentId}/participants/`, {
             method: 'GET',
             credentials: 'include',
         });
@@ -364,7 +364,7 @@ export async function startMatchmaking(tournamentId)
 
         // Send the matches to the API
         for (const match of matches) {
-            const response = await fetch(`/tournament/tournaments/${tournamentId}/matches/`, {
+            const response = await fetch(`/tournament/${tournamentId}/matches/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -424,7 +424,7 @@ async function executeMatches(matches, tournamentId, currentRound) {
         }
 
 		// Get most recent match data from database
-        const matchResponse = await fetch(`/tournament/tournaments/${tournamentId}/matches/${match.id}/`, {
+        const matchResponse = await fetch(`/tournament/${tournamentId}/matches/${match.id}/`, {
             method: 'GET',
             credentials: 'include',
         });
@@ -466,7 +466,7 @@ async function executeMatches(matches, tournamentId, currentRound) {
 
 		const csrftoken = getCookie('csrftoken');
 	
-		fetch(`/tournament/tournaments/${tournamentId}/finish/`, {
+		fetch(`/tournament/${tournamentId}/finish/`, {
 			method: 'PATCH',
 			headers: {
 				'Content-Type': 'application/json',
@@ -532,7 +532,7 @@ async function updateMatch(tournamentId, matchId, winnerId) {
 
     try {
         // Get match info
-        const getResponse = await fetch(`/tournament/tournaments/${tournamentId}/matches/${matchId}/`, {
+        const getResponse = await fetch(`/tournament/${tournamentId}/matches/${matchId}/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -555,7 +555,7 @@ async function updateMatch(tournamentId, matchId, winnerId) {
         }
 
         // Update match info
-        const response = await fetch(`/tournament/tournaments/${tournamentId}/matches/${matchId}/`, {
+        const response = await fetch(`/tournament/${tournamentId}/matches/${matchId}/`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',

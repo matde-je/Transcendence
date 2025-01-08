@@ -141,6 +141,7 @@ def update_match(request, tournament_id, match_id=None):
             match = TournamentMatch.objects.get(id=match_id, tournament_id=tournament_id)
             serializer = TournamentMatchSerializer(match, data=request.data, partial=True)
             if serializer.is_valid():
+                match.completed_on = timezone.now()
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
@@ -174,7 +175,7 @@ def finish_tournament(request, tournament_id):
             winner = CustomUser.objects.get(id=winner_id)
         except CustomUser.DoesNotExist:
             return Response({'detail': 'Winner not found.'}, status=status.HTTP_404_NOT_FOUND)
-        
+
         tournament.winner_id = winner_id
         tournament.is_finished = True
         tournament.finished_on = timezone.now()
