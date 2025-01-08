@@ -12,6 +12,7 @@ from .services.matchmaking import create_knockout_matches
 from rest_framework.decorators import action
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
+from django.db import transaction
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -187,7 +188,79 @@ def finish_tournament(request, tournament_id):
         return Response({'detail': 'Tournament not found.'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'detail': 'An error occurred while completing the tournament.', 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def select_winners_and_matchmake(request, tournament_id):
+
+    round_number = request.data.get('round_number')
+
+    if not round_number or not isinstance(round_number, int) or round_number < 2:
+        return Response(
+            {'detail': 'Invalid round number. Must be an integer greater than 1.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     
+    try:
+        tournament = Tournament.objects.get(id=tournament_id, is_finished=False)
+    except Tournament.DoesNotExist:
+        return Response(
+            {'detail': 'Tournament not found or already completed.'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    # Select winners from the previous round
+    matches = TournamentMatch.objects.filter(tournament_id=tournament_id, round=round_number, completed=True)
+    
+    if not matches.exists():
+        return Response(
+            {'detail': f'No completed matches found for the round {round_number}.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    winners_ids = matches.values_list('winner', flat=True)
+    
+    if len(winners_ids) < 2:
+        return Response(
+            {'detail': 'Insufficient number of winners to carry out matchmaking.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+	# Matchmaking 
+    if len(winners_ids) % 2 != 0:
+        return Response(
+            {'detail': 'The number of winners is not even!'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    new_matches = []
+    sorted_winners = list(winners_ids)
+    
+    for i in range(0, len(sorted_winners), 2):
+        player1_id = sorted_winners[i]
+        player2_id = sorted_winners[i+1]
+        
+        match = TournamentMatch(
+            tournament_id=tournament_id,
+            player1=player1_id,
+            player2=player2_id,
+            round=round_number - 1,
+            started_at=timezone.now(),
+            completed=False
+        )
+        new_matches.append(match)
+    
+    # Save new matches
+    with transaction.atomic():
+        TournamentMatch.objects.bulk_create(new_matches)
+    
+    serializer = TournamentMatchSerializer(new_matches, many=True)
+    
+    return Response(
+        {'detail': 'Matchmaking carried out successfully.', 'matches': serializer.data, 'round': round_number - 1},
+        status=status.HTTP_201_CREATED
+    )
+
 class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer

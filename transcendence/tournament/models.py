@@ -25,7 +25,6 @@ class TournamentUser(models.Model):
     is_accepted = models.BooleanField(default=False)
     is_canceled = models.BooleanField(default=False)
     is_refused = models.BooleanField(default=False)
-    position = models.IntegerField(default=0)
 
     def __str__(self):
         if self.tournament:

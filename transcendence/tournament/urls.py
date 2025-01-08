@@ -16,6 +16,7 @@ from .views import (
 	manage_matches,
 	update_match,
 	start_matchmaking,
+	select_winners_and_matchmake,
 	finish_tournament
 )
 
@@ -36,5 +37,6 @@ urlpatterns = [
     path('<int:tournament_id>/matches/', manage_matches, name='manage_matches'),
     path('<int:tournament_id>/matches/<int:match_id>/', update_match, name='update_match'),
 	path('<int:tournament_id>/matchmaking/start/', start_matchmaking, name='start_matchmaking'),
+	path('<int:tournament_id>/select_winners/', select_winners_and_matchmake, name='select_winners_and_matchmake'),
 	path('<int:tournament_id>/finish/', finish_tournament, name='finish_tournament'),
 ]

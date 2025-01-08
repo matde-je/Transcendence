@@ -459,7 +459,7 @@ async function executeMatches(matches, tournamentId, currentRound) {
 		console.log('PFV - Vencedor da Partida:', winnerUsername);
     }
 
-    alert(`Round ${currentRound} finished.`);
+    alert(`Round ${getRoundName(currentRound)} finished.`);
 
 	if(currentRound === 1) {
 		alert('The tournament has ended.');
@@ -494,6 +494,12 @@ async function executeMatches(matches, tournamentId, currentRound) {
 		.catch(error => {
 			console.error('Error updating tournament:', error);
 		});
+	}
+	else
+	{
+		const nextRound = currentRound - 1;
+		alert(`Next Round: ${getRoundName(nextRound)}`);
+		selectWinnersAndMatchmake(tournamentId, currentRound);
 	}
 }
 
@@ -574,6 +580,65 @@ async function updateMatch(tournamentId, matchId, winnerId) {
     } catch (error) {
         console.error('Error updating match:', error);
         alert('Error updating match.');
+    }
+}
+
+// transcendence/static/js/tournament.js
+
+/**
+ * Seleciona os vencedores de um round e realiza o matchmaking.
+ *
+ * @param {number} tournamentId - ID do torneio.
+ * @param {number} roundNumber - Número do round.
+ */
+export async function selectWinnersAndMatchmake(tournamentId, roundNumber) {
+	let currentRound = roundNumber - 1;
+
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+        const response = await fetch(`/tournament/${tournamentId}/select_winners/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            credentials: 'include',
+            body: JSON.stringify({ round_number: roundNumber })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            alert('Matchmaking carried out successfully!');
+
+            const matches = data.matches;
+            currentRound = data.round;
+            
+			console.log('PFV - Matches:', matches);
+
+            // Shows the round and the names of the participants
+            content.innerHTML = `
+                <h2>Tournament Match Making</h2>
+                <p>Round: ${getRoundName(currentRound)}</p>
+                <p>
+                    <ul>
+                        ${matches.map((match, index) => `<li>Match: ${index + 1}<br>${match.player1_username} vs ${match.player2_username}</li><br>`).join('')}
+                    </ul>
+                </p>
+                <button id="start-round" class="btn btn-primary">Start Round</button>
+            `;
+
+            document.getElementById('start-round').addEventListener('click', async (e) => {
+                e.preventDefault();
+                await executeMatches(matches, tournamentId, currentRound);
+            });
+        } else {
+            const errorData = await response.json();
+            alert('Error: ' + errorData.detail);
+        }
+    } catch (error) {
+        console.error('Error when performing matchmaking:', error);
+        alert('Error when performing matchmaking.');
     }
 }
 

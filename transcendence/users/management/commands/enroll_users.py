@@ -18,12 +18,13 @@ def setup_django():
     django.setup()
 
 def enroll_users_in_open_tournaments():
-    openTournaments = Tournament.objects.filter(is_started=False, is_finished=False)
-    users = CustomUser.objects.all()
-
-    for tournament in openTournaments:
-        for user in users:
-            # Check if the user is already enrolled in the tournament
+    # Retrieve all active users excluding the 'root' user
+    activeUsers = CustomUser.objects.filter(is_active=True).exclude(username='root')
+    
+    # Enroll each user in open tournaments
+    for user in activeUsers:
+        openTournaments = Tournament.objects.filter(is_started=False, is_finished=False)
+        for tournament in openTournaments:
             if not TournamentUser.objects.filter(tournament=tournament, user_id=user.id).exists():
                 TournamentUser.objects.create(
                     tournament=tournament,

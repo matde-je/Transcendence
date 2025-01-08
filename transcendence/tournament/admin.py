@@ -26,7 +26,9 @@ class TournamentAdmin(admin.ModelAdmin):
 
 @admin.register(TournamentUser)
 class TournamentUserAdmin(admin.ModelAdmin):
-    list_display = ('id', 'tournament', 'get_username', 'is_accepted', 'is_canceled', 'is_refused', 'position')
+    list_display = ('id', 'tournament', 'get_username', 'is_accepted', 'is_canceled', 'is_refused')
+    list_filter = ('tournament', 'is_accepted')
+    search_fields = ('tournament__name', 'get_username')
 
     def get_username(self, obj):
         try:
