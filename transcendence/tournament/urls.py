@@ -17,7 +17,8 @@ from .views import (
 	update_match,
 	start_matchmaking,
 	select_winners_and_matchmake,
-	finish_tournament
+	finish_tournament,
+	user_tournament_results
 )
 
 router = DefaultRouter()
@@ -39,4 +40,5 @@ urlpatterns = [
 	path('<int:tournament_id>/matchmaking/start/', start_matchmaking, name='start_matchmaking'),
 	path('<int:tournament_id>/select_winners/', select_winners_and_matchmake, name='select_winners_and_matchmake'),
 	path('<int:tournament_id>/finish/', finish_tournament, name='finish_tournament'),
+	path('user/results/', user_tournament_results, name='user_tournament_results'),
 ]

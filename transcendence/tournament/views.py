@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Tournament, TournamentUser, TournamentMatch
-from .serializers import TournamentSerializer, TournamentUserSerializer, TournamentMatchSerializer
+from .serializers import TournamentSerializer, TournamentUserSerializer, TournamentMatchSerializer, TournamentResultSerializer
 from users.models import CustomUser
 from .services.matchmaking import create_knockout_matches
 from rest_framework.decorators import action
@@ -260,6 +260,13 @@ def select_winners_and_matchmake(request, tournament_id):
         {'detail': 'Matchmaking carried out successfully.', 'matches': serializer.data, 'round': round_number - 1},
         status=status.HTTP_201_CREATED
     )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_tournament_results(request):
+    tournaments = TournamentUser.objects.filter(user_id=request.user.id)
+    serializer = TournamentResultSerializer(tournaments, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.all()

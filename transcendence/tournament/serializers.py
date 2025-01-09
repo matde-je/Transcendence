@@ -71,3 +71,15 @@ class TournamentMatchSerializer(serializers.ModelSerializer):
             except CustomUser.DoesNotExist:
                 return 'Unknown Winner'
         return None
+    
+class TournamentResultSerializer(serializers.ModelSerializer):
+    tournament_name = serializers.CharField(source='tournament.name')
+    finished_on = serializers.DateTimeField(source='tournament.finished_on')
+    is_winner = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TournamentUser
+        fields = ['tournament_name', 'finished_on', 'is_winner']
+
+    def get_is_winner(self, obj):
+        return obj.tournament.winner_id == obj.user_id
