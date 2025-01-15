@@ -8,11 +8,15 @@ import { getCookie, isPowerOfTwo, nextPowerOfTwo, getRoundName } from './utils.j
 export function showTournamentMenu() {
     const content = document.getElementById('content');
     content.innerHTML = `
-        <h2>Tournament Menu</h2>
-        <button id="createTournamentBtn" class="btn btn-success">Create Tournament</button>
-        <button id="listOpenTournamentsBtn" class="btn btn-primary">List Open Tournaments</button>
+        <div class="container" style="margin-top: 150px;">
+        <h1 class="text-center mb-5">Tournament menu</h1>
+        <div class="d-flex justify-content-center mb-5 button-spacing gap-4 p-3">
+        <button id="createTournamentBtn" class="btn btn-success me-3">Create Tournament</button>
+        <button id="listOpenTournamentsBtn" class="btn btn-primary me-3">List Open Tournaments</button>
         <button id="showResultsBtn" class="btn btn-secondary">Tournament Results</button>
         <div id="tournamentContent"></div>
+        </div>
+        </div>
     `;
 
     document.getElementById('createTournamentBtn').addEventListener('click', (e) => {
@@ -200,14 +204,23 @@ export function showTournamentResults() {
  */
 export function showCreateTournamentForm() {
     const formContent = `
-        <h2>Create Tournament</h2>
-        <form id="createTournamentForm">
-            <div class="form-group">
-                <label for="tournamentName">Tournament Name:</label>
-                <input type="text" id="tournamentName" name="tournamentName" class="form-control" required>
+        <div class="container" style="margin-top: 150px;">
+        <h1 class="text-center mb-5">Create Tournament</h1>
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-6 col-lg-4">
+                <form id="createTournamentForm">
+                    <div class="form-group mb-3">
+                        <label for="tournamentName" class="form-label">Tournament Name:</label>
+                        <input type="text" id="tournamentName" name="tournamentName" class="form-control" placeholder="Enter tournament name" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-secondary">Create Tournament</button>
+                    </div>
+                </form>
             </div>
-            <button type="submit" class="btn btn-primary">Create Tournament</button>
-        </form>
+        </div>
+    </div>
+
     `;
     document.getElementById('content').innerHTML = formContent;
 

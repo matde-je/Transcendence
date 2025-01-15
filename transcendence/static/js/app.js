@@ -94,25 +94,36 @@ function initializeNavbar(authenticated) {
     document.body.appendChild(navBarContainer);
 
     if (authenticated) {
-            fetch('/users/user/', {
-                method: 'GET',
-                credentials: 'include',
-            })
-            .then(response => response.json())
-            .then(data => {
-                const tournamentLink = document.createElement('li');
-				tournamentLink.className = 'nav-item';
-				tournamentLink.innerHTML = '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
-				navLinksLeft.appendChild(tournamentLink);
+        fetch('/users/user/', {
+            method: 'GET',
+            credentials: 'include',
+        })
+        .then(response => response.json())
+        .then(data => {
+            const tournamentLink = document.createElement('li');
+            tournamentLink.className = 'nav-item';
+            tournamentLink.innerHTML = '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
+            navLinksLeft.appendChild(tournamentLink);
+            
+            document.getElementById('tournament').addEventListener('click', (e) => {
+                e.preventDefault();
+                showTournamentMenu();
+                history.pushState({ page: 'tournament' }, 'Tournament', '/tournament');
+            });
 
-				document.getElementById('tournament').addEventListener('click', (e) => {
-				    e.preventDefault();
-				    showTournamentMenu();
-				    history.pushState({ page: 'tournament' }, 'Tournament', '/tournament');
-				});
+            const rpsLink = document.createElement('li');
+            rpsLink.className = 'nav-item';
+            rpsLink.innerHTML = '<a class="nav-link" href="/rock-paper-scissors" data-link>Rock Paper Scissors</a>';
+            navLinksLeft.appendChild(rpsLink);
+            rpsLink.querySelector('a').addEventListener('click', (e) => {
+                e.preventDefault();
+                showRPS();
+                history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
+                console.log("rps log");
+            });
+            
                 const usernameLink = document.createElement('li');
                 usernameLink.className = 'nav-item';
-                //usernameLink.innerHTML = `<a class="nav-link" href="/dashboard" data-link>My User</a>`;
                 usernameLink.innerHTML = `
                         <a class="nav-link" href="/dashboard" data-link>
                             <img src="${data.avatar}" alt="Avatar" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;">
@@ -166,16 +177,6 @@ function initializeNavbar(authenticated) {
             console.log("register log");
         });
     }
-    const rpsLink = document.createElement('li');
-    rpsLink.className = 'nav-item';
-    rpsLink.innerHTML = '<a class="nav-link" href="/rock-paper-scissors" data-link>Rock Paper Scissors</a>';
-    navLinksLeft.appendChild(rpsLink);
-    rpsLink.querySelector('a').addEventListener('click', (e) => {
-        e.preventDefault();
-        showRPS();
-        history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
-        console.log("rps log");
-    });
 }
 
 // Function to check authentication and update navbar
@@ -254,10 +255,12 @@ export function showHome() {
  */
 export function showRPS() {
     const rpsContent = `
-        <h1>Rock - Paper - Scissors</h1>
-        <div class="mode-selection">
-            <button class="btn btn-primary m-2" id="singlePlayerBtn">Single Player</button>
-            <button class="btn btn-secondary m-2" id="multiplayerBtn">Multiplayer</button>
+        <div class="container text-center mt-7" style="margin-top: 150px;">
+            <h1>Rock - Paper - Scissors</h1>
+            <div class="mode-selection mt-4">
+                <button class="btn btn-secondary m-3" id="singlePlayerBtn" style="font-size: 1.2rem;">Single Player</button>
+                <button class="btn btn-secondary m-3" id="multiplayerBtn" style="font-size: 1.2rem;">Multiplayer</button>
+            </div>
         </div>
     `;
     // Insert content into the main content area
@@ -284,7 +287,7 @@ export function showRPS() {
     });
 
     // Update history
-    history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
+    //history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
 }
 
 /**
