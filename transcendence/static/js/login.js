@@ -17,7 +17,6 @@ import { getCookie } from './utils.js';
 export function showLogin() {
 	// Dynamically insert the login form into the element with the ID 'content'
     document.getElementById('content').innerHTML = `
-        <div style="margin-top: 150px;">
         <h2>Login</h2>
         <form id="login-form">
             <div class="form-group">
@@ -28,7 +27,7 @@ export function showLogin() {
                 <label for="password">Password</label>
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
-            <button type="submit" class="btn btn-secondary">Login</button>
+            <button type="submit" class="btn btn-primary">Login</button>
         </form>
     `;
 

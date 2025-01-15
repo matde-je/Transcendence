@@ -15,6 +15,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
 from django.utils import timezone
+from .services.tournament_service import create_tournament_for_user
 
 class UserList(generics.ListAPIView):
     queryset = CustomUser.objects.all()
@@ -156,3 +157,39 @@ def remove_friend(request, user_id):
         from_user=friend, to_user=request.user, accepted=True
     ).delete()
     return Response({'detail': 'Friendship removed.'}, status=status.HTTP_204_NO_CONTENT)
+
+"""
+Create a new tournament for the authenticated user.
+This view handles the creation of a new tournament for the user making the request.
+It requires the user to be authenticated.
+Args:
+	request (Request): The HTTP request object containing the user's information.
+Returns:
+	Response: A Response object containing the result of the tournament creation.
+		- If successful, returns a 201 status with a success message and tournament details.
+		- If there is an error in the creation process, returns a 400 status with an error message.
+		- If an exception occurs, returns a 500 status with an error message and exception details.
+"""
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_tournament(request):
+    try:
+        result = create_tournament_for_user(request.user.id)
+        
+        if 'error' in result:
+            return Response({'detail': result['error']}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'detail': 'Tournament created successfully!', 'tournament': result}, status=status.HTTP_201_CREATED)
+    
+    except Exception as e:
+        return Response({'detail': 'An error occurred while creating the tournament.', 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_by_id(request, id):
+    try:
+        user = CustomUser.objects.get(id=id)
+    except CustomUser.DoesNotExist:
+        return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+    serializer = UserSerializer(user)
+    return Response(serializer.data)

@@ -14,21 +14,23 @@ from .views import (
     logout_user,
     get_user_data,
     update_user_data,
-    register_user
+    register_user,
+    get_user_by_id
 )
 
 router = DefaultRouter()
 router.register(r'friendships', FriendshipViewSet, basename='friendship')
 
 urlpatterns = [
-    path('api/users/', UserList.as_view()),
-    path('api/user/', get_user_data),
-    path('api/user/update/', update_user_data),
-    path('api/friends/', friend_list),
-    path('api/friend_requests/received/', received_requests),
-    path('api/friend_requests/sent/', sent_requests),
-    path('api/friends/<int:user_id>/remove/', remove_friend),
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
+    path('users/', UserList.as_view()),
+    path('user/', get_user_data),
+    path('user/<int:id>/', get_user_by_id, name='get_user_by_id'),
+    path('user/update/', update_user_data),
+    path('friends/', friend_list),
+    path('friend_requests/received/', received_requests),
+    path('friend_requests/sent/', sent_requests),
+    path('friends/<int:user_id>/remove/', remove_friend),
     path('register/', register_user, name='register'),
     path('check-auth/', check_authentication),
     path('login/', login_user),

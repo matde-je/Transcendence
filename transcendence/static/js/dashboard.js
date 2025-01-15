@@ -2,10 +2,8 @@
 
 import { checkAuthentication } from './app.js';
 import { getCookie } from './utils.js';
-import { sendFriendRequest, acceptFriendRequest, removeFriend } from './friendship.js';
+import { sendFriendRequest, acceptFriendRequest, removeFriend, showFriends } from './friendship.js';
 
-// Exporting functions so they can be used in other modules
-export { sendFriendRequest, acceptFriendRequest, removeFriend };
 window.sendFriendRequest = sendFriendRequest;
 window.acceptFriendRequest = acceptFriendRequest;
 window.removeFriend = removeFriend;
@@ -47,10 +45,13 @@ function createList(content, title, items) {
  * Shows user's dashboard.
   */
 export function showDashboard() {
+	// Get CSRF token
+	const csrftoken = getCookie('csrftoken');
+
     const content = document.getElementById('content');
     content.innerHTML = '';
 	// Fetch user data
-    fetch('/users/api/user/', {
+    fetch('/users/user/', {
         method: 'GET',
         credentials: 'include',
     })
@@ -87,20 +88,20 @@ export function showDashboard() {
             showEditUserForm(data);
         });
         Promise.all([ // Uses Promise.all to fetch users, sent friend requests, and friends simultaneously
-            fetch('/users/api/users/', {
+            fetch('/users/users/', {
                 method: 'GET',
                 credentials: 'include',
             }).then(response => response.json()),
-            fetch('/users/api/friend_requests/sent/', {
+            fetch('/users/friend_requests/sent/', {
                 method: 'GET',
                 credentials: 'include',
             }).then(response => response.json()),
 			// Fetch received friend requests
-            fetch('/users/api/friend_requests/received/', {
+            fetch('/users/friend_requests/received/', {
                 method: 'GET',
                 credentials: 'include',
             }).then(response => response.json()),
-            fetch('/users/api/friends/', {
+            fetch('/users/friends/', {
                 method: 'GET',
                 credentials: 'include',
             }).then(response => response.json())
@@ -149,7 +150,7 @@ export function showDashboard() {
         })
         .catch(error => alert('Error fetching users and friend requests:', error));
 		// fetch friends and received friend requests
-        fetch('/users/api/friends/')
+        fetch('/users/friends/')
             .then(response => response.json())
             .then(friends => {
                 const friendItems = friends.map(friend => {
@@ -171,11 +172,11 @@ export function showDashboard() {
                 createList(content, 'Friends', friendItems);
             });
 
-        fetch('/users/api/friend_requests/received/')
+        fetch('/users/friend_requests/received/')
             .then(response => response.json())
             .then(receivedRequests => {
 				// Fetch sent friend requests
-                fetch('/users/api/friend_requests/sent/')
+                fetch('/users/friend_requests/sent/')
                     .then(response => response.json())
                     .then(sentRequests => {
                         const allRequests = [
@@ -219,8 +220,6 @@ export function showDashboard() {
             });
     })
     .catch(error => console.error('Erro:', error));
-	// Get CSRF token
-    const csrftoken = getCookie('csrftoken');
 }
 
 /**
@@ -279,7 +278,7 @@ export function showEditUserForm(userData) {
         }
         const csrfToken = getCookie('csrftoken');
         try {
-            const response = await fetch('/users/api/user/update/', {
+            const response = await fetch('/users/user/update/', {
                 method: 'PUT',
                 headers: {
                     'X-CSRFToken': csrfToken
@@ -305,4 +304,55 @@ export function showEditUserForm(userData) {
         e.preventDefault();
         showDashboard();
     });
+}
+
+export async function showUserTournamentResults() {
+    try {
+        const response = await fetch('/tournament/user/results/', {
+            method: 'GET',
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP! status: ${response.status}`);
+        }
+
+        const tournaments = await response.json();
+        const content = document.getElementById('content');
+        content.innerHTML = '<h2>Tournament Results</h2>';
+
+        if (tournaments.length > 0) {
+            tournaments.forEach(tournament => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <p>${tournament.tournament_name}
+                       ---   Finished on: ${new Date(tournament.finished_on).toLocaleString()}
+                       ---   Winner: ${tournament.is_winner ? 'Yes' : 'No'}</p>
+                `;
+                content.appendChild(div);
+            });
+
+			// Calculate statistics
+            const total = tournaments.length;
+            const wins = tournaments.filter(t => t.is_winner).length;
+            const losses = total - wins;
+            const winPercentage = ((wins / total) * 100).toFixed(2);
+
+			// Show statistics
+            const statsDiv = document.createElement('div');
+            statsDiv.innerHTML = `
+                <h3>Statistics</h3>
+                <p>Total Tournaments: ${total}</p>
+                <p>Total Wins: ${wins}</p>
+                <p>Total Losses: ${losses}</p>
+                <p>Win Percentage: ${winPercentage}%</p>
+            `;
+            content.appendChild(statsDiv);
+        } else {
+            content.innerHTML += '<p>You have not participated in any tournaments.</p>';
+        }
+    } catch (error) {
+        console.error('Error fetching tournament results:', error);
+        alert('Error fetching tournament results.');
+    }
 }

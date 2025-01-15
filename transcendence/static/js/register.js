@@ -14,7 +14,6 @@ import { getCookie } from './utils.js';
 export function showRegister() {
 	// Dynamically insert the registration form into the element with the ID 'content'
     document.getElementById('content').innerHTML = `
-        <div style="margin-top: 150px;">
         <h2>Register</h2>
         <form id="registerForm" enctype="multipart/form-data">
             <div class="form-group">
@@ -41,7 +40,7 @@ export function showRegister() {
                 <label for="avatar">Avatar:</label>
                 <input type="file" id="avatar" name="avatar" class="form-control">
             </div>
-            <button type="submit" class="btn btn-secondary">Register</button>
+            <button type="submit" class="btn btn-primary">Register</button>
         </form>
     `;
 

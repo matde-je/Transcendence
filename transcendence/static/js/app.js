@@ -5,6 +5,7 @@ import { showDashboard, showEditUserForm } from './dashboard.js';
 import { getCookie } from './utils.js';
 import { showSinglePlayer, showMultiplayer } from './rps.js';
 import { playSinglePlayerGame } from './rps-singleplayer.js';
+import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthentication();
@@ -29,6 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'rock-paper-scissors-multiplayer':
                     showMultiplayer();
                     break;
+                case 'create_tournament':
+                    showCreateTournamentForm();
+                    break;
                 default:
                     showHome();
                     break;
@@ -50,6 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showSinglePlayer();
     } else if (path === '/rock-paper-scissors/multiplayer') {
         showMultiplayer();
+    } else if (path === '/tournament/create/') {
+        showCreateTournamentForm();
     } else {
         showHome();
     }
@@ -88,15 +94,36 @@ function initializeNavbar(authenticated) {
     document.body.appendChild(navBarContainer);
 
     if (authenticated) {
-            fetch('/users/api/user/', {
-                method: 'GET',
-                credentials: 'include',
-            })
-            .then(response => response.json())
-            .then(data => {
+        fetch('/users/user/', {
+            method: 'GET',
+            credentials: 'include',
+        })
+        .then(response => response.json())
+        .then(data => {
+            const tournamentLink = document.createElement('li');
+            tournamentLink.className = 'nav-item';
+            tournamentLink.innerHTML = '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
+            navLinksLeft.appendChild(tournamentLink);
+            
+            document.getElementById('tournament').addEventListener('click', (e) => {
+                e.preventDefault();
+                showTournamentMenu();
+                history.pushState({ page: 'tournament' }, 'Tournament', '/tournament');
+            });
+
+            const rpsLink = document.createElement('li');
+            rpsLink.className = 'nav-item';
+            rpsLink.innerHTML = '<a class="nav-link" href="/rock-paper-scissors" data-link>Rock Paper Scissors</a>';
+            navLinksLeft.appendChild(rpsLink);
+            rpsLink.querySelector('a').addEventListener('click', (e) => {
+                e.preventDefault();
+                showRPS();
+                history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
+                console.log("rps log");
+            });
+            
                 const usernameLink = document.createElement('li');
                 usernameLink.className = 'nav-item';
-                //usernameLink.innerHTML = `<a class="nav-link" href="/dashboard" data-link>My User</a>`;
                 usernameLink.innerHTML = `
                         <a class="nav-link" href="/dashboard" data-link>
                             <img src="${data.avatar}" alt="Avatar" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;">
@@ -150,16 +177,6 @@ function initializeNavbar(authenticated) {
             console.log("register log");
         });
     }
-    const rpsLink = document.createElement('li');
-    rpsLink.className = 'nav-item';
-    rpsLink.innerHTML = '<a class="nav-link" href="/rock-paper-scissors" data-link>Rock Paper Scissors</a>';
-    navLinksLeft.appendChild(rpsLink);
-    rpsLink.querySelector('a').addEventListener('click', (e) => {
-        e.preventDefault();
-        showRPS();
-        history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
-        console.log("rps log");
-    });
 }
 
 // Function to check authentication and update navbar
@@ -268,6 +285,9 @@ export function showRPS() {
             '/rock-paper-scissors/multiplayer'
         );
     });
+
+    // Update history
+    //history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
 }
 
 /**
@@ -302,3 +322,6 @@ function logout() {
 
 // Exposed the function to the global object if it is not already
 window.playSinglePlayerGame = playSinglePlayerGame;
+
+// Use a função showMultiplayer
+showMultiplayer();

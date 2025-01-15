@@ -9,7 +9,6 @@ let computerScore = 0;
  * @param {string} playerChoice - The player's choice ('rock', 'paper', 'scissors').
  */
 export function playSinglePlayerGame(playerChoice) {
-    
     const playerDisplay = document.getElementById('playerDisplay');
     const computerDisplay = document.getElementById('computerDisplay');
     const resultDisplay = document.getElementById('resultDisplay');
@@ -21,7 +20,6 @@ export function playSinglePlayerGame(playerChoice) {
         return;
     }
 
-    // Rest of the playGame function...
     playGame(playerChoice, playerDisplay, computerDisplay, resultDisplay, playerScoreDisplay, computerScoreDisplay);
 }
 
@@ -46,40 +44,80 @@ function playGame(playerChoice, playerDisplay, computerDisplay, resultDisplay, p
             case 'scissors':
                 result = computerChoice === 'paper' ? 'You win!' : 'You lose!';
                 break;
-            default:
-                result = 'Invalid choice!';
-                break;
         }
     }
 
-    playerDisplay.textContent = `PLAYER: ${capitalizeFirstLetter(playerChoice)}`;
-    computerDisplay.textContent = `COMPUTER: ${capitalizeFirstLetter(computerChoice)}`;
-    resultDisplay.textContent = result;
+    if (result === 'You win!') {
+        playerScore++;
+    } else if (result === 'You lose!') {
+        computerScore++;
+    }
 
-    resultDisplay.classList.remove('greenText', 'redText');
+    playerDisplay.innerText = `Player: ${playerChoice}`;
+    computerDisplay.innerText = `Computer: ${computerChoice}`;
+    resultDisplay.innerText = result;
+    playerScoreDisplay.innerText = `Player Score: ${playerScore}`;
+    computerScoreDisplay.innerText = `Computer Score: ${computerScore}`;
 
-    switch (result) {
-        case 'You win!':
-            resultDisplay.classList.add('greenText');
-            playerScore++;
-            playerScoreDisplay.textContent = playerScore;
-            break;
-        case 'You lose!':
-            resultDisplay.classList.add('redText');
-            computerScore++;
-            computerScoreDisplay.textContent = computerScore;
-            break;
-        default:
-            // No score update for a tie or invalid choice
-            break;
+    if (playerScore === 3 || computerScore === 3) {
+        const finalResult = playerScore === 3 ? 'You won the game!' : 'You lost the game!';
+        alert(finalResult);
+        resultDisplay.innerText = finalResult;
+        registerMatch(finalResult);
+        resetScores();
     }
 }
 
 /**
- * Capitalizes the first letter of a string.
- * @param {string} string - The string to capitalize.
- * @returns {string} - The capitalized string.
+ * Registers the match result with the backend.
+ * @param {string} result - The result of the match.
  */
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+async function registerMatch(result) {
+    const response = await fetch('/api/register_match/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            result: result.includes('won') ? 'win' : 'lose'
+        })
+    });
+
+    const data = await response.json();
+    if (data.status === 'success') {
+        console.log('Match registered successfully');
+    } else {
+        console.error('Error registering match:', data.error);
+    }
+}
+
+/**
+ * Resets the scores for both players.
+ */
+function resetScores() {
+    playerScore = 0;
+    computerScore = 0;
+    document.getElementById('playerScoreDisplay').innerText = `Player Score: ${playerScore}`;
+    document.getElementById('computerScoreDisplay').innerText = `Computer Score: ${computerScore}`;
+}
+
+/**
+ * Gets the CSRF token from the cookies.
+ * @param {string} name - The name of the cookie.
+ * @returns {string|null} - The value of the cookie.
+ */
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
