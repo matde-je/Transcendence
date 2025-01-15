@@ -22,7 +22,7 @@ function createList(content, title, items) {
     section.className = 'mb-4';
     const heading = document.createElement('h4');
     heading.textContent = title;
-    heading.className = 'mb-4 text-center mt-5 pt-5';
+    heading.className = 'mb-4 text-center mt-4';
     section.appendChild(heading);
     const listGroup = document.createElement('div');
     listGroup.className = 'list-group';
@@ -57,9 +57,10 @@ export function showDashboard() {
     .then(response => response.json())
     .then(data => {
         content.innerHTML = `
-            <div class="card shadow-sm mt-5 pt-5">
-            <div class="card-body">
-            <div class="text-center mb-2 mt-5 pt-5">
+        <div class="container mt-5 mb-5 pt-5">
+            <div class="card shadow-sm">
+            <div class="card-body mt-3">
+            <div class="text-center">
                     <img src="${data.avatar}" alt="Avatar" width="70" class="rounded-circle" style="width: 70px; height: 70px; object-fit: cover;">
                     </div>
                     <ul class="list-group list-group-flush">
@@ -78,6 +79,7 @@ export function showDashboard() {
                     </div>
                 </div>
             </div>
+        </div>
         </div>
     `;
         checkAuthentication();
