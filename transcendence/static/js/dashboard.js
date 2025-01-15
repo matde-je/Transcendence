@@ -88,20 +88,20 @@ export function showDashboard() {
             showEditUserForm(data);
         });
         Promise.all([ // Uses Promise.all to fetch users, sent friend requests, and friends simultaneously
-            fetch('/users/api/users/', {
+            fetch('/users/users/', {
                 method: 'GET',
                 credentials: 'include',
             }).then(response => response.json()),
-            fetch('/users/api/friend_requests/sent/', {
+            fetch('/users/friend_requests/sent/', {
                 method: 'GET',
                 credentials: 'include',
             }).then(response => response.json()),
 			// Fetch received friend requests
-            fetch('/users/api/friend_requests/received/', {
+            fetch('/users/friend_requests/received/', {
                 method: 'GET',
                 credentials: 'include',
             }).then(response => response.json()),
-            fetch('/users/api/friends/', {
+            fetch('/users/friends/', {
                 method: 'GET',
                 credentials: 'include',
             }).then(response => response.json())
@@ -150,7 +150,7 @@ export function showDashboard() {
         })
         .catch(error => alert('Error fetching users and friend requests:', error));
 		// fetch friends and received friend requests
-        fetch('/users/api/friends/')
+        fetch('/users/friends/')
             .then(response => response.json())
             .then(friends => {
                 const friendItems = friends.map(friend => {
@@ -172,11 +172,11 @@ export function showDashboard() {
                 createList(content, 'Friends', friendItems);
             });
 
-        fetch('/users/api/friend_requests/received/')
+        fetch('/users/friend_requests/received/')
             .then(response => response.json())
             .then(receivedRequests => {
 				// Fetch sent friend requests
-                fetch('/users/api/friend_requests/sent/')
+                fetch('/users/friend_requests/sent/')
                     .then(response => response.json())
                     .then(sentRequests => {
                         const allRequests = [

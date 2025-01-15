@@ -94,7 +94,7 @@ function initializeNavbar(authenticated) {
     document.body.appendChild(navBarContainer);
 
     if (authenticated) {
-            fetch('/users/api/user/', {
+            fetch('/users/user/', {
                 method: 'GET',
                 credentials: 'include',
             })

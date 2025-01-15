@@ -46,7 +46,7 @@ create_superuser:
 # Create users
 create_users:
 	@clear
-	docker compose --file docker-compose.yml run backend python manage.py create_users
+	docker-compose --file docker-compose.yml run backend python manage.py create_users
 
 # Enroll all users in all open tournaments
 enroll-users:
