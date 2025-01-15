@@ -221,11 +221,11 @@ export function showHome() {
     document.getElementById('aiScript')?.remove();
     contentElement.innerHTML = `
         <div class="text-center mt-5 pt-5">
-            <h2 class="text-dark fw-bold">Pong Game</h2>
+            <h2 class="text-dark fw-bold mb-5">Pong Game</h2>
         </div>
-        <div class="text-center mt-5"> 
+        <div class="text-center"> 
             <div class="d-flex justify-content-center">
-                <canvas id="game" width="500" height="400" style="background-color: #000;"></canvas>
+                <canvas id="game" width="550" height="400" style="background-color: #000;"></canvas>
             </div>
         </div>
         <div class="text-center mt-4">

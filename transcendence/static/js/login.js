@@ -17,8 +17,8 @@ import { getCookie } from './utils.js';
 export function showLogin() {
 	// Dynamically insert the login form into the element with the ID 'content'
     document.getElementById('content').innerHTML = `
-        <div class="container">
-        <h3 class="text-center mb-5 pt-5">Log in</h3>
+        <div class="container mb-5">
+        <h3 class="text-center mb-5 mt-5 pt-5">Log in</h3>
         <div class="row justify-content-center">
             <div class="col-md-6 col-lg-4">
                 <form id="login-form">
@@ -37,9 +37,7 @@ export function showLogin() {
             </div>
         </div>
     </div>
-
     `;
-
 	// Add event listener for form submission
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
