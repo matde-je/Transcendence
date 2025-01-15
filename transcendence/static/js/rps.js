@@ -8,20 +8,29 @@ import { playMultiplayerGame } from './rps-multiplayer.js';
  */
 export function showSinglePlayer() {
     const singlePlayerContent = `
-        <h1>Single Player - Rock Paper Scissors</h1>
-        <div class='choices'>
-            <button class='btn btn-success' id='rockBtn'>👊 Rock</button>
-            <button class='btn btn-info' id='paperBtn'>✋ Paper</button>
-            <button class='btn btn-danger' id='scissorsBtn'>✌️ Scissors</button>
+    <div class="container" style="margin-top: 150px;">
+        <h1 class="text-center mb-5">Rock - Paper - Scissors</h1>
+        <div class="d-flex justify-content-center mb-4">
+            <button class="btn btn-success mx-3" id="rockBtn" style="font-size: 1.5rem;">👊 Rock</button>
+            <button class="btn btn-info mx-3" id="paperBtn" style="font-size: 1.5rem;">✋ Paper</button>
+            <button class="btn btn-danger mx-3" id="scissorsBtn" style="font-size: 1.5rem;">✌️ Scissors</button>
         </div>
-        <div id='singlePlayerDisplay'>
-            <p id='playerDisplay'>PLAYER:</p>
-            <p id='computerDisplay'>COMPUTER:</p>
-            <p id='resultDisplay'></p>
-            <p>Player Score: <span id='playerScoreDisplay'>0</span></p>
-            <p>Computer Score: <span id='computerScoreDisplay'>0</span></p>
+        <div id="singlePlayerDisplay" class="container text-center mt-5">
+        <h3 class="mb-4">Game Status</h3>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <p id="playerDisplay" class="fs-5 fw-bold mb-2">PLAYER:</p>
+                <p id="playerScoreDisplay" class="fs-4">Score: 0</p>
+            </div>
+            <div class="col-md-6">
+                <p id="computerDisplay" class="fs-5 fw-bold mb-2">COMPUTER:</p>
+                <p id="computerScoreDisplay" class="fs-4">Score: 0</p>
+            </div>
         </div>
-    `;
+        <p id="resultDisplay" class="mb-4 fw-bold" style="font-size: 2rem;" ></p>
+    </div>
+        `;
+
     document.getElementById('content').innerHTML = singlePlayerContent;
 
     // Ensure elements are available before adding event listeners
@@ -47,29 +56,40 @@ export function showSinglePlayer() {
     }
 }
 
-/**
- * Displays the Multiplayer mode interface.
- */
 export function showMultiplayer() {
     const multiplayerContent = `
-        <h1>Multiplayer - Rock Paper Scissors</h1>
-        <div class="choices">
-            <button class="btn btn-success" id="player1RockBtn">👊 PLAYER 1 - Rock (KEY Q)</button>
-            <button class="btn btn-info" id="player1PaperBtn">✋ PLAYER 1 - Paper (KEY W)</button>
-            <button class="btn btn-danger" id="player1ScissorsBtn">✌️ PLAYER 1 - Scissors (KEY E)</button>
+        <div class="container" style="margin-top: 150px;">
+        <h1 class="text-center mb-5">Rock - Paper - Scissors</h1>
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-4 text-center">
+                <h4>Player 1</h4>
+                <button class="btn btn-success mb-2 w-100" id="player1RockBtn">👊 Rock</button>
+                <button class="btn btn-info mb-2 w-100" id="player1PaperBtn">✋ Paper</button>
+                <button class="btn btn-danger mb-2 w-100" id="player1ScissorsBtn">✌️ Scissors</button>
+            </div>
+            <div class="col-md-4 text-center">
+                <h4>Player 2</h4>
+                <button class="btn btn-success mb-2 w-100" id="player2RockBtn">👊 Rock</button>
+                <button class="btn btn-info mb-2 w-100" id="player2PaperBtn">✋ Paper</button>
+                <button class="btn btn-danger mb-2 w-100" id="player2ScissorsBtn">✌️ Scissors</button>
+            </div>
         </div>
-        <div class="choices">
-            <button class="btn btn-success" id="player2RockBtn">👊 PLAYER 2 - Rock (ARROW LEFT)</button>
-            <button class="btn btn-info" id="player2PaperBtn">✋ PLAYER 2 - Paper (ARROW DOWN)</button>
-            <button class="btn btn-danger" id="player2ScissorsBtn">✌️ PLAYER 2 - Scissors (ARROW RIGHT)</button>
+    </div>
+    <div id="multiplayerDisplay" class="container text-center mt-5">
+        <h3 class="mb-4">Game Status</h3>
+        <!-- Display for Player 1 and Player 2 -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <p id="player1Display" class="fs-5 fw-bold mb-2">PLAYER 1:</p>
+                <p id="player1ScoreDisplay" class="fs-4">Score: 0</p>
+            </div>
+            <div class="col-md-6">
+                <p id="player2Display" class="fs-5 fw-bold mb-2">PLAYER 2:</p>
+                <p id="player2ScoreDisplay" class="fs-4">Score: 0</p>
+            </div>
         </div>
-        <div id="multiplayerDisplay">
-            <p id="player1Display">PLAYER 1:</p>
-            <p id="player2Display">PLAYER 2:</p>
-            <p id="resultDisplay"></p>
-            <p>Player 1 Score: <span id="player1ScoreDisplay">0</span></p>
-            <p>Player 2 Score: <span id="player2ScoreDisplay">0</span></p>
-        </div>
+        <p id="resultDisplay" class="mb-4 fw-bold" style="font-size: 2rem"></p> 
+    </div>
     `;
     document.getElementById('content').innerHTML = multiplayerContent;
     // Add event listeners for the choices

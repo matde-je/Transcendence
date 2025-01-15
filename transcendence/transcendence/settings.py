@@ -44,7 +44,7 @@ SECURE_SSL_REDIRECT = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
-
+#channels 
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
@@ -58,7 +58,19 @@ INSTALLED_APPS = [
     'users',
 	'tournament',
 	'rps',
+    'channels'
 ]
+
+ASGI_APPLICATION = 'transcendence.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)], 
+        },
+    },
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -89,8 +101,7 @@ TEMPLATES = [
     },
 ]
 
-# settings.py
-WSGI_APPLICATION = 'transcendence.wsgi.application'
+# WSGI_APPLICATION = 'transcendence.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -186,7 +197,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.CustomUser'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",
     "https://localhost:8000",
 ]
 
@@ -195,7 +205,6 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-     "http://localhost:8000",
      "https://localhost:8000",
 ]
 

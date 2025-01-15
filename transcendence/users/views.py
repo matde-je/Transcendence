@@ -70,10 +70,6 @@ class FriendshipViewSet(viewsets.ModelViewSet):
         friendship.remove_friendship()
         return Response({'detail': 'Friendship removed.'}, status=status.HTTP_204_NO_CONTENT)
 
-@ensure_csrf_cookie
-def index(request):
-    return render(request, 'index.html')
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):

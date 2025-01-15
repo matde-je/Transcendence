@@ -22,12 +22,10 @@ export function playMultiplayerGame(choice, player) {
     const resultDisplay = document.getElementById('resultDisplay');
     const player1ScoreDisplay = document.getElementById('player1ScoreDisplay');
     const player2ScoreDisplay = document.getElementById('player2ScoreDisplay');
-
     if (!player1Display || !player2Display || !resultDisplay || !player1ScoreDisplay || !player2ScoreDisplay) {
         console.error('One or more display elements are missing.');
         return;
     }
-
     // Rest of the playGame function...
     choose(choice, player);
 }
@@ -63,9 +61,7 @@ function playGame() {
         console.error('One or more display elements are missing.');
         return;
     }
-
     let result = '';
-
     if (player1Choice === player2Choice) {
         result = "It's a tie!";
     } else {
@@ -91,9 +87,7 @@ function playGame() {
     player1Display.textContent = `PLAYER 1: ${capitalizeFirstLetter(player1Choice)}`;
     player2Display.textContent = `PLAYER 2: ${capitalizeFirstLetter(player2Choice)}`;
     resultDisplay.textContent = result;
-
     resultDisplay.classList.remove('greenText', 'redText');
-
     switch (result) {
         case 'Player 1 wins!':
             resultDisplay.classList.add('greenText');
