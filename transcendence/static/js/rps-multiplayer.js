@@ -64,6 +64,10 @@ function playGame() {
         return;
     }
     let result = '';
+
+    if (player1Score === 3 || player2Score === 3)
+        resetScores();
+
     if (player1Choice === player2Choice) {
         result = "It's a tie!";
     } else {
@@ -86,30 +90,17 @@ function playGame() {
         player2Score++;
     }
 
-    player1Display.textContent = `Player 1: ${capitalizeFirstLetter(player1Choice)}`;
-    player2Display.textContent = `Player 2: ${capitalizeFirstLetter(player2Choice)}`;
+    player1Display.textContent = `Player 1: ${player1Choice}`;
+    player2Display.textContent = `Player 2: ${player2Choice}`;
     resultDisplay.textContent = result;
-    resultDisplay.classList.remove('greenText', 'redText');
-    switch (result) {
-        case 'Player 1 wins!':
-            resultDisplay.classList.add('greenText');
-            player1ScoreDisplay.textContent = player1Score;
-            break;
-        case 'Player 2 wins!':
-            resultDisplay.classList.add('redText');
-            player2ScoreDisplay.textContent = player2Score;
-            break;
-        default:
-            // No score update for a tie or invalid choice
-            break;
-    }
+    player1ScoreDisplay.innerText = `Score: ${player1Score}`;
+    player2ScoreDisplay.innerText = `Score: ${player2Score}`;
+
 
     if (player1Score === 3 || player2Score === 3) {
         const finalResult = player1Score === 3 ? 'Player 1 won the game!' : 'Player 2 won the game!';
-        alert(finalResult);
         resultDisplay.textContent = finalResult;
         registerMultiplayerMatch(finalResult, player1Score === 3 ? 'Player 2' : 'Player 1');
-        resetScores();
     }
 
     // Reset choices after the round

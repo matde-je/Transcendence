@@ -63,15 +63,15 @@ export function showMultiplayer() {
         <div class="row justify-content-center mb-5">
             <div class="col-md-4 text-center">
                 <h5 class="mb-3 pt-3">Player 1</h5>
-                <button class="btn btn-success mb-2 w-100" id="player1RockBtn">👊 Rock</button>
-                <button class="btn btn-info mb-2 w-100" id="player1PaperBtn">✋ Paper</button>
-                <button class="btn btn-danger mb-2 w-100" id="player1ScissorsBtn">✌️ Scissors</button>
+                <button class="btn btn-success mb-2 w-100" id="player1RockBtn">👊 Rock (Key Q)</button>
+                <button class="btn btn-info mb-2 w-100" id="player1PaperBtn">✋ Paper (Key W)</button>
+                <button class="btn btn-danger mb-2 w-100" id="player1ScissorsBtn">✌️ Scissors (Key E)</button>
             </div>
             <div class="col-md-4 text-center">
                 <h5 class="mb-3 pt-3">Player 2</h5>
-                <button class="btn btn-success mb-2 w-100" id="player2RockBtn">👊 Rock</button>
-                <button class="btn btn-info mb-2 w-100" id="player2PaperBtn">✋ Paper</button>
-                <button class="btn btn-danger mb-2 w-100" id="player2ScissorsBtn">✌️ Scissors</button>
+                <button class="btn btn-success mb-2 w-100" id="player2RockBtn">👊 Rock (Arrow Left)</button>
+                <button class="btn btn-info mb-2 w-100" id="player2PaperBtn">✋ Paper (Arrow Down)</button>
+                <button class="btn btn-danger mb-2 w-100" id="player2ScissorsBtn">✌️ Scissors (Arrow Right)</button>
             </div>
         </div>
     </div>

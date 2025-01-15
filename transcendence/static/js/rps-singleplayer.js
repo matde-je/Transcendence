@@ -33,6 +33,9 @@ function playGame(playerChoice, playerDisplay, computerDisplay, resultDisplay, p
     const computerChoice = choices[Math.floor(Math.random() * choices.length)];
     let result = '';
 
+    if (playerScore === 3 || computerScore === 3)
+        resetScores();
+
     if (playerChoice === computerChoice) {
         result = "It's a tie!";
     } else {
@@ -63,10 +66,8 @@ function playGame(playerChoice, playerDisplay, computerDisplay, resultDisplay, p
 
     if (playerScore === 3 || computerScore === 3) {
         const finalResult = playerScore === 3 ? 'You won the game!' : 'You lost the game!';
-        alert(finalResult);
         resultDisplay.innerText = finalResult;
         registerMatch(finalResult);
-        resetScores();
     }
 }
 
