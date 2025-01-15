@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'create_tournament':
                     showCreateTournamentForm();
                     break;
+                case 'tournament':
+                    showTournamentMenu();
+                    break;
                 default:
                     showHome();
                     break;
@@ -56,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showMultiplayer();
     } else if (path === '/tournament/create/') {
         showCreateTournamentForm();
+    } else if (path === '/tournament') {
+        showTournamentMenu();
     } else {
         showHome();
     }
