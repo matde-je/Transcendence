@@ -28,5 +28,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('tournament/', include('tournament.urls')),
+	path('rps/', include('rps.urls')),
     re_path(r'^(?!admin|users|media/|static/).*$', views.index, name='index'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

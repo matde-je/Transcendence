@@ -1,5 +1,7 @@
 // static/js/rps-multiplayer.js
 
+import { getCookie } from './utils.js';
+
 const choices = ['rock', 'paper', 'scissors'];
 const player1Display = document.getElementById('player1Display');
 const player2Display = document.getElementById('player2Display');
@@ -121,7 +123,7 @@ function playGame() {
  * @param {string} opponent - The opponent of the logged-in player.
  */
 async function registerMultiplayerMatch(result, opponent) {
-    const response = await fetch('/api/register_multiplayer_match/', {
+    const response = await fetch('/rps/register_multiplayer_match/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -158,26 +160,6 @@ function resetScores() {
  */
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-/**
- * Gets the CSRF token from the cookies.
- * @param {string} name - The name of the cookie.
- * @returns {string|null} - The value of the cookie.
- */
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
 }
 
 // Add event listener for key presses

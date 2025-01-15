@@ -1,5 +1,7 @@
 // static/js/rps-singleplayer.js
 
+import { getCookie } from './utils.js';
+
 const choices = ['rock', 'paper', 'scissors'];
 let playerScore = 0;
 let computerScore = 0;
@@ -73,7 +75,7 @@ function playGame(playerChoice, playerDisplay, computerDisplay, resultDisplay, p
  * @param {string} result - The result of the match.
  */
 async function registerMatch(result) {
-    const response = await fetch('/api/register_match/', {
+    const response = await fetch('/rps/register_match/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -100,24 +102,4 @@ function resetScores() {
     computerScore = 0;
     document.getElementById('playerScoreDisplay').innerText = `Player Score: ${playerScore}`;
     document.getElementById('computerScoreDisplay').innerText = `Computer Score: ${computerScore}`;
-}
-
-/**
- * Gets the CSRF token from the cookies.
- * @param {string} name - The name of the cookie.
- * @returns {string|null} - The value of the cookie.
- */
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
 }

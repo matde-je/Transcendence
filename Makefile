@@ -1,22 +1,22 @@
 # Starts and build all containers defined in docker-compose.yml
 run:
 	@clear
-	docker-compose --file docker-compose.yml up --build
+	docker compose --file docker-compose.yml up --build
 
 # Stop all containers defined in docker-compose.yml
 stop:
 	@clear
-	docker-compose --file docker-compose.yml stop
+	docker compose --file docker-compose.yml stop
 
 # Stop and remove all containers and networks defined in docker-compose.yml
 down:
 	@clear
-	docker-compose --file docker-compose.yml down 
+	docker compose --file docker-compose.yml down 
 
 # Stop and remove all containers, network, images and volumes defined in docker-compose.yml
 clean:
 	@clear
-	docker-compose --file docker-compose.yml down --rmi all --volumes --remove-orphans
+	docker compose --file docker-compose.yml down --rmi all --volumes --remove-orphans
 
 # Remove all containers, images and volumes not used
 fclean: clean
@@ -41,12 +41,12 @@ install:
 # Create a superuser in Django
 create_superuser:
 	@clear
-	docker-compose --file docker-compose.yml run backend python manage.py createsuperuser
+	docker compose --file docker-compose.yml run backend python manage.py createsuperuser
 
 # Create users
 create_users:
 	@clear
-	docker-compose --file docker-compose.yml run backend python manage.py create_users
+	docker compose --file docker-compose.yml run backend python manage.py create_users
 
 # Enroll all users in all open tournaments
 enroll-users:
@@ -56,8 +56,8 @@ enroll-users:
 # Migrate the database
 migrate:
 	@clear
-	docker-compose --file docker-compose.yml run backend python manage.py makemigrations
-	docker-compose --file docker-compose.yml run backend python manage.py migrate
+	docker compose --file docker-compose.yml run backend python manage.py makemigrations
+	docker compose --file docker-compose.yml run backend python manage.py migrate
 
 # Display containers details
 info:
@@ -87,7 +87,7 @@ tournament-it:
 # Display containers logs
 logs:
 	@clear
-	docker-compose --file docker-compose.yml logs
+	docker compose --file docker-compose.yml logs
 
 # Generate SSL certificates (only if they don't exist)
 generate-certs:
