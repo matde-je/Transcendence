@@ -20,10 +20,9 @@ window.showDashboard = showDashboard;
 function createList(content, title, items) {
     const section = document.createElement('section');
     section.className = 'mb-4';
-    const heading = document.createElement('h3');
+    const heading = document.createElement('h4');
     heading.textContent = title;
-    heading.className = 'mb-3 text-center';
-    heading.style.marginTop = '20px';
+    heading.className = 'mb-4 text-center mt-5 pt-5';
     section.appendChild(heading);
     const listGroup = document.createElement('div');
     listGroup.className = 'list-group';
@@ -58,11 +57,10 @@ export function showDashboard() {
     .then(response => response.json())
     .then(data => {
         content.innerHTML = `
-            <div style="margin-top: 100px;">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm mt-5 pt-5">
             <div class="card-body">
-            <div class="text-center mb-3">
-                    <img src="${data.avatar}" alt="Avatar" width="100" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+            <div class="text-center mb-2 mt-5 pt-5">
+                    <img src="${data.avatar}" alt="Avatar" width="70" class="rounded-circle" style="width: 70px; height: 70px; object-fit: cover;">
                     </div>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item"><strong>Email:</strong> ${data.email}</li>
@@ -75,8 +73,8 @@ export function showDashboard() {
                             <strong>Last Login:</strong> ${new Date(data.last_login).toLocaleString('pt-PT')}
                         </li>
                     </ul>
-                    <div class="text-center mt-4">
-                        <button id="edit-user" class="btn btn-secondary btn-lg">Edit Profile</button>
+                    <div class="text-center mt-6">
+                        <button id="edit-user" class="btn btn-secondary ">Edit Profile</button>
                     </div>
                 </div>
             </div>
@@ -233,7 +231,7 @@ export function showDashboard() {
  */
 export function showEditUserForm(userData) {
     document.getElementById('content').innerHTML = `
-        <div style="margin-top: 100px;">
+        <div  class= "mt-5 pt-5">
         <h2>Editar Perfil</h2>
         <form id="edit-user-form" enctype="multipart/form-data">
             <div class="form-group">

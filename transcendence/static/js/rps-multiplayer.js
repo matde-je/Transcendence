@@ -86,8 +86,8 @@ function playGame() {
         player2Score++;
     }
 
-    player1Display.textContent = `PLAYER 1: ${capitalizeFirstLetter(player1Choice)}`;
-    player2Display.textContent = `PLAYER 2: ${capitalizeFirstLetter(player2Choice)}`;
+    player1Display.textContent = `Player 1: ${capitalizeFirstLetter(player1Choice)}`;
+    player2Display.textContent = `Player 2: ${capitalizeFirstLetter(player2Choice)}`;
     resultDisplay.textContent = result;
     resultDisplay.classList.remove('greenText', 'redText');
     switch (result) {

@@ -8,26 +8,26 @@ import { playMultiplayerGame } from './rps-multiplayer.js';
  */
 export function showSinglePlayer() {
     const singlePlayerContent = `
-    <div class="container" style="margin-top: 150px;">
-        <h1 class="text-center mb-5">Rock - Paper - Scissors</h1>
-        <div class="d-flex justify-content-center mb-4">
-            <button class="btn btn-success mx-3" id="rockBtn" style="font-size: 1.5rem;">👊 Rock</button>
-            <button class="btn btn-info mx-3" id="paperBtn" style="font-size: 1.5rem;">✋ Paper</button>
-            <button class="btn btn-danger mx-3" id="scissorsBtn" style="font-size: 1.5rem;">✌️ Scissors</button>
+    <div class="container mb-5 mt-5 pt-5">
+        <h2 class="text-center mb-4 mt-5 pt-5 ">Rock - Paper - Scissors</h2>
+        <div class="d-flex justify-content-center mb-4 mt-4 pt-3">
+            <button class="btn btn-success mx-2" id="rockBtn">👊 Rock</button>
+            <button class="btn btn-info mx-2" id="paperBtn">✋ Paper</button>
+            <button class="btn btn-danger mx-2" id="scissorsBtn" >✌️ Scissors</button>
         </div>
         <div id="singlePlayerDisplay" class="container text-center mt-5">
-        <h3 class="mb-4">Game Status</h3>
+        <h5 class="mb-4 mt-4 pt-2">Game Status</h5>
         <div class="row mb-3">
             <div class="col-md-6">
-                <p id="playerDisplay" class="fs-5 fw-bold mb-2">PLAYER:</p>
-                <p id="playerScoreDisplay" class="fs-4">Score: 0</p>
+                <p id="playerDisplay" class="fs-6 fw-bold mb-2">Player:</p>
+                <p id="playerScoreDisplay" class="fs-6 mb-2">Score: 0</p>
             </div>
             <div class="col-md-6">
-                <p id="computerDisplay" class="fs-5 fw-bold mb-2">COMPUTER:</p>
-                <p id="computerScoreDisplay" class="fs-4">Score: 0</p>
+                <p id="computerDisplay" class="fs-6 fw-bold mb-2">Computer:</p>
+                <p id="computerScoreDisplay" class="fs-6 mb-2">Score: 0</p>
             </div>
         </div>
-        <p id="resultDisplay" class="mb-4 fw-bold" style="font-size: 2rem;" ></p>
+        <p id="resultDisplay" class="mb-4 fw-bold" ></p>
     </div>
         `;
 
@@ -58,17 +58,17 @@ export function showSinglePlayer() {
 
 export function showMultiplayer() {
     const multiplayerContent = `
-        <div class="container" style="margin-top: 150px;">
-        <h1 class="text-center mb-5">Rock - Paper - Scissors</h1>
-        <div class="row justify-content-center mb-4">
+        <div class="container mb-5" >
+        <h3 class="text-center mb-5 mt-5 pt-5">Rock - Paper - Scissors</h3>
+        <div class="row justify-content-center mb-5">
             <div class="col-md-4 text-center">
-                <h4>Player 1</h4>
+                <h5 class="mb-3 pt-3">Player 1</h5>
                 <button class="btn btn-success mb-2 w-100" id="player1RockBtn">👊 Rock</button>
                 <button class="btn btn-info mb-2 w-100" id="player1PaperBtn">✋ Paper</button>
                 <button class="btn btn-danger mb-2 w-100" id="player1ScissorsBtn">✌️ Scissors</button>
             </div>
             <div class="col-md-4 text-center">
-                <h4>Player 2</h4>
+                <h5 class="mb-3 pt-3">Player 2</h5>
                 <button class="btn btn-success mb-2 w-100" id="player2RockBtn">👊 Rock</button>
                 <button class="btn btn-info mb-2 w-100" id="player2PaperBtn">✋ Paper</button>
                 <button class="btn btn-danger mb-2 w-100" id="player2ScissorsBtn">✌️ Scissors</button>
@@ -76,19 +76,18 @@ export function showMultiplayer() {
         </div>
     </div>
     <div id="multiplayerDisplay" class="container text-center mt-5">
-        <h3 class="mb-4">Game Status</h3>
-        <!-- Display for Player 1 and Player 2 -->
-        <div class="row mb-3">
+        <h5 class="mb-4">Game Status</h5>
+        <div class="row mb-5">
             <div class="col-md-6">
-                <p id="player1Display" class="fs-5 fw-bold mb-2">PLAYER 1:</p>
-                <p id="player1ScoreDisplay" class="fs-4">Score: 0</p>
+                <p id="player1Display" class="fs-6 fw-bold mb-2">Player 1:</p>
+                <p id="player1ScoreDisplay" class="fs-6">Score: 0</p>
             </div>
             <div class="col-md-6">
-                <p id="player2Display" class="fs-5 fw-bold mb-2">PLAYER 2:</p>
-                <p id="player2ScoreDisplay" class="fs-4">Score: 0</p>
+                <p id="player2Display" class="fs-6 fw-bold mb-2">Player 2:</p>
+                <p id="player2ScoreDisplay" class="fs-6">Score: 0</p>
             </div>
         </div>
-        <p id="resultDisplay" class="mb-4 fw-bold" style="font-size: 2rem"></p> 
+        <p id="resultDisplay" class="mb-3 fw-bold fs-5"></p> 
     </div>
     `;
     document.getElementById('content').innerHTML = multiplayerContent;

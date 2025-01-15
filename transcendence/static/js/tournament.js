@@ -8,14 +8,14 @@ import { getCookie, isPowerOfTwo, nextPowerOfTwo, getRoundName } from './utils.j
 export function showTournamentMenu() {
     const content = document.getElementById('content');
     content.innerHTML = `
-        <div class="container" style="margin-top: 150px;">
-        <h1 class="text-center mb-5">Tournament menu</h1>
-        <div class="d-flex justify-content-center mb-5 button-spacing gap-4 p-3">
-        <button id="createTournamentBtn" class="btn btn-success me-3">Create Tournament</button>
-        <button id="listOpenTournamentsBtn" class="btn btn-primary me-3">List Open Tournaments</button>
-        <button id="showResultsBtn" class="btn btn-secondary">Tournament Results</button>
-        <div id="tournamentContent"></div>
-        </div>
+        <div class="container-fluid d-flex flex-column pt-5 mb-5 mt-5 ">
+            <h2 class="text-center mb-5 mt-5 pt-5">Tournament menu</h2>
+            <div class="d-flex justify-content-center mb-5 gap-4 p-3">
+                <button id="createTournamentBtn" class="btn btn-success me-3">Create Tournament</button>
+                <button id="listOpenTournamentsBtn" class="btn btn-primary me-3">List Open Tournaments</button>
+                <button id="showResultsBtn" class="btn btn-secondary">Tournament Results</button>
+            </div>
+            <div id="tournamentContent"></div>
         </div>
     `;
 
@@ -204,8 +204,8 @@ export function showTournamentResults() {
  */
 export function showCreateTournamentForm() {
     const formContent = `
-        <div class="container" style="margin-top: 150px;">
-        <h1 class="text-center mb-5">Create Tournament</h1>
+        <div class="container" >
+        <h1 class="text-center mb-5 mt-5 pt-5">Create Tournament</h1>
         <div class="row justify-content-center mb-4">
             <div class="col-md-6 col-lg-4">
                 <form id="createTournamentForm">
