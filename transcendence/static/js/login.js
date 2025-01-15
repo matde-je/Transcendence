@@ -17,18 +17,27 @@ import { getCookie } from './utils.js';
 export function showLogin() {
 	// Dynamically insert the login form into the element with the ID 'content'
     document.getElementById('content').innerHTML = `
-        <h2>Login</h2>
-        <form id="login-form">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+        <div class="container">
+        <h3 class="text-center mb-5 pt-5">Log in</h3>
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <form id="login-form">
+                    <div class="form-group mb-3">
+                        <label for="username" class="form-label">Username:</label>
+                        <input type="text" class="form-control" id="username" name="username" required placeholder="Enter your username">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="password" class="form-label">Password:</label>
+                        <input type="password" class="form-control" id="password" name="password" required placeholder="Enter your password">
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-secondary">Login</button>
+                    </div>
+                </form>
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Login</button>
-        </form>
+        </div>
+    </div>
+
     `;
 
 	// Add event listener for form submission
