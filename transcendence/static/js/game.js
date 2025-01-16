@@ -1,3 +1,5 @@
+import { getCookie, checkAuthentication } from './utils.js';
+
 "use strict"
 
 let canvas;
@@ -344,7 +346,7 @@ function loop() {
             if (score1 === 10)
                 x = canvas.width / 4;
             else
-			x = (canvas.width / 2) + (canvas.width / 4);
+				x = (canvas.width / 2) + (canvas.width / 4);
 			context.font = '50px \'Courier New\', Courier, monospace';
             context.textAlign = 'center';
             context.fillStyle = 'white';
@@ -355,6 +357,62 @@ function loop() {
             window.cancelAnimationFrame(ani);
         }
     }
-    if (!gameOver && score1 < 10 && score2 < 10 && init === 1) 
-		ani = window.requestAnimationFrame(loop);
+    if (!gameOver && score1 < 10 && score2 < 10 && init === 1) {
+        ani = window.requestAnimationFrame(loop);
+    } else if (gameOver) {
+        let finalResult;
+        let opponentType;
+
+	    // Determines the opponent type based on the game mode
+	    if (ai === 1 && multiplayer === 0) {
+	        opponentType = 'AI';
+	    } else if (ai === 0 && multiplayer === 0) {
+	        opponentType = 'HUMAN';
+	    } else if (ai === 0 && multiplayer === 1) {
+	        opponentType = 'HUMAN PAIR';
+	    }
+
+	    // Determines the result based on the score
+	    if (score1 === 10) {
+	        finalResult = 'win';
+	    } else {
+	        finalResult = 'lose';
+	    }
+
+		alert(`PFV - Register score! You ${finalResult}!`);
+
+	    // Register the result in the backend
+	    registerMatchResult(opponentType, finalResult);
+
+    }
+}
+
+/**
+ * Send game results to the backend.
+ * 
+ * @param {string} opponent - Opponent type ("AI", "HUMAN" or "HUMAN PAIR").
+ * @param {string} result - Game result ("win" or "lose").
+ */
+function registerMatchResult(opponent, result) {
+
+    const csrftoken = getCookie('csrftoken'); 
+
+    fetch('/pong/register_pong_history/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+        },
+        body: JSON.stringify({
+            opponent: opponent,
+            result: result,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Result successfully recorded:', data);
+    })
+    .catch((error) => {
+        console.error('Error registering result:', error);
+    });
 }

@@ -7,9 +7,6 @@ from django.views.decorators.http import require_POST
 from rps.models import MatchHistory
 import json
 
-def index(request):
-    return render(request, 'index.html')
-
 @login_required
 @require_POST
 def register_match(request):

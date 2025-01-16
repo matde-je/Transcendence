@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'users',
 	'tournament',
 	'rps',
+	'pong_history',
     'channels'
 ]
 
@@ -132,6 +133,15 @@ DATABASES = {
     'rps': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.getenv('RPS_DB_NAME'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
+        },
+	# pong database configuration
+    'pong': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.getenv('PONG_DB_NAME'),
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         'HOST': os.getenv('DB_HOST'),

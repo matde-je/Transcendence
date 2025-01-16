@@ -264,7 +264,12 @@ def select_winners_and_matchmake(request, tournament_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_tournament_results(request):
-    tournaments = TournamentUser.objects.filter(user_id=request.user.id)
+    # Filtro correto utilizando user_id
+    tournaments = TournamentUser.objects.filter(
+        user_id=request.user.id,
+        tournament__is_started=True,
+        tournament__is_finished=True
+    )
     serializer = TournamentResultSerializer(tournaments, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 

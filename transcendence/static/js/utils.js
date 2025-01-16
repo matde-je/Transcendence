@@ -1,5 +1,7 @@
 // static/js/utils.js
 
+import { initializeNavbar } from './app.js';
+
 /**
  * Retrieves the value of a specified cookie by name.
  *
@@ -20,6 +22,30 @@ export function getCookie(name) {
         }
     }
     return cookieValue;
+}
+
+// Function to check authentication and update navbar
+export function checkAuthentication() {
+    fetch('/users/check-auth/', {
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        credentials: 'include',
+    })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            initializeNavbar(data.is_authenticated || '');
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert(`Error: ${error.message}`);
+        });
 }
 
 /**
