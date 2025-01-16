@@ -18,7 +18,7 @@ let multiplayer = 0;
 export function initializeGame() {
     canvas = document.getElementById("game"); // Get canvas and context after DOM is loaded
     context = canvas.getContext("2d");
-    canvas.width = 650;
+    canvas.width = 550;
     canvas.height = 400;
 	window.canvas = canvas;
     window.context = context;
@@ -57,7 +57,7 @@ const player1 = new Element ( {
 });
 
 window.player2 = new Element ( {
-	x: 625,
+	x: 530,
     y: 170, // Center vertically
 	width: 12,
 	height: 60,
@@ -75,8 +75,8 @@ const player3 = new Element({
 });
 
 const player4 = new Element({
-	x: 625,
-	y: 70,
+	x: 525,
+	y: 130,
 	width: 12,
 	height: 60,
 	color: "#fff",
@@ -84,7 +84,7 @@ const player4 = new Element({
 });
 
 window.ball = new Element ( {
-	x: 325,
+	x: 175,
 	y: 200,
 	width: 12,
 	height: 12,
@@ -99,7 +99,7 @@ function reset_game() {
 	score2 = 0;
 	player1.x = 10;
 	player1.y = 170;
-	player2.x = 625;
+	player2.x = 525;
 	player2.y = 170;
 	ball.x = canvas.width / 2 - ball.width / 2;
 	ball.y = canvas.height / 2 - ball.height / 2;
@@ -156,7 +156,7 @@ window.addEventListener("keydown", (e) => {
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("Paused, press P to continue", canvas.width / 4 + 10, 350);
+			context.fillText("Paused, press P to continue", canvas.width / 4 + 50, 355);
 		}
 		keys['p'] = false;
 	}

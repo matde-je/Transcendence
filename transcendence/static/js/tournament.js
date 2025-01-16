@@ -8,14 +8,14 @@ import { getCookie, isPowerOfTwo, nextPowerOfTwo, getRoundName } from './utils.j
 export function showTournamentMenu() {
     const content = document.getElementById('content');
     content.innerHTML = `
-        <div class="container" style="margin-top: 150px;">
-        <h1 class="text-center mb-5">Tournament menu</h1>
-        <div class="d-flex justify-content-center mb-5 button-spacing gap-4 p-3">
-        <button id="createTournamentBtn" class="btn btn-success me-3">Create Tournament</button>
-        <button id="listOpenTournamentsBtn" class="btn btn-primary me-3">List Open Tournaments</button>
-        <button id="showResultsBtn" class="btn btn-secondary">Tournament Results</button>
-        <div id="tournamentContent"></div>
-        </div>
+        <div class="container-fluid d-flex flex-column pt-5 mb-5 mt-5 ">
+            <h2 class="text-center mb-3 mt-5 pt-5">Tournament menu</h2>
+            <div class="d-flex justify-content-center mb-5 gap-4 p-3">
+                <button id="createTournamentBtn" class="btn btn-success me-3">Create Tournament</button>
+                <button id="listOpenTournamentsBtn" class="btn btn-primary">List Open Tournaments</button>
+                <button id="showResultsBtn" class="btn btn-secondary">Tournament Results</button>
+            </div>
+            <div id="tournamentContent"></div>
         </div>
     `;
 
@@ -58,7 +58,7 @@ export async function listOpenTournaments() {
         const currentUserId = currentUser.id;
 
         const tournamentContent = document.getElementById('tournamentContent');
-        tournamentContent.innerHTML = '<h3>Open Tournaments</h3>';
+        tournamentContent.innerHTML = '<h3 class="mb-2 text-center">Open Tournaments</h3>';
 
         if (tournaments.length > 0) {
             const list = document.createElement('ul');
@@ -77,28 +77,47 @@ export async function listOpenTournaments() {
                     let startTournamentButton = '';
 
                     if (isEnrolled) {
-                        actionButton = `<button onclick="removeUserFromTournament(${tournament.id})" class="btn btn-danger btn-sm">Quit Tournament</button>`;
-                    } 
+                        actionButton = `<div class="d-flex justify-content-center">
+                                            <button onclick="removeUserFromTournament(${tournament.id})" class="btn btn-danger btn-sm">Quit Tournament</button>
+                                        </div>`;
+                                        } 
 					if (!isEnrolled && !tournament.is_started) {
-                        actionButton = `<button onclick="addUserToTournament(${tournament.id})" class="btn btn-primary btn-sm">Participate</button>`;
+                        actionButton = `
+                        <div class="d-flex justify-content-center">
+                            <button onclick="addUserToTournament(${tournament.id})" class="btn btn-primary btn-sm">Participate</button>
+                        </div>`;
                     }
 
 					if (isCreator && !tournament.is_started) {
-						deleteTournamentButton = `<button onclick="deleteTournament(${tournament.id})" class="btn btn-danger btn-sm">Delete Tournament</button>`;
+						deleteTournamentButton = `
+                        <div class="d-flex justify-content-center">
+                            <button onclick="deleteTournament(${tournament.id})" class="btn btn-danger btn-sm">Delete Tournament</button>
+                        </div>`;
 					}
 
                     if (isEnrolled && !tournament.is_started) {
-                        startTournamentButton = `<button onclick="startTournament(${tournament.id})" class="btn btn-success btn-sm">Start Tournament</button>`;
+                        startTournamentButton = `
+                        <div class="d-flex justify-content-center">
+                            <button onclick="startTournament(${tournament.id})" class="btn btn-success btn-sm">Start Tournament</button>
+                        </div>`;
                     }
                     
                     const listItem = document.createElement('li');
-                    listItem.innerHTML = `
-                        <strong>${tournament.name}</strong> - Created by ${tournament.creator_username} - ${deleteTournamentButton}
-                        <br>
-                        Participants: ${participants.map(p => p.username).join(', ')}
-                        <br>
-                        ${actionButton} - ${startTournamentButton}
-                    `;
+                    listItem.className = 'list-group-item py-4';
+                    listItem.innerHTML = ` 
+                     <div>
+                        <div class="text-center mb-2">
+                            <strong>${tournament.name}</strong> - Created by <em>${tournament.creator_username}</em>
+                        </div>
+                        <div class="text-center mb-2">
+                            Participants: <span class="fw-bold">${participants.map(p => p.username).join(', ') || 'None'}</span>
+                        </div>
+                        <div class="d-flex flex-column gap-3 align-items-center">
+                            ${deleteTournamentButton || ''}
+                            ${actionButton || ''}
+                            ${startTournamentButton || ''}
+                        </div>
+                    </div>`;
                     list.appendChild(listItem);
                 })
                 .catch(error => {
@@ -107,7 +126,7 @@ export async function listOpenTournaments() {
             });
             tournamentContent.appendChild(list);
         } else {
-            tournamentContent.innerHTML += '<p>No tournaments open at the moment.</p>';
+            tournamentContent.innerHTML += '<p class="text-center mb-3 mt-3">No tournaments open at the moment.</p>';
         }
     } catch (error) {
         console.error('Error listing tournaments:', error);
@@ -180,7 +199,7 @@ export function showTournamentResults() {
     .then(response => response.json())
     .then(data => {
         const tournamentContent = document.getElementById('tournamentContent');
-        tournamentContent.innerHTML = '<h3>Tournament Results</h3>';
+        tournamentContent.innerHTML = '<h3 class="text-center mb-3">Tournament Results</h3>';
         if (data.length > 0) {
             const list = document.createElement('ul');
             data.forEach(tournament => {
@@ -190,7 +209,7 @@ export function showTournamentResults() {
             });
             tournamentContent.appendChild(list);
         } else {
-            tournamentContent.innerHTML += '<p>No results available.</p>';
+            tournamentContent.innerHTML += '<p class="text-center mb-3">No results available.</p>';
         }
     })
     .catch(error => {
@@ -204,8 +223,8 @@ export function showTournamentResults() {
  */
 export function showCreateTournamentForm() {
     const formContent = `
-        <div class="container" style="margin-top: 150px;">
-        <h1 class="text-center mb-5">Create Tournament</h1>
+        <div class="container" >
+        <h1 class="text-center mb-5 mt-5 pt-5">Create Tournament</h1>
         <div class="row justify-content-center mb-4">
             <div class="col-md-6 col-lg-4">
                 <form id="createTournamentForm">
@@ -218,9 +237,8 @@ export function showCreateTournamentForm() {
                     </div>
                 </form>
             </div>
-        </div>
+        </div> 
     </div>
-
     `;
     document.getElementById('content').innerHTML = formContent;
 
@@ -397,15 +415,23 @@ export async function startMatchmaking(tournamentId)
 
 		// Shows the round and the names of the participants
 		content.innerHTML = `
-			<h2>Tournament Match Making</h2>
-			<p>Round: ${getRoundName(numberOfRounds)}</p>
-			<p>
-				<ul>
-					${matches.map((match, index) => `<li>Match: ${index + 1}<br>${match.player1_username} vs ${match.player2_username}</li><br>`).join('')}
+        <div class="text-center mb-5 mt-5 pt-5">
+			<h2 class="mb-4">Tournament Match Making</h2>
+			<p class="mb-3">Round: <strong>${getRoundName(numberOfRounds)}</strong></p>
+            <div class="matches-list">
+                <ul class="list-group">
+                    ${matches.map((match, index) => `
+                        <li class="list-group-item">
+                            <strong>Match ${index + 1}:</strong><br>
+                            ${match.player1_username} vs ${match.player2_username}
+                        </li>
+                    `).join('')}
 				</ul>
 			</p>
+            <div class="mb-5 mt-3 pt-2">
 			<button id="start-matches" class="btn btn-primary">Start Matches</button>
-		`;
+		</div>
+        </div>`;
 
 		document.getElementById('start-matches').addEventListener('click', async (e) => {
 			e.preventDefault();
@@ -500,8 +526,8 @@ async function executeMatches(matches, tournamentId, currentRound) {
 		.then(data => {
 			console.log('Tournament updated successfully:', data);
 			content.innerHTML = `
-				<h1>Welcome to Pong Tournament</h1>
-				<p>The tournament has concluded. Thank you for playing!</p>
+				<h3 class="text-center mb-3 mt-5 pt-5">Welcome to Pong Tournament</h3>
+				<p class="text-center">The tournament has concluded. Thank you for playing!</p>
 			`;
 			})
 		.catch(error => {

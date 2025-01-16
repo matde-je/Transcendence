@@ -10,6 +10,37 @@ window.removeFriend = removeFriend;
 window.showDashboard = showDashboard;
 
 /**
+ * Creates a list section with a title and items, and appends it to the given content element.
+ *
+ * @param {HTMLElement} content - The parent element to which the list section will be appended.
+ * @param {string} title - The title of the list section.
+ * @param {string[]} items - An array of strings representing the items to be included in the list section.
+ */
+
+function createList(content, title, items) {
+    const section = document.createElement('section');
+    section.className = 'mb-4';
+    const heading = document.createElement('h4');
+    heading.textContent = title;
+    heading.className = 'mb-4 text-center mt-4';
+    section.appendChild(heading);
+    const listGroup = document.createElement('div');
+    listGroup.className = 'list-group';
+    if (items.length > 0) {
+        items.forEach(item => {
+            listGroup.appendChild(item);
+        });
+    } else {
+        const emptyItem = document.createElement('div');
+        emptyItem.className = 'list-group-item text-muted text-center';
+        emptyItem.textContent = 'No users found.';
+        listGroup.appendChild(emptyItem);
+    }
+    section.appendChild(listGroup);
+    content.appendChild(section);
+}
+
+/**
  * Shows user's dashboard.
  */
 export function showDashboard() {
@@ -27,23 +58,31 @@ export function showDashboard() {
     .then(response => response.json())
     .then(data => {
         content.innerHTML = `
-            <h2>Dashboard</h2>
-            <p>Avatar: <img src="${data.avatar}" alt="Avatar" width="100"></p>
-            <p>ID: ${data.id}</p>
-            <p>Email: ${data.email}</p>
-            <p>Username: ${data.username}</p>
-            <p>Nickname: ${data.nickname}</p>
-            <p>Nome: ${data.first_name} ${data.last_name}</p>
-            <p>Registration date: ${new Date(data.date_joined).toLocaleString('pt-PT')}</p>
-            <p>Last login: ${new Date(data.last_login).toLocaleString('pt-PT')}</p>
-            <button id="edit-user" class="btn btn-primary">Edit Profile</button>
-            <hr>
-			<button id="show-friends" class="btn btn-primary">Show Friends</button>
-            <hr>
-			<button id="show-tournaments" class="btn btn-primary">Show Tournaments Results</button>
-			<hr>
-			`;
-
+        <div class="container mt-5 mb-5 pt-5">
+            <div class="card shadow-sm">
+            <div class="card-body mt-3">
+            <div class="text-center">
+                    <img src="${data.avatar}" alt="Avatar" width="70" class="rounded-circle" style="width: 70px; height: 70px; object-fit: cover;">
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Email:</strong> ${data.email}</li>
+                        <li class="list-group-item"><strong>Username:</strong> ${data.username}</li>
+                        <li class="list-group-item"><strong>Nickname:</strong> ${data.nickname}</li>
+                        <li class="list-group-item">
+                            <strong>Registration Date:</strong> ${new Date(data.date_joined).toLocaleString('pt-PT')}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Last Login:</strong> ${new Date(data.last_login).toLocaleString('pt-PT')}
+                        </li>
+                    </ul>
+                    <div class="text-center mt-6">
+                        <button id="edit-user" class="btn btn-secondary ">Edit Profile</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    `;
         checkAuthentication();
 
         document.getElementById('edit-user').addEventListener('click', (e) => {
@@ -75,6 +114,7 @@ export function showDashboard() {
  */
 export function showEditUserForm(userData) {
     document.getElementById('content').innerHTML = `
+        <div  class= "mt-5 pt-5">
         <h2>Editar Perfil</h2>
         <form id="edit-user-form" enctype="multipart/form-data">
             <div class="form-group">

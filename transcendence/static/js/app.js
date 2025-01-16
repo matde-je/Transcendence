@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'create_tournament':
                     showCreateTournamentForm();
                     break;
+                case 'tournament':
+                    showTournamentMenu();
+                    break;
                 default:
                     showHome();
                     break;
@@ -56,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showMultiplayer();
     } else if (path === '/tournament/create/') {
         showCreateTournamentForm();
+    } else if (path === '/tournament') {
+        showTournamentMenu();
     } else {
         showHome();
     }
@@ -66,7 +71,7 @@ export function initializeNavbar(authenticated) {
     let navBarContainer = document.getElementById('navbar');
     navBarContainer = document.createElement('nav'); //navigation
     navBarContainer.id = 'navbar';
-    navBarContainer.className = 'navbar navbar-expand-lg navbar-light bg-light fixed-top';
+    navBarContainer.className = 'navbar navbar-expand-lg navbar-light bg-light fixed-top mb-5';
     const container = document.createElement('div'); //group
     container.className = 'container-fluid';
     const navbarBrand = document.createElement('a'); //hyperlink
@@ -121,7 +126,7 @@ export function initializeNavbar(authenticated) {
                 history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
                 console.log("rps log");
             });
-            
+
                 const usernameLink = document.createElement('li');
                 usernameLink.className = 'nav-item';
                 usernameLink.innerHTML = `
@@ -157,12 +162,12 @@ export function initializeNavbar(authenticated) {
         const loginLink = document.createElement('li'); //list 
         loginLink.className = 'nav-item';
         loginLink.innerHTML = '<a class="nav-link" href="/login" data-link>Login</a>';
-        navLinksLeft.appendChild(loginLink);
+        navLinksRight.appendChild(loginLink);
 
         const registerLink = document.createElement('li');
         registerLink.className = 'nav-item';
         registerLink.innerHTML = '<a class="nav-link" href="/register" data-link>Register</a>';
-        navLinksLeft.appendChild(registerLink);
+        navLinksRight.appendChild(registerLink);
 
         loginLink.querySelector('a').addEventListener('click', (e) => {
             e.preventDefault();
@@ -196,17 +201,17 @@ export function showHome() {
     document.getElementById('gameScript')?.remove();
     document.getElementById('aiScript')?.remove();
     contentElement.innerHTML = `
-        <div class="text-center" style="margin-top: 100px;">
-            <h1 class="display-5 text-dark fw-bold">Pong Game</h1>
+        <div class="text-center mt-5 pt-5">
+            <h2 class="text-dark fw-bold mb-5">Pong Game</h2>
         </div>
-        <div class="text-center mt-5"> 
+        <div class="text-center"> 
             <div class="d-flex justify-content-center">
-                <canvas id="game" width="650" height="400" style="background-color: #000;"></canvas>
+                <canvas id="game" width="550" height="400" style="background-color: #000;"></canvas>
             </div>
         </div>
-        <div class="text-center mt-5">
-            <p class="fs-4 fw-bold text-dark">To unlock new features and games,</p>
-            <p class="fs-5 text-dark fst-italic">Register your User and Login!</p>
+        <div class="text-center mt-4">
+            <p class="fs-6 fw-bold text-dark">To unlock new features and games,</p>
+            <p class="fs-6 text-dark">Register your User and Login!</p>
         </div>
         `;
         const gameScript = document.createElement('script');
@@ -231,11 +236,11 @@ export function showHome() {
  */
 export function showRPS() {
     const rpsContent = `
-        <div class="container text-center mt-7" style="margin-top: 150px;">
-            <h1>Rock - Paper - Scissors</h1>
-            <div class="mode-selection mt-4">
-                <button class="btn btn-secondary m-3" id="singlePlayerBtn" style="font-size: 1.2rem;">Single Player</button>
-                <button class="btn btn-secondary m-3" id="multiplayerBtn" style="font-size: 1.2rem;">Multiplayer</button>
+        <div class="container-fluid d-flex flex-column pt-5 mb-5 mt-5 ">
+            <h2 class="text-center mb-3 mt-5 pt-5"> Rock - Paper - Scissors</h2>
+            <div class="d-flex justify-content-center mb-3 gap-4 p-3">
+                <button class="btn btn-secondary m-3" id="singlePlayerBtn" >Single Player</button>
+                <button class="btn btn-secondary m-3" id="multiplayerBtn" >Multiplayer</button>
             </div>
         </div>
     `;
@@ -261,8 +266,6 @@ export function showRPS() {
             '/rock-paper-scissors/multiplayer'
         );
     });
-
-    // Update history
     //history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
 }
 
