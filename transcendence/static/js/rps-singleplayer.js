@@ -1,6 +1,6 @@
 // static/js/rps-singleplayer.js
 
-import { getCookie } from './utils.js';
+import { getCookie, capitalizeFirstLetter } from './utils.js';
 
 const choices = ['rock', 'paper', 'scissors'];
 let playerScore = 0;
@@ -58,11 +58,11 @@ function playGame(playerChoice, playerDisplay, computerDisplay, resultDisplay, p
         computerScore++;
     }
 
-    playerDisplay.innerText = `Player: ${playerChoice}`;
-    computerDisplay.innerText = `Computer: ${computerChoice}`;
-    resultDisplay.innerText = result;
-    playerScoreDisplay.innerText = `Player Score: ${playerScore}`;
-    computerScoreDisplay.innerText = `Computer Score: ${computerScore}`;
+    playerDisplay.textContent = `Player: ${capitalizeFirstLetter(playerChoice)}`;
+    computerDisplay.textContent = `Computer: ${capitalizeFirstLetter(computerChoice)}`;
+    resultDisplay.textContent = result;
+    playerScoreDisplay.innerText = `Score: ${playerScore}`;
+    computerScoreDisplay.innerText = `Score: ${computerScore}`;
 
     if (playerScore === 3 || computerScore === 3) {
         const finalResult = playerScore === 3 ? 'You won the game!' : 'You lost the game!';
@@ -75,7 +75,7 @@ function playGame(playerChoice, playerDisplay, computerDisplay, resultDisplay, p
  * Registers the match result with the backend.
  * @param {string} result - The result of the match.
  */
-async function registerMatch(result) {
+async function registerMatch(result, opponent) {
     const response = await fetch('/rps/register_match/', {
         method: 'POST',
         headers: {
@@ -83,7 +83,8 @@ async function registerMatch(result) {
             'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
-            result: result.includes('won') ? 'win' : 'lose'
+            result: result.includes('won') ? 'win' : 'lose',
+            opponent: "AI"
         })
     });
 

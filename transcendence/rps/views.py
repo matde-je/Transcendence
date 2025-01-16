@@ -7,25 +7,9 @@ from django.views.decorators.http import require_POST
 from rps.models import MatchHistory
 import json
 
-def index(request):
-    return render(request, 'index.html')
-
 @login_required
 @require_POST
 def register_match(request):
-    data = json.loads(request.body)
-    result = data.get('result')
-
-    if not result:
-        return JsonResponse({'error': 'Invalid data'}, status=400)
-
-    MatchHistory.objects.create(player=request.user, opponent='AI', result=result)
-
-    return JsonResponse({'status': 'success'})
-
-@login_required
-@require_POST
-def register_multiplayer_match(request):
     data = json.loads(request.body)
     result = data.get('result')
     opponent = data.get('opponent')
@@ -33,6 +17,6 @@ def register_multiplayer_match(request):
     if not result or not opponent:
         return JsonResponse({'error': 'Invalid data'}, status=400)
 
-    MatchHistory.objects.create(player=request.user, opponent='HUMAN', result=result)
+    MatchHistory.objects.create(player=request.user, opponent=opponent, result=result)
 
     return JsonResponse({'status': 'success'})
