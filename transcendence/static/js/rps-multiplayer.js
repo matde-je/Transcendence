@@ -144,32 +144,33 @@ function resetScores() {
     document.getElementById('player2ScoreDisplay').textContent = player2Score;
 }
 
-
 // Add event listener for key presses
 document.addEventListener('keydown', (event) => {
-    const key = event.key;
-    switch (key) {
-        // Player 1 keys
-        case 'q':
-            choose('rock', 1);
-            break;
-        case 'w':
-            choose('paper', 1);
-            break;
-        case 'e':
-            choose('scissors', 1);
-            break;
-        // Player 2 keys
-        case 'ArrowLeft':
-            choose('rock', 2);
-            break;
-        case 'ArrowDown':
-            choose('paper', 2);
-            break;
-        case 'ArrowRight':
-            choose('scissors', 2);
-            break;
-        default:
-            break;
+    if (window.location.pathname === '/rock-paper-scissors/multiplayer') {
+        const key = event.key;
+        switch (key) {
+            // Player 1 keys
+            case 'q':
+                choose('rock', 1);
+                break;
+            case 'w':
+                choose('paper', 1);
+                break;
+            case 'e':
+                choose('scissors', 1);
+                break;
+            // Player 2 keys
+            case 'ArrowLeft':
+                choose('rock', 2);
+                break;
+            case 'ArrowDown':
+                choose('paper', 2);
+                break;
+            case 'ArrowRight':
+                choose('scissors', 2);
+                break;
+            default:
+                break;
+        }
     }
 });

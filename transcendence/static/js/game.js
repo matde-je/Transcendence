@@ -1,4 +1,4 @@
-import { getCookie, checkAuthentication } from './utils.js';
+import { getCookie, checkAuthentication, getAuthenticationStatus } from './utils.js';
 
 "use strict"
 
@@ -359,7 +359,7 @@ function loop() {
     }
     if (!gameOver && score1 < 10 && score2 < 10 && init === 1) {
         ani = window.requestAnimationFrame(loop);
-    } else if (gameOver) {
+    } else if (gameOver && getAuthenticationStatus()) {
         let finalResult;
         let opponentType;
 

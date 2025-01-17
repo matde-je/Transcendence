@@ -2,6 +2,17 @@
 
 import { initializeNavbar } from './app.js';
 
+let isAuthenticated = false;
+
+/**
+ * Retrieves the authentication status.
+ *
+ * @returns {boolean} True if authenticated, false otherwise.
+ */
+export function getAuthenticationStatus() {
+    return isAuthenticated;
+}
+
 /**
  * Retrieves the value of a specified cookie by name.
  *
@@ -40,7 +51,8 @@ export function checkAuthentication() {
             return response.json();
         })
         .then((data) => {
-            initializeNavbar(data.is_authenticated || '');
+			isAuthenticated = data.is_authenticated || false;
+            initializeNavbar(isAuthenticated);
         })
         .catch((error) => {
             console.error('Error:', error);

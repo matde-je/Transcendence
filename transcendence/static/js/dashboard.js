@@ -80,6 +80,11 @@ export function showDashboard() {
                     </div>
                 </div>
             </div>
+			<hr>
+			<button id="show-friends" class="btn btn-primary">Show Friends</button>
+            <hr>
+			<button id="show-tournaments" class="btn btn-primary">Show Tournaments Results</button>
+			<hr>
         </div>
         </div>
     `;
@@ -100,7 +105,7 @@ export function showDashboard() {
             showUserTournamentResults()
         });
 	})
-    .catch(error => console.error('Erro:', error));
+    .catch(error => console.error('Error:', error));
 }
 
 /**

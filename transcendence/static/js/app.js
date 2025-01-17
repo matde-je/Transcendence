@@ -9,41 +9,7 @@ import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthentication();
-    window.addEventListener('popstate', (event) => {
-        if (event.state) {
-            switch (event.state.page) {
-                case 'login':
-                    showLogin();
-                    break;
-                case 'register':
-                    showRegister();
-                    break;
-                case 'dashboard':
-                    showDashboard();
-                    break;
-                case 'rock-paper-scissors':
-                    showRPS();
-                    break;
-                case 'rock-paper-scissors-singleplayer':
-                    showSinglePlayer();
-                    break;
-                case 'rock-paper-scissors-multiplayer':
-                    showMultiplayer();
-                    break;
-                case 'create_tournament':
-                    showCreateTournamentForm();
-                    break;
-                case 'tournament':
-                    showTournamentMenu();
-                    break;
-                default:
-                    showHome();
-                    break;
-             }
-        } else {
-            showHome();
-        }
-    });
+
     const path = window.location.pathname;
     if (path === '/login') {
         showLogin();
