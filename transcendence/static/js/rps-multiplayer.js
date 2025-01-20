@@ -1,6 +1,6 @@
 // static/js/rps-multiplayer.js
 
-import { getCookie } from './utils.js';
+import { getCookie, capitalizeFirstLetter } from './utils.js';
 
 const choices = ['rock', 'paper', 'scissors'];
 const player1Display = document.getElementById('player1Display');
@@ -90,8 +90,8 @@ function playGame() {
         player2Score++;
     }
 
-    player1Display.textContent = `Player 1: ${player1Choice}`;
-    player2Display.textContent = `Player 2: ${player2Choice}`;
+    player1Display.textContent = `Player 1: ${capitalizeFirstLetter(player1Choice)}`;
+    player2Display.textContent = `Player 2: ${capitalizeFirstLetter(player2Choice)}`;
     resultDisplay.textContent = result;
     player1ScoreDisplay.innerText = `Score: ${player1Score}`;
     player2ScoreDisplay.innerText = `Score: ${player2Score}`;
@@ -114,7 +114,7 @@ function playGame() {
  * @param {string} opponent - The opponent of the logged-in player.
  */
 async function registerMultiplayerMatch(result, opponent) {
-    const response = await fetch('/rps/register_multiplayer_match/', {
+    const response = await fetch('/rps/register_match/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -122,7 +122,7 @@ async function registerMultiplayerMatch(result, opponent) {
         },
         body: JSON.stringify({
             result: result.includes('Player 1') ? 'win' : 'lose',
-            opponent: opponent
+            opponent: "HUMAN"
         })
     });
 
@@ -144,40 +144,33 @@ function resetScores() {
     document.getElementById('player2ScoreDisplay').textContent = player2Score;
 }
 
-/**
- * Capitalizes the first letter of a string.
- * @param {string} string - The string to capitalize.
- * @returns {string} - The capitalized string.
- */
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
 // Add event listener for key presses
 document.addEventListener('keydown', (event) => {
-    const key = event.key;
-    switch (key) {
-        // Player 1 keys
-        case 'q':
-            choose('rock', 1);
-            break;
-        case 'w':
-            choose('paper', 1);
-            break;
-        case 'e':
-            choose('scissors', 1);
-            break;
-        // Player 2 keys
-        case 'ArrowLeft':
-            choose('rock', 2);
-            break;
-        case 'ArrowDown':
-            choose('paper', 2);
-            break;
-        case 'ArrowRight':
-            choose('scissors', 2);
-            break;
-        default:
-            break;
+    if (window.location.pathname === '/rock-paper-scissors/multiplayer') {
+        const key = event.key;
+        switch (key) {
+            // Player 1 keys
+            case 'q':
+                choose('rock', 1);
+                break;
+            case 'w':
+                choose('paper', 1);
+                break;
+            case 'e':
+                choose('scissors', 1);
+                break;
+            // Player 2 keys
+            case 'ArrowLeft':
+                choose('rock', 2);
+                break;
+            case 'ArrowDown':
+                choose('paper', 2);
+                break;
+            case 'ArrowRight':
+                choose('scissors', 2);
+                break;
+            default:
+                break;
+        }
     }
 });

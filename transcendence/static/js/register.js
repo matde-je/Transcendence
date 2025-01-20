@@ -1,6 +1,5 @@
 // static/js/register.js
 
-import { checkAuthentication } from './app.js';
 import { showLogin } from './login.js';
 import { getCookie } from './utils.js';
 
