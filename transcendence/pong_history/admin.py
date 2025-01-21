@@ -5,6 +5,6 @@ from .models import MatchPongHistory
 
 @admin.register(MatchPongHistory)
 class MatchHistoryAdmin(admin.ModelAdmin):
-    list_display = ('player', 'opponent', 'result', 'date_played')
+    list_display = ('player', 'opponent', 'result', 'score', 'date_played')
     search_fields = ('player__username', 'opponent', 'result')
     list_filter = ('result', 'date_played')

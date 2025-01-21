@@ -19,3 +19,8 @@ class FriendshipSerializer(serializers.ModelSerializer):
         model = Friendship
         fields = ['id', 'from_user', 'to_user', 'to_user_id', 'created_at', 'accepted_at', 'accepted']
         read_only_fields = ['created_at', 'accepted_at', 'accepted']
+
+class UserResultsSerializer(serializers.Serializer):
+    total_matches = serializers.IntegerField()
+    total_wins = serializers.IntegerField()
+    win_percentage = serializers.FloatField()

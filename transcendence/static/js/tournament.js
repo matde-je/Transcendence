@@ -191,13 +191,13 @@ export async function removeUserFromTournament(tournamentId) {
 /**
  * Lists results of finished tournaments.
  */
-export function showTournamentResults() {
-    fetch('/tournament/results/', {
-        method: 'GET',
-        credentials: 'include',
-    })
-    .then(response => response.json())
-    .then(data => {
+export async function showTournamentResults() {
+    try {
+        const response = await fetch('/tournament/results/', {
+            method: 'GET',
+            credentials: 'include',
+        });
+        const data = await response.json();
         const tournamentContent = document.getElementById('tournamentContent');
         tournamentContent.innerHTML = '<h3 class="text-center mb-3">Tournament Results</h3>';
         if (data.length > 0) {
@@ -211,11 +211,10 @@ export function showTournamentResults() {
         } else {
             tournamentContent.innerHTML += '<p class="text-center mb-3">No results available.</p>';
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error showing results:', error);
         alert('Error showing results.');
-    });
+    }
 }
 
 /**

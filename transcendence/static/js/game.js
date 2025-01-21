@@ -14,26 +14,31 @@ let initialBallGravity = 1;
 let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
 let multiplayer = 0;
+let username1 = " Anonymous";
+let username2 = "";
 
-export function initializeGame() {
-    canvas = document.getElementById("game"); // Get canvas and context after DOM is loaded
-    context = canvas.getContext("2d");
-    canvas.width = 550;
-    canvas.height = 400;
-	window.canvas = canvas;
-    window.context = context;
-    score1 = 0;
-    score2 = 0;
-    init = 0;
-	initialBallGravity = 1;
-	maxGravity = initialBallGravity * 2;
-	ballSpeed = 7;
-	multiplayer = 0;
-	window.ai = 0;
-	window.aiSpeed = 70;
-	window.aiRefreshView = 1000; // 1 sec, 1000 ms
-	window.aiLastUpdateTime = Date.now();
-	ani = window.requestAnimationFrame(loop);
+export async function initializeGame() {
+    checkAuthentication().then((username) => {
+        username1 = username;
+	    canvas = document.getElementById("game");
+	    context = canvas.getContext("2d");
+	    canvas.width = 550;
+	    canvas.height = 400;
+		window.canvas = canvas;
+	    window.context = context;
+	    score1 = 0;
+	    score2 = 0;
+	    init = 0;
+		initialBallGravity = 1;
+		maxGravity = initialBallGravity * 2;
+		ballSpeed = 7;
+		multiplayer = 0;
+		window.ai = 0;
+		window.aiSpeed = 70;
+		window.aiRefreshView = 1000; // 1 sec, 1000 ms
+		window.aiLastUpdateTime = Date.now();
+		ani = window.requestAnimationFrame(loop);
+    });
 }
 class Element {
 	constructor(options) {
@@ -76,7 +81,7 @@ const player3 = new Element({
 
 const player4 = new Element({
 	x: 525,
-	y: 130,
+	y: 230,
 	width: 12,
 	height: 60,
 	color: "#fff",
@@ -120,6 +125,7 @@ window.addEventListener("keydown", (e) => {
 		context.fillText("PLAYER 2 - Q AND A", canvas.width / 2, 290);
 		context.fillText("P - PAUSE", canvas.width / 2, 320);
 		context.fillText("G - START", canvas.width / 2, 350);
+		username2 = "     HUMAN";
 	}
 	if (keys['1']) {
 		ai = 1;
@@ -129,6 +135,7 @@ window.addEventListener("keydown", (e) => {
 		context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
 		context.fillText("P - PAUSE", canvas.width / 2, 320);
 		context.fillText("G - START", canvas.width / 2, 350);
+		username2 = "        AI";
 	}
 	if (keys['4']) {
 		multiplayer = 1;
@@ -141,6 +148,7 @@ window.addEventListener("keydown", (e) => {
 		context.fillText("PLAYER 4 - J AND M", canvas.width / 2, 290);
 		context.fillText("P - PAUSE", canvas.width / 2, 320);
 		context.fillText("G - START", canvas.width / 2, 350);
+		username2 = "HUMAN PAIR";
 	}
 	if ((gameOver == true || init == 0) && (keys['g'])) {
 		window.cancelAnimationFrame(ani);
@@ -168,40 +176,48 @@ window.addEventListener("keyup", (e) => {
 
 //handle player movement based on pressed keys
 function handleMoves() {
-	if (!gameOver && !pause) {
+	if (!gameOver && !pause)
+	{
 		let newY;
+
+		// Player 1 movement
 		newY = player1.y;
 		if (keys['q'] && player1.y > 0)
 			newY -= player1.gravity * 2; //up
-		if (keys['a'] && player1.y + player2.height < canvas.height)
+		if (keys['a'] && player1.y + player1.height < canvas.height)
 			newY += player1.gravity * 2; //down
 		if (!multiplayer || preventPaddleOverlap({...player1, y: newY}, player3))
 			player1.y = newY;
+
+		// Player 2 movement
 		newY = player2.y;
 		if (keys['ArrowUp'] && player2.y > 0 && !ai)
 			newY -= player2.gravity * 2; //up
-		if (keys['ArrowDown'] && player2.y + player1.height < canvas.height && !ai)
+		if (keys['ArrowDown'] && player2.y + player2.height < canvas.height && !ai)
 			newY += player2.gravity * 2; //down
 		if (!multiplayer || preventPaddleOverlap({...player2, y: newY}, player4) && multiplayer)
 			player2.y = newY;
-	}
-	if (multiplayer && !gameOver && !pause) {
-		let newY;
-		newY = player3.y;
-		if (keys['f'] && player3.y - player1.height > 0)
-			newY -= player3.gravity * 2; // move up
-		if (keys['v'] && player3.y + player3.height < canvas.height)
-			newY += player3.gravity * 2; // move down, but don't cross Player 2
-		if (!multiplayer || preventPaddleOverlap(player1, {...player3, y: newY}) && multiplayer)
-			player3.y = newY;
-		
-		newY = player4.y;
-		if (keys['j'] && player4.y > 0)
-			newY -= player4.gravity * 2; // move up, but don't go out
-		if (keys['m'] && player4.y + player3.height < canvas.height)
-			newY += player4.gravity * 2; // move down
-		if (!multiplayer || preventPaddleOverlap(player2, {...player4, y: newY}) && multiplayer)
-			player4.y = newY;
+	
+		if (multiplayer) 
+		{
+			// Player 3 movement
+			newY = player3.y;
+			if (keys['f'] && player3.y - player1.height > 0)
+				newY -= player3.gravity * 2; // move up
+			if (keys['v'] && player3.y + player3.height < canvas.height)
+				newY += player3.gravity * 2; // move down, but don't cross Player 2
+			if (preventPaddleOverlap(player1, {...player3, y: newY}))
+				player3.y = newY;
+
+			// Player 4 movement
+			newY = player4.y;
+			if (keys['j'] && player4.y > 0)
+				newY -= player4.gravity * 2; // move up, but don't go out
+			if (keys['m'] && player4.y + player4.height < canvas.height)
+				newY += player4.gravity * 2; // move down
+			if (preventPaddleOverlap(player2, {...player4, y: newY}))
+				player4.y = newY;
+		}
 	}
 }
 
@@ -295,13 +311,18 @@ function draw(element) {
 function score_1(){
 	context.font = "50px 'Courier New', Courier, monospace";
 	context.fillStyle = "#fff";
-	context.fillText(score1, canvas.width / 2 - 60, 50);
+	context.fillText(`${score1}`, canvas.width / 2 - 60, 50);
+	context.font = "20px 'Courier New', Courier, monospace";
+	context.fillText(`${username1}`, canvas.width - canvas.width + 60, canvas.height - 10);
 }
 
 function score_2(){
 	context.font = "50px 'Courier New', Courier, monospace";
 	context.fillStyle = "#fff";
 	context.fillText(score2, canvas.width / 2 + 60, 50);
+	context.font = "20px 'Courier New', Courier, monospace";
+	context.fillText(`${username2}`, canvas.width - 70, canvas.height - 10);
+
 }
 
 function drawAll(){
@@ -350,7 +371,7 @@ function loop() {
 			context.font = '50px \'Courier New\', Courier, monospace';
             context.textAlign = 'center';
             context.fillStyle = 'white';
-            context.fillText('WIN', x, 80);
+            context.fillText('WIN', x, 150);
             context.font = '30px \'Courier New\', Courier, monospace';
             context.fillText('G - PLAY AGAIN', x, 350);
             gameOver = true;
@@ -379,21 +400,26 @@ function loop() {
 	        finalResult = 'lose';
 	    }
 
-		alert(`PFV - Register score! You ${finalResult}!`);
+		console.log('Final result:', finalResult);
+		console.log('Opponent type:', opponentType);
+		console.log('Final score:', score1 + '-' + score2);
+		let score = score1 + '-' + score2;
+		console.log('Score:', score);
 
 	    // Register the result in the backend
-	    registerMatchResult(opponentType, finalResult);
+	    registerMatchResult(opponentType, finalResult, score);
 
     }
 }
 
 /**
- * Send game results to the backend.
- * 
- * @param {string} opponent - Opponent type ("AI", "HUMAN" or "HUMAN PAIR").
- * @param {string} result - Game result ("win" or "lose").
+ * Registers the result of a match by sending a POST request to the server.
+ *
+ * @param {string} opponent - The name of the opponent.
+ * @param {string} result - The result of the match (e.g., 'win', 'lose', 'draw').
+ * @param {number} score - The score of the match.
  */
-function registerMatchResult(opponent, result) {
+function registerMatchResult(opponent, result, score) {
 
     const csrftoken = getCookie('csrftoken'); 
 
@@ -406,6 +432,7 @@ function registerMatchResult(opponent, result) {
         body: JSON.stringify({
             opponent: opponent,
             result: result,
+			score: score,
         }),
     })
     .then(response => response.json())

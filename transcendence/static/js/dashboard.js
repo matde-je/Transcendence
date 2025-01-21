@@ -60,9 +60,9 @@ export function showDashboard() {
         content.innerHTML = `
         <div class="container mt-5 mb-5 pt-5">
             <div class="card shadow-sm">
-            <div class="card-body mt-3">
-            <div class="text-center">
-                    <img src="${data.avatar}" alt="Avatar" width="70" class="rounded-circle" style="width: 70px; height: 70px; object-fit: cover;">
+            	<div class="card-body mt-3">
+            		<div class="text-center">
+                    	<img src="${data.avatar}" alt="Avatar" width="70" class="rounded-circle" style="width: 70px; height: 70px; object-fit: cover;">
                     </div>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item"><strong>Email:</strong> ${data.email}</li>
@@ -85,8 +85,9 @@ export function showDashboard() {
             <hr>
 			<button id="show-tournaments" class="btn btn-primary">Show Tournaments Results</button>
 			<hr>
-        </div>
-        </div>
+			<button id="show-results" class="btn btn-primary">Show Results</button>
+			<hr>
+		</div>
     `;
         checkAuthentication();
 
@@ -104,6 +105,12 @@ export function showDashboard() {
             e.preventDefault();
             showUserTournamentResults()
         });
+
+		document.getElementById('show-results').addEventListener('click', (e) => {
+            e.preventDefault();
+            showUserResults()
+        });
+
 	})
     .catch(error => console.error('Error:', error));
 }
@@ -244,5 +251,31 @@ export async function showUserTournamentResults() {
     } catch (error) {
         console.error('Error fetching tournament results:', error);
         alert('Error fetching tournament results.');
+    }
+}
+
+export async function showUserResults() {
+    try {
+        const response = await fetch('/users/results/', {
+            method: 'GET',
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const content = document.getElementById('content');
+        content.innerHTML = '<h3 class="text-center mb-3">User Results</h3>';
+
+        content.innerHTML += `
+            <p>Total Matches: ${data.total_matches}</p>
+            <p>Wins: ${data.total_wins}</p>
+            <p>Win Percentage: ${data.win_percentage}%</p>
+        `;
+    } catch (error) {
+        console.error('Error getting results:', error);
+        alert('Error getting results.');
     }
 }

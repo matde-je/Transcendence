@@ -7,6 +7,7 @@ class MatchPongHistory(models.Model):
     player = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pong_player_matches')
     opponent = models.CharField(max_length=100, null=True, blank=True)
     result = models.CharField(max_length=10)
+    score = models.CharField(max_length=10, default='0 - 0')
     date_played = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

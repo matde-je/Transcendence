@@ -13,10 +13,11 @@ def register_pong_history(request):
     data = json.loads(request.body)
     result = data.get('result')
     opponent = data.get('opponent')
+    score = data.get('score')
 
     if not result:
         return JsonResponse({'error': 'Invalid data'}, status=400)
 
-    MatchPongHistory.objects.create(player=request.user, opponent=opponent, result=result)
+    MatchPongHistory.objects.create(player=request.user, opponent=opponent, result=result, score=score)
 
     return JsonResponse({'status': 'success'})
