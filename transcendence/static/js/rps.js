@@ -2,6 +2,7 @@
 
 import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { playMultiplayerGame } from './rps-multiplayer.js';
+import { showRPS } from './app.js';
 
 /**
  * Displays the Single Player mode interface.
@@ -29,9 +30,22 @@ export function showSinglePlayer() {
         </div>
         <h3 id="resultDisplay" class="mb-4 fw-bold" ></h3>
     </div>
+    <div class="container mb-5 mt-5 pt-5 col-md-4 text-center">
+            <div class="row justify-content-center">
+                <button class="btn btn-primary " id="backToMenuBtn">Back to Menu</button>
+    </div>
         `;
 
     document.getElementById('content').innerHTML = singlePlayerContent;
+    document.getElementById('backToMenuBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        showRPS();
+        history.pushState(
+            { page: 'rock-paper-scissors' },
+            'Rock Paper Scissors',
+            '/rock-paper-scissors'
+        );
+    });
 
     // Ensure elements are available before adding event listeners
     const rockBtn = document.getElementById('rockBtn');
@@ -89,6 +103,10 @@ export function showMultiplayer() {
         </div>
 		<h3 id="resultDisplay" class="mb-4 fw-bold" ></h3> 
     </div>
+    <div class="container mb-5 mt-5 pt-5 col-md-4 text-center">
+            <div class="row justify-content-center">
+                <button class="btn btn-primary " id="backToMenuBtn">Back to Menu</button>
+    </div>
     `;
     document.getElementById('content').innerHTML = multiplayerContent;
     // Add event listeners for the choices
@@ -116,4 +134,46 @@ export function showMultiplayer() {
         e.preventDefault();
         playMultiplayerGame('scissors', 2);
     });
+    document.getElementById('backToMenuBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        showRPS();
+        history.pushState(
+            { page: 'rock-paper-scissors' },
+            'Rock Paper Scissors',
+            '/rock-paper-scissors'
+        );
+    });
+}
+
+export function showWaitingList() {
+    fetch('waiting-list/')
+        .then(response => response.json())
+        .then(data => {
+            const users = data.users.map(user => `<li>${user.username}</li>`).join('');
+            const content = `
+                <div class="container mb-5 mt-5 pt-5">
+                    <h2 class="text-center mb-4 mt-5 pt-5">Waiting List...</h2>
+                    <h4 class="text-center">You've been added to the waiting list to find a game partner.</h4>
+                    <ul class="text-center">${users}</ul>
+                </div>
+                <div class="container mb-5 mt-5 pt-5 col-md-4 text-center">
+                    <div class="row justify-content-center">
+                        <button class="btn btn-primary btn-sm" id="backToMenuBtn">Back to Menu</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('content').innerHTML = content;
+            document.getElementById('backToMenuBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                showRPS();
+                history.pushState(
+                    { page: 'rps' }, 
+                    'Rock Paper Scissors', 
+                    '/rock-paper-scissors'
+                );
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching waiting list:', error);
+        });
 }

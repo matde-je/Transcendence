@@ -208,6 +208,9 @@ export function showRPS() {
                 <button class="btn btn-secondary m-3" id="singlePlayerBtn" >Single Player</button>
                 <button class="btn btn-secondary m-3" id="multiplayerBtn" >Multiplayer</button>
             </div>
+            <div class="d-flex justify-content-center mb-3 gap-4 p-3">
+                <button class="btn btn-secondary m-3" id="WaitingListBtn">WaitingList</button>
+            </div>
         </div>
     `;
     // Insert content into the main content area
@@ -232,6 +235,16 @@ export function showRPS() {
             '/rock-paper-scissors/multiplayer'
         );
     });
+        // Add listener for the WaitingList button
+        document.getElementById('WaitingListBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            showWaitingList();
+            history.pushState(
+                { page: 'rock-paper-scissors-WaitingList' },
+                'WaitingList',
+                '/rock-paper-scissors/WaitingList'
+            );
+        });
     //history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
 }
 

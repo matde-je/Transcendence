@@ -15,7 +15,8 @@ from .views import (
     get_user_data,
     update_user_data,
     register_user,
-    get_user_by_id
+    get_user_by_id,
+	user_results
 )
 
 router = DefaultRouter()
@@ -35,4 +36,5 @@ urlpatterns = [
     path('check-auth/', check_authentication),
     path('login/', login_user),
     path('logout/', logout_user),
+	path('results/', user_results, name='user-results'),
 ]

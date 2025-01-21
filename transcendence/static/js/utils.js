@@ -36,28 +36,31 @@ export function getCookie(name) {
 }
 
 // Function to check authentication and update navbar
-export function checkAuthentication() {
-    fetch('/users/check-auth/', {
-        method: 'GET',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-        },
-        credentials: 'include',
-    })
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then((data) => {
-			isAuthenticated = data.is_authenticated || false;
-            initializeNavbar(isAuthenticated);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            alert(`Error: ${error.message}`);
+export async function checkAuthentication() {
+    try {
+        const response = await fetch('/users/check-auth/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            credentials: 'include',
         });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+		localStorage.setItem('username', data.username);
+        isAuthenticated = data.is_authenticated || false;
+        initializeNavbar(isAuthenticated);
+        
+        return isAuthenticated ? data.username : ' Anonymous';
+    } catch (error) {
+        console.error('Error:', error);
+        alert(`Error: ${error.message}`);
+        return ' Anonymous';
+    }
 }
 
 /**
