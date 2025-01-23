@@ -211,7 +211,7 @@ export async function showFriends() {
             if (!existingContainer) {
                 const friendsListContainer = document.createElement('div');
                 friendsListContainer.id = 'friends-list-container';
-                document.body.appendChild(friendsListContainer);
+                content.appendChild(friendsListContainer);
                 const friendsTitle = document.createElement('h4');
                 friendsTitle.className = 'text-center';
                 friendsTitle.textContent = 'Online Friends';
@@ -254,8 +254,8 @@ export async function showFriends() {
                 };
             }
         });
-
-    fetch('/users/friend_requests/received/')
+        
+        fetch('/users/friend_requests/received/')
         .then(response => response.json())
         .then(receivedRequests => {
 			// Fetch sent friend requests
@@ -274,17 +274,17 @@ export async function showFriends() {
                                 ${request.from_user.username} - Received: ${formattedDate}
                                 <button onclick="acceptFriendRequest(${request.id})" class="btn btn-sm btn-success">
                                     Accept
-                                </button>
+                                    </button>
                             `;
                         } else {
                             return `
                                 To: ${request.to_user.username} - Sent: ${formattedDate}
-                            `;
-                        }
+                                `;
+                            }
+                        });
+ 
+                        createList(content, 'Friend Requests', requestItems);
                     });
-
-                    createList(content, 'Friend Requests', requestItems);
-                });
         })
         .catch(error => {
             console.error('Error fetching friend requests:', error);

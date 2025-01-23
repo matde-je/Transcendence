@@ -19,3 +19,4 @@ key.pem
 /transcendence/users/migrations/__pycache__/
 /transcendence/users/services/__pycache__/
 /transcendence/media/
+/transcendence/staticfiles/
