@@ -11,7 +11,7 @@ stop:
 # Stop and remove all containers and networks defined in docker-compose.yml
 down:
 	@clear
-	docker compose --file docker-compose.yml down 
+	docker compose --file docker-compose.yml down
 
 # Stop and remove all containers, network, images and volumes defined in docker-compose.yml
 clean:
