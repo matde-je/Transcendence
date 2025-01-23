@@ -42,7 +42,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('tournament/', include('tournament.urls')),
-    path('rps/', include('rps.urls')),
+	path('rps/', include('rps.urls')),
+	path('pong/', include('pong_history.urls')),
     re_path(r'^(?!admin|users|media/|static/).*$', views.index, name='index'),
 ]
 

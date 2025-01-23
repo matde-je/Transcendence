@@ -44,7 +44,6 @@ services:
     restart: unless-stopped
     depends_on:
       - db
-      - redis
     healthcheck:
       test: ["CMD-SHELL", "curl -f https://localhost:8000 --insecure || exit 1"]
       interval: 30s
@@ -112,18 +111,36 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-  redis:
-    container_name: redis
-    image: "redis:alpine" 
+
+  pong:
+    container_name: pong
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "
+        until pg_isready -h db -p 5432 -U $${POSTGRES_USER} -d $${PONG_DB_NAME}; do
+          echo 'Waiting for Postgres...';
+          sleep 2;
+        done &&
+        python manage.py migrate --database=pong &&
+        python manage.py runserver_plus --cert-file cert.pem 0.0.0.0:8003"
+    volumes:
+      - ./transcendence:/app:cached
     ports:
-      - "6379:6379"
+      - "8003:8003"
     networks:
       - transcendence
-    restart: always
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - db
+      - backend
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping || exit 1"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD-SHELL", "curl -f http://localhost:8003 || exit 1"]
+      interval: 30s
+      timeout: 10s
       retries: 5
 
 

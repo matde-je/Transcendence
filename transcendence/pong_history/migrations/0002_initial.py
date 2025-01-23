@@ -10,14 +10,14 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('rps', '0001_initial'),
+        ('pong_history', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='matchhistory',
+            model_name='matchponghistory',
             name='player',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='player_matches', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pong_player_matches', to=settings.AUTH_USER_MODEL),
         ),
     ]

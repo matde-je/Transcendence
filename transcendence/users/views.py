@@ -1,18 +1,17 @@
 # users/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from .forms import CustomUserCreationForm
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework import viewsets, status, generics
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from .serializers import UserSerializer, FriendshipSerializer
+from .serializers import UserSerializer, FriendshipSerializer, UserResultsSerializer
 from .models import CustomUser, Friendship
+from pong_history.models import MatchPongHistory
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
-from django.contrib.auth.decorators import login_required
-from rest_framework import viewsets, status, generics
-from rest_framework.decorators import action
-from rest_framework.response import Response
 from django.db import transaction
 from django.utils import timezone
 from .services.tournament_service import create_tournament_for_user
@@ -192,4 +191,21 @@ def get_user_by_id(request, id):
     except CustomUser.DoesNotExist:
         return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
     serializer = UserSerializer(user)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_results(request):
+    user = request.user
+    total_matches = MatchPongHistory.objects.filter(player=user).count()
+    total_wins = MatchPongHistory.objects.filter(player=user, result='win').count()
+    win_percentage = round((total_wins / total_matches * 100), 2) if total_matches > 0 else 0.0
+
+    data = {
+        'total_matches': total_matches,
+        'total_wins': total_wins,
+        'win_percentage': win_percentage,
+    }
+
+    serializer = UserResultsSerializer(data)
     return Response(serializer.data)
