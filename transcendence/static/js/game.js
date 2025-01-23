@@ -17,6 +17,8 @@ let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
 let paddleGravity = 3;
+let lastLeftHitTime = 0;
+const aiRefreshView = 4000;
 
 export async function initializeGame() {
 	checkAuthentication().then((username) => {
@@ -36,9 +38,8 @@ export async function initializeGame() {
 		ballSpeed = 7;
 		multiplayer = 0;
 		window.ai = 0;
-		window.aiSpeed = 70;
-		window.aiRefreshView = 1000; // 1 sec, 1000 ms
-		window.aiLastUpdateTime = Date.now();
+		window.lastLeftHitTime = lastLeftHitTime;
+		window.aiRefreshView = aiRefreshView;
 		ani = window.requestAnimationFrame(loop);
 	});
 }
@@ -66,7 +67,7 @@ const player1 = new Element ( {
 
 window.player2 = new Element ( {
 	x: 530,
-	y: 170, // Center vertically
+	y: 170,
 	width: 12,
 	height: 60,
 	color: "#fff",
@@ -247,7 +248,7 @@ function preventPaddleOverlap(paddle1, paddle2) {
 	}
 }
 
-function handleEdgeCollisions(player) {
+function handleEdgeHit(player) {
 	ball.speed *= -1;
 	if (ball.y + (ball.diamet / 2) <= player.y + (player.height / 6)) //Thouch upper edge!!
 	ball.gravity = -1 * maxGravity;
@@ -257,29 +258,31 @@ function handleEdgeCollisions(player) {
 	ball.gravity = Math.sign(ball.gravity) * initialBallGravity; // Thouch center!!
 }
 
-function paddleCollision() {
+function ballHitPaddle() {
 	if (gameOver == true)
 		return ;
 	// Left side paddles (player1 and player3)
 	if (ball.x <= player1.x + player1.width && ball.speed < 0) {
+		if (ai)
+			lastLeftHitTime = Date.now();
 		if (ball.y + ball.diamet >= player1.y && ball.y <= player1.y + player1.height)
-			handleEdgeCollisions(player1);
+			handleEdgeHit(player1);
 		else if (multiplayer && ball.y + ball.diamet >= player3.y && ball.y <= player3.y + player3.height)
-			handleEdgeCollisions(player3);
+			handleEdgeHit(player3);
 	}
 	// Right side paddles (player2 and player4)
 	else if (ball.x + ball.diamet >= player2.x && ball.speed > 0) {
 		if (ball.y + ball.diamet >= player2.y && ball.y <= player2.y + player2.height)
-			handleEdgeCollisions(player2);
+			handleEdgeHit(player2);
 		else if (multiplayer && ball.y + ball.diamet >= player4.y && ball.y <= player4.y + player4.height)
-			handleEdgeCollisions(player4);
+			handleEdgeHit(player4);
 	}
 	if (ball.x <= player1.x + player1.width && ball.y + ball.diamet >= player1.y &&
 			ball.y <= player1.y + player1.height && ball.speed < 0) // There is collision!!
-		handleEdgeCollisions(player1);
+		handleEdgeHit(player1);
 	else if (ball.x + ball.diamet >= player2.x && ball.y + ball.diamet >= player2.y &&
 				ball.y <= player2.y + player2.height && ball.speed > 0) // There is collision!!
-		handleEdgeCollisions(player2);
+		handleEdgeHit(player2);
 	//point scored
 	let randomSign = Math.random() < 0.5 ? -1 : 1;
 	if (ball.x + ball.diamet < 0) {
@@ -376,11 +379,11 @@ function loop() {
 	}
 	if (!gameOver && !pause && init === 1) {
 		handleMoves();
-		moveBall();
-		paddleCollision();
 		if (window.ai) {
 			aiLogic(window.aiRefreshView);
 		}
+		moveBall();
+		ballHitPaddle();
 		drawAll();
 		if (score1 === 10 || score2 === 10) {
 			let x;
