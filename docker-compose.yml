@@ -21,6 +21,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      - DJANGO_SETTINGS_MODULE=transcendence.settings
     command: >
       sh -c "
         until pg_isready -h db -p 5432 -U $${POSTGRES_USER} -d $${POSTGRES_DB}; do
@@ -29,7 +31,8 @@ services:
         done &&
         python manage.py makemigrations &&
         python manage.py migrate &&
-        python manage.py runserver_plus --cert-file cert.pem 0.0.0.0:8000"
+        python manage.py collectstatic --no-input &&
+        daphne -e ssl:8000:privateKey=/app/cert.key:certKey=/app/cert.crt transcendence.asgi:application"
     volumes:
       - ./transcendence:/app:cached
     ports:
@@ -43,7 +46,7 @@ services:
       - db
       - redis
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000 || exit 1"]
+      test: ["CMD-SHELL", "curl -f https://localhost:8000 --insecure || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -74,7 +77,7 @@ services:
       - db
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8001 || exit 1"]
+      test: ["CMD-SHELL", "curl -f https://localhost:8001 --insecure || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -105,7 +108,7 @@ services:
       - db
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8002 || exit 1"]
+      test: ["CMD-SHELL", "curl -f https://localhost:8002 --insecure || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5

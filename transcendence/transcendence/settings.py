@@ -39,7 +39,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Include subdomains in HSTS
 SESSION_COOKIE_SECURE = True  # Enforce secure cookies
 CSRF_COOKIE_SECURE = True  # Enforce secure CSRF cookies
 
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -58,19 +58,38 @@ INSTALLED_APPS = [
     'users',
 	'tournament',
 	'rps',
-    'channels'
+    'channels',
 ]
 
 ASGI_APPLICATION = 'transcendence.asgi.application'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [('127.0.0.1', 6379)], 
+            'hosts': [('redis', 6379)],  #redis
         },
     },
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -82,6 +101,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+CORS_ALLOWED_ORIGINS = [
+    'https://localhost:8000', 
+    'wss://localhost:8000', 
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'transcendence.urls'
 
@@ -199,8 +226,6 @@ AUTH_USER_MODEL = 'users.CustomUser'
 CORS_ALLOWED_ORIGINS = [
     "https://localhost:8000",
 ]
-
-CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOW_CREDENTIALS = True
 
