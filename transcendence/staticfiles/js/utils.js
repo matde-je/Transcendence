@@ -1,5 +1,18 @@
 // static/js/utils.js
 
+import { initializeNavbar } from './app.js';
+
+let isAuthenticated = false;
+
+/**
+ * Retrieves the authentication status.
+ *
+ * @returns {boolean} True if authenticated, false otherwise.
+ */
+export function getAuthenticationStatus() {
+    return isAuthenticated;
+}
+
 /**
  * Retrieves the value of a specified cookie by name.
  *
@@ -20,6 +33,34 @@ export function getCookie(name) {
         }
     }
     return cookieValue;
+}
+
+// Function to check authentication and update navbar
+export async function checkAuthentication() {
+    try {
+        const response = await fetch('/users/check-auth/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            credentials: 'include',
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+		localStorage.setItem('username', data.username);
+        isAuthenticated = data.is_authenticated || false;
+        initializeNavbar(isAuthenticated);
+        
+        return isAuthenticated ? data.username : ' Anonymous';
+    } catch (error) {
+        console.error('Error:', error);
+        alert(`Error: ${error.message}`);
+        return ' Anonymous';
+    }
 }
 
 /**
@@ -73,3 +114,14 @@ export function getRoundName(round) {
         return 'Unknown Round';
     }
 }
+
+/**
+ * Capitalizes the first letter of a string.
+ * @param {string} string - The string to capitalize.
+ * @returns {string} - The capitalized string.
+ */
+export function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+

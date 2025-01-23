@@ -40,8 +40,6 @@ function createList(content, title, items) {
     content.appendChild(section);
 }
 
-
-
 /**
  * Shows user's dashboard.
  */

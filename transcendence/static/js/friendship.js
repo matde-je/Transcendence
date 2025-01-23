@@ -207,6 +207,52 @@ export async function showFriends() {
                 `;
             });
             createList(content, 'Friends', friendItems);
+            const existingContainer = document.getElementById('friends-list-container');
+            if (!existingContainer) {
+                const friendsListContainer = document.createElement('div');
+                friendsListContainer.id = 'friends-list-container';
+                document.body.appendChild(friendsListContainer);
+                const friendsTitle = document.createElement('h4');
+                friendsTitle.className = 'text-center';
+                friendsTitle.textContent = 'Online Friends';
+                friendsListContainer.appendChild(friendsTitle);
+                const userList = document.createElement('ul');
+                userList.id = 'online-users';
+                friendsListContainer.appendChild(userList);
+                const socket = new WebSocket('wss://localhost:8000/ws/online_status/');
+                socket.onopen = function() {
+                    console.log("WebSocket connection established.");
+                };
+                socket.onerror = function(error) {
+                    console.error("WebSocket error:", error);
+                };
+                socket.onmessage = function(e) {
+                    const data = JSON.parse(e.data);
+                    console.log("Parsed data:", data);
+                    let onlineFriends = [];
+                    if (data.online_friends) {
+                        if (data.online_friends.online_friends) 
+                            onlineFriends = data.online_friends.online_friends;
+                    }
+                    userList.innerHTML = '';
+                    console.log("Online friends:", onlineFriends);
+                    if (onlineFriends.length > 0) {
+                        onlineFriends.forEach(user => {
+                            const li = document.createElement('li');
+                            li.textContent = user;
+                            userList.appendChild(li);
+                        });
+                    } else {
+                        const noOnlineMessage = document.createElement('div');
+                        noOnlineMessage.className = 'text-center';
+                        noOnlineMessage.textContent = 'No friends online.';
+                        userList.appendChild(noOnlineMessage);
+                    }
+                };
+                socket.onclose = function(e) {
+                    console.log("WebSocket connection closed.");
+                };
+            }
         });
 
     fetch('/users/friend_requests/received/')
