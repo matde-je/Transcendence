@@ -2,48 +2,14 @@
 import { showLogin } from './login.js';
 import { showRegister } from './register.js';
 import { showDashboard, showEditUserForm } from './dashboard.js';
-import { getCookie } from './utils.js';
+import { getCookie, checkAuthentication } from './utils.js';
 import { showSinglePlayer, showMultiplayer } from './rps.js';
 import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthentication();
-    window.addEventListener('popstate', (event) => {
-        if (event.state) {
-            switch (event.state.page) {
-                case 'login':
-                    showLogin();
-                    break;
-                case 'register':
-                    showRegister();
-                    break;
-                case 'dashboard':
-                    showDashboard();
-                    break;
-                case 'rock-paper-scissors':
-                    showRPS();
-                    break;
-                case 'rock-paper-scissors-singleplayer':
-                    showSinglePlayer();
-                    break;
-                case 'rock-paper-scissors-multiplayer':
-                    showMultiplayer();
-                    break;
-                case 'create_tournament':
-                    showCreateTournamentForm();
-                    break;
-                case 'tournament':
-                    showTournamentMenu();
-                    break;
-                default:
-                    showHome();
-                    break;
-             }
-        } else {
-            showHome();
-        }
-    });
+
     const path = window.location.pathname;
     if (path === '/login') {
         showLogin();
@@ -67,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Function to initialize and update the navbar
-function initializeNavbar(authenticated) {
+export function initializeNavbar(authenticated) {
     let navBarContainer = document.getElementById('navbar');
     navBarContainer = document.createElement('nav'); //navigation
     navBarContainer.id = 'navbar';
@@ -184,30 +150,6 @@ function initializeNavbar(authenticated) {
     }
 }
 
-// Function to check authentication and update navbar
-export function checkAuthentication() {
-    fetch('/users/check-auth/', {
-        method: 'GET',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-        },
-        credentials: 'include',
-    })
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then((data) => {
-            initializeNavbar(data.is_authenticated || '');
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            alert(`Error: ${error.message}`);
-        });
-}
-
 /**
  * Displays the Home page.
  */
@@ -266,6 +208,9 @@ export function showRPS() {
                 <button class="btn btn-secondary m-3" id="singlePlayerBtn" >Single Player</button>
                 <button class="btn btn-secondary m-3" id="multiplayerBtn" >Multiplayer</button>
             </div>
+            <div class="d-flex justify-content-center mb-3 gap-4 p-3">
+                <button class="btn btn-secondary m-3" id="WaitingListBtn">WaitingList</button>
+            </div>
         </div>
     `;
     // Insert content into the main content area
@@ -290,6 +235,16 @@ export function showRPS() {
             '/rock-paper-scissors/multiplayer'
         );
     });
+        // Add listener for the WaitingList button
+        document.getElementById('WaitingListBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            showWaitingList();
+            history.pushState(
+                { page: 'rock-paper-scissors-WaitingList' },
+                'WaitingList',
+                '/rock-paper-scissors/WaitingList'
+            );
+        });
     //history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
 }
 
@@ -312,7 +267,6 @@ function logout() {
             return response.json();
         })
         .then((data) => {
-            alert(data.message);
             showHome();
             history.pushState({ page: 'home' }, 'Home', '/');
             checkAuthentication();

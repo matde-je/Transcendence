@@ -1,8 +1,7 @@
 // static/js/login.js
 
-import { checkAuthentication } from './app.js';
 import { showDashboard } from './dashboard.js';
-import { getCookie } from './utils.js';
+import { getCookie, checkAuthentication } from './utils.js';
 
 /**
  * Displays the login form and handles the login process.
@@ -60,7 +59,6 @@ export function showLogin() {
 		// Handle the response from the server
         if (response.ok) {
             const data = await response.json();
-            alert('Login successful');
             showDashboard();
             history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard');
             checkAuthentication();

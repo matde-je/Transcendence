@@ -44,6 +44,7 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+      - redis
     healthcheck:
       test: ["CMD-SHELL", "curl -f https://localhost:8000 --insecure || exit 1"]
       interval: 30s
@@ -112,6 +113,20 @@ services:
       timeout: 10s
       retries: 5
 
+  redis:
+    container_name: redis
+    image: "redis:alpine" 
+    ports:
+      - "6379:6379"
+    networks:
+      - transcendence
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   pong:
     container_name: pong
     build:
@@ -142,7 +157,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-
 
 networks:
   transcendence:
