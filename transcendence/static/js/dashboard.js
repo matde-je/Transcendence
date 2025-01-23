@@ -40,13 +40,14 @@ function createList(content, title, items) {
     content.appendChild(section);
 }
 
+
+
 /**
  * Shows user's dashboard.
  */
 export function showDashboard() {
-	// Get CSRF token
+    // Get CSRF token
 	const csrftoken = getCookie('csrftoken');
-
     const content = document.getElementById('content');
     content.innerHTML = '';
     
@@ -69,7 +70,7 @@ export function showDashboard() {
                         <li class="list-group-item"><strong>Username:</strong> ${data.username}</li>
                         <li class="list-group-item"><strong>Nickname:</strong> ${data.nickname}</li>
                         <li class="list-group-item">
-                            <strong>Registration Date:</strong> ${new Date(data.date_joined).toLocaleString('pt-PT')}
+                        <strong>Registration Date:</strong> ${new Date(data.date_joined).toLocaleString('pt-PT')}
                         </li>
                         <li class="list-group-item">
                             <strong>Last Login:</strong> ${new Date(data.last_login).toLocaleString('pt-PT')}

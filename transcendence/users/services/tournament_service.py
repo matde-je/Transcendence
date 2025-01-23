@@ -4,7 +4,7 @@ import requests
 
 def create_tournament_for_user(user_id):
     # Tournament Microservice URL
-    url = 'http://tournament:8001/create/'
+    url = 'https://tournament:8001/create/'
     data = {
         'user_id': user_id
     }
