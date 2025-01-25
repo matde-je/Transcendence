@@ -2,6 +2,8 @@ import { getCookie, checkAuthentication, getAuthenticationStatus } from './utils
 
 "use strict"
 
+////////////////////////////////VARIABLES/////////////////////////////////////
+
 let canvas;
 let context;
 let score1 = 0;
@@ -17,8 +19,7 @@ let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
 let paddleGravity = 3;
-let lastLeftHitTime = 0;
-const aiRefreshView = 4000;
+const aiRefreshView = 1000;
 
 export async function initializeGame() {
 	checkAuthentication().then((username) => {
@@ -35,10 +36,12 @@ export async function initializeGame() {
 		init = 0;
 		initialBallGravity = 1;
 		maxGravity = initialBallGravity * 2;
-		ballSpeed = 7;
+		ballSpeed = 4;
 		multiplayer = 0;
 		window.ai = 0;
-		window.lastLeftHitTime = lastLeftHitTime;
+		window.previousBallDirection = 1;
+		window.lastLeftHitTime = 0;
+		window.ballTurnedRight = true;
 		window.aiRefreshView = aiRefreshView;
 		ani = window.requestAnimationFrame(loop);
 	});
@@ -116,6 +119,8 @@ function reset_game() {
 	gameOver = false;
 }
 
+//////////////////////////////KEYBOARD, EVENTLISTENER///////////////////////////////////
+
 window.addEventListener("keydown", (e) => {
 	keys[e.key] = true; //mark the key as pressed
 	if (keys['2']) {
@@ -174,6 +179,8 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("keyup", (e) => {
 	keys[e.key] = false; //mark the key as released
 });
+
+/////////////////////////////////MOVES ENGINE//////////////////////////////////////
 
 //handle player movement based on pressed keys
 function handleMoves() {
@@ -251,11 +258,11 @@ function preventPaddleOverlap(paddle1, paddle2) {
 function handleEdgeHit(player) {
 	ball.speed *= -1;
 	if (ball.y + (ball.diamet / 2) <= player.y + (player.height / 6)) //Thouch upper edge!!
-	ball.gravity = -1 * maxGravity;
+		ball.gravity = -1 * maxGravity;
 	else if (ball.y + (ball.diamet / 2) >= player.y + (player.height * 5) / 6) // Thouch lower edge!!
-	ball.gravity = maxGravity;
+		ball.gravity = maxGravity;
 	else
-	ball.gravity = Math.sign(ball.gravity) * initialBallGravity; // Thouch center!!
+		ball.gravity = Math.sign(ball.gravity) * initialBallGravity; // Thouch center!!
 }
 
 function ballHitPaddle() {
@@ -263,8 +270,6 @@ function ballHitPaddle() {
 		return ;
 	// Left side paddles (player1 and player3)
 	if (ball.x <= player1.x + player1.width && ball.speed < 0) {
-		if (ai)
-			lastLeftHitTime = Date.now();
 		if (ball.y + ball.diamet >= player1.y && ball.y <= player1.y + player1.height)
 			handleEdgeHit(player1);
 		else if (multiplayer && ball.y + ball.diamet >= player3.y && ball.y <= player3.y + player3.height)
@@ -301,9 +306,23 @@ function ballHitPaddle() {
 function moveBall() {
 	if (gameOver == true)
 		return ;
+	//move X and Y according to speed and gravity
 	ball.x += ball.speed;
 	ball.y += ball.gravity;
 
+	console.log("previousBallDirection:", window.lastLeftHitTime);
+
+	// Update previousBallDirection and reset ballTurnedRight if necessary
+	if (ball.speed > 0 && window.previousBallDirection == -1) {
+		window.previousBallDirection = 1;
+		ballTurnedRight = true;
+		window.lastLeftHitTime = Date.now();
+		console.log("moveBall,lastLeftHitTime", window.lastLeftHitTime);
+	} else if (ball.speed < 0 && window.previousBallDirection == 1) {
+		window.previousBallDirection = -1;
+		ballTurnedRight = false;
+	}
+	//Keep in bounds
 	if (ball.y <= 0 || ball.y + ball.diamet >= canvas.height) {
 		ball.gravity *= -1;
 		if (ball.y <= 0)
@@ -312,6 +331,8 @@ function moveBall() {
 			ball.y = canvas.height - ball.diamet;
 	}
 }
+
+///////////////////////////////DRAW FUNCTIONS////////////////////////////////////
 
 function center_line() {
 	context.beginPath();
@@ -324,7 +345,7 @@ function center_line() {
 	context.setLineDash([]); //reset line dash to solid for other drawings
 }
 
-function draw(element) {
+function drawElements(element) {
 	context.fillStyle = element.color;
 
 	if (element.diamet) {
@@ -351,89 +372,46 @@ function score_2(){
 	context.fillText(`${username2}`, canvas.width - 70, canvas.height - 10);
 
 }
+function drawFirstMenu() {
+	context.font = '20px \'Courier New\', Courier, monospace';
+	context.textAlign = 'center';
+	context.fillStyle = 'white';
+	context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2, 50);
+}
+
+function drawWinGameMenu() {
+	if (score1 === 10 || score2 === 10) {
+		let x;
+		if (score1 === 10)
+			x = canvas.width / 4;
+		else
+			x = (canvas.width / 2) + (canvas.width / 4);
+		context.font = '50px \'Courier New\', Courier, monospace';
+		context.textAlign = 'center';
+		context.fillStyle = 'white';
+		context.fillText('WIN', x, 150);
+		context.font = '30px \'Courier New\', Courier, monospace';
+		context.fillText('G - PLAY AGAIN', x, 350);
+		gameOver = true;
+		window.cancelAnimationFrame(ani);
+	}
+}
 
 function drawAll(){
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	center_line();
-	draw(ball);
-	draw(player1);
-	draw(player2);
+	drawElements(ball);
+	drawElements(player1);
+	drawElements(player2);
 	if (multiplayer) {
-		draw(player3);
-		draw(player4);
+		drawElements(player3);
+		drawElements(player4);
 	}
 	score_1();
 	score_2();
 }
 
-function loop() {
-	if (init === 0) {
-		reset_game();
-		context.font = '20px \'Courier New\', Courier, monospace';
-		context.textAlign = 'center';
-		context.fillStyle = 'white';
-		context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2, 50);
-		draw(ball);
-		draw(player1);
-		draw(player2);
-	}
-	if (!gameOver && !pause && init === 1) {
-		handleMoves();
-		if (window.ai) {
-			aiLogic(window.aiRefreshView);
-		}
-		moveBall();
-		ballHitPaddle();
-		drawAll();
-		if (score1 === 10 || score2 === 10) {
-			let x;
-			if (score1 === 10)
-				x = canvas.width / 4;
-			else
-				x = (canvas.width / 2) + (canvas.width / 4);
-			context.font = '50px \'Courier New\', Courier, monospace';
-			context.textAlign = 'center';
-			context.fillStyle = 'white';
-			context.fillText('WIN', x, 150);
-			context.font = '30px \'Courier New\', Courier, monospace';
-			context.fillText('G - PLAY AGAIN', x, 350);
-			gameOver = true;
-			window.cancelAnimationFrame(ani);
-		}
-	}
-	if (!gameOver && score1 < 10 && score2 < 10 && init === 1) {
-		ani = window.requestAnimationFrame(loop);
-	} else if (gameOver && getAuthenticationStatus()) {
-		let finalResult;
-		let opponentType;
-
-		// Determines the opponent type based on the game mode
-		if (ai === 1 && multiplayer === 0) {
-			opponentType = 'AI';
-		} else if (ai === 0 && multiplayer === 0) {
-			opponentType = 'HUMAN';
-		} else if (ai === 0 && multiplayer === 1) {
-			opponentType = 'HUMAN PAIR';
-		}
-
-		// Determines the result based on the score
-		if (score1 === 10) {
-			finalResult = 'win';
-		} else {
-			finalResult = 'lose';
-		}
-
-		console.log('Final result:', finalResult);
-		console.log('Opponent type:', opponentType);
-		console.log('Final score:', score1 + '-' + score2);
-		let score = score1 + '-' + score2;
-		console.log('Score:', score);
-
-		// Register the result in the backend
-		registerMatchResult(opponentType, finalResult, score);
-
-	}
-}
+/////////////////////////////////TOURNAMMENT//////////////////////////////////////
 
 /**
  * Registers the result of a match by sending a POST request to the server.
@@ -465,4 +443,60 @@ function registerMatchResult(opponent, result, score) {
 	.catch((error) => {
 		console.error('Error registering result:', error);
 	});
+}
+
+function tournamentEndGame() {
+	let finalResult;
+	let opponentType;
+
+	// Determines the opponent type based on the game mode
+	if (ai === 1 && multiplayer === 0) {
+		opponentType = 'AI';
+	} else if (ai === 0 && multiplayer === 0) {
+		opponentType = 'HUMAN';
+	} else if (ai === 0 && multiplayer === 1) {
+		opponentType = 'HUMAN PAIR';
+	}
+
+	// Determines the result based on the score
+	if (score1 === 10) {
+		finalResult = 'win';
+	} else {
+		finalResult = 'lose';
+	}
+
+	console.log('Final result:', finalResult);
+	console.log('Opponent type:', opponentType);
+	console.log('Final score:', score1 + '-' + score2);
+	let score = score1 + '-' + score2;
+	console.log('Score:', score);
+
+	// Register the result in the backend
+	registerMatchResult(opponentType, finalResult, score);
+}
+
+/////////////////////////////////MAIN LOOP/////////////////////////////////////
+
+function loop() {
+	if (init === 0) {
+		reset_game();
+	drawFirstMenu();
+	drawElements(ball);
+	drawElements(player1);
+	drawElements(player2);
+	}
+	if (!gameOver && !pause && init === 1) {
+		handleMoves();
+		if (window.ai) {
+			aiLogic(window.ball, window.canvas);
+		}
+		moveBall();
+		ballHitPaddle();
+		drawAll();
+		drawWinGameMenu();
+	}
+	if (!gameOver && score1 < 10 && score2 < 10 && init === 1) {
+		ani = window.requestAnimationFrame(loop);
+	} else if (gameOver && getAuthenticationStatus())
+		tournamentEndGame();
 }

@@ -23,27 +23,37 @@ function predictBallYPos(ball, canvas, player2) {
 	return predictedY;
 }
 
-function updateAI(player2, ball, canvas) {
-	// Don't move the AI paddle if not enough time has passed
+function aiLogic(ball, canvas) {
+
 	const currentTime = Date.now();
-	if (currentTime - window.lastLeftHitTime < window.aiRefreshView)
-		return;
+	//console.log("Time since last hit:", currentTime - window.lastLeftHitTime);
 
-	const targetY = predictBallYPos(ball, canvas, player2);
 
-	// Move AI paddle toward the predicted position
-	let newY = player2.y;
-	if (Math.abs(newY + player2.height / 2 - targetY) > player2.gravity) {
-		const direction = targetY < newY + player2.height / 2 ? -1 : 1;
-		newY += direction * player2.gravity;
-	}
-	// Move and Ensure paddle stays within canvas bounds if ball moving towards AI
-	if (ball.speed > 0)
-		player2.y = Math.max(Math.min(newY, canvas.height - player2.height), 0);
+	if (ball.speed > 0) {
+		if (window.ballTurnedRight && (currentTime - window.lastLeftHitTime <= window.aiRefreshView))
+			return;
+
+		const targetY = predictBallYPos(ball, canvas, player2);
+		//console.log("targetY", targetY);
+		let newY = player2.y;
+
+		//Se distancia do centro da paddle ate a previsao targetY for maior que a
+		//aiPistancia percorrida em 1seg, a velocidade gravity mover na direcao da bola
+		const aiPaddleCenterPos = newY + player2.height / 2;
+		if (Math.abs(aiPaddleCenterPos - targetY) > player2.gravity) {
+			const direction = targetY < aiPaddleCenterPos ? -1 : 1;
+			newY += direction * player2.gravity;
+		}
+		// Move and Ensure paddle stays within canvas bounds if ball moving towards AI
+		if (ball.speed > 0)
+			//console.log("Paddle moved");
+			window.player2.y = Math.max(Math.min(newY, canvas.height - player2.height), 0);
+
+		//Reset ballTurnedRight after AI has processed it
+		window.ballTurnedRight = false;
 }
-
-function aiLogic() {
-		updateAI(player2, ball, canvas);
+	else
+		return;
 }
 
 // Export the aiLogic function to the global window object
