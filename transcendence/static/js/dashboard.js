@@ -1,7 +1,7 @@
 // static/js/dashboard.js
 
-import { checkAuthentication } from './utils.js';
-import { getCookie } from './utils.js';
+import { checkAuthentication, getCookie } from './utils.js';
+import { showHome } from './app.js';
 import { sendFriendRequest, acceptFriendRequest, removeFriend, showFriends } from './friendship.js';
 
 window.sendFriendRequest = sendFriendRequest;
@@ -43,7 +43,15 @@ function createList(content, title, items) {
 /**
  * Shows user's dashboard.
  */
-export function showDashboard() {
+export async function showDashboard() {
+
+	const username = await checkAuthentication();
+alert(username);
+    if (username === ' Anonymous') {
+        showHome();
+        return;
+    }
+	
 	// Get CSRF token
 	const csrftoken = getCookie('csrftoken');
 
@@ -88,8 +96,7 @@ export function showDashboard() {
 			<button id="show-results" class="btn btn-primary">Show Results</button>
 			<hr>
 		</div>
-    `;
-        checkAuthentication();
+    	`;
 
         document.getElementById('edit-user').addEventListener('click', (e) => {
             e.preventDefault();
@@ -113,6 +120,7 @@ export function showDashboard() {
 
 	})
     .catch(error => console.error('Error:', error));
+	
 }
 
 /**

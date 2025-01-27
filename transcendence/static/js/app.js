@@ -156,6 +156,7 @@ export function initializeNavbar(authenticated) {
 import { initializeGame } from './game.js';
 
 export function showHome() {
+	
     let contentElement = document.getElementById('content');
     if (!contentElement) {
         contentElement = document.createElement('div');
@@ -263,9 +264,3 @@ function logout() {
             alert('Error: ' + error.message);
         });
 }
-
-// Exposed the function to the global object if it is not already
-window.playSinglePlayerGame = playSinglePlayerGame;
-
-// Use a função showMultiplayer
-showMultiplayer();

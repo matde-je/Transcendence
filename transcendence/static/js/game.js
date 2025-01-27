@@ -17,29 +17,40 @@ let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
 
+window.isTournament = false;
+
 export async function initializeGame() {
-    checkAuthentication().then((username) => {
-        username1 = username;
-	    canvas = document.getElementById("game");
-	    context = canvas.getContext("2d");
-	    canvas.width = 550;
-	    canvas.height = 400;
-		window.canvas = canvas;
-	    window.context = context;
-	    score1 = 0;
-	    score2 = 0;
-	    init = 0;
-		initialBallGravity = 1;
-		maxGravity = initialBallGravity * 2;
-		ballSpeed = 7;
-		multiplayer = 0;
-		window.ai = 0;
-		window.aiSpeed = 70;
-		window.aiRefreshView = 1000; // 1 sec, 1000 ms
-		window.aiLastUpdateTime = Date.now();
-		ani = window.requestAnimationFrame(loop);
-    });
+	if (window.isTournament)
+	{
+		username1 = window.username1;
+		username2 = window.username2;
+	}
+	else
+	{
+		checkAuthentication().then((username) => {
+			username1 = username;
+		});
+	}
+    canvas = document.getElementById("game");
+    context = canvas.getContext("2d");
+    canvas.width = 550;
+    canvas.height = 400;
+	window.canvas = canvas;
+    window.context = context;
+    score1 = 0;
+    score2 = 0;
+    init = 0;
+	initialBallGravity = 1;
+	maxGravity = initialBallGravity * 2;
+	ballSpeed = 7;
+	multiplayer = 0;
+	window.ai = 0;
+	window.aiSpeed = 70;
+	window.aiRefreshView = 1000; // 1 sec, 1000 ms
+	window.aiLastUpdateTime = Date.now();
+	ani = window.requestAnimationFrame(loop);
 }
+
 class Element {
 	constructor(options) {
 	this.x = options.x;
@@ -61,7 +72,7 @@ const player1 = new Element ( {
 	gravity: 2,
 });
 
-window.player2 = new Element ( {
+const player2 = new Element ( {
 	x: 530,
     y: 170, // Center vertically
 	width: 12,
@@ -117,27 +128,28 @@ window.keys = {};
 
 window.addEventListener("keydown", (e) => {
 	keys[e.key] = true; //mark the key as pressed
-	if (keys['2']) {
-		context.font = "20px 'Courier New', Courier, monospace";
-		context.textAlign = "center";
-		context.fillStyle = "white";
-		context.fillText("PLAYER 1 - ARROW KEYS", canvas.width / 2, 260);
-		context.fillText("PLAYER 2 - Q AND A", canvas.width / 2, 290);
-		context.fillText("P - PAUSE", canvas.width / 2, 320);
-		context.fillText("G - START", canvas.width / 2, 350);
-		username2 = "     HUMAN";
-	}
-	if (keys['1']) {
+	if (keys['1'] && init === 0) {
 		ai = 1;
 		context.font = "20px 'Courier New', Courier, monospace";
 		context.textAlign = "center";
 		context.fillStyle = "white";
 		context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
 		context.fillText("P - PAUSE", canvas.width / 2, 320);
-		context.fillText("G - START", canvas.width / 2, 350);
+		context.fillText("S - START", canvas.width / 2, 350);
 		username2 = "        AI";
 	}
-	if (keys['4']) {
+	if (keys['2'] && init === 0) {
+		context.font = "20px 'Courier New', Courier, monospace";
+		context.textAlign = "center";
+		context.fillStyle = "white";
+		context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, 260);
+		context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 290);
+		context.fillText("P - PAUSE", canvas.width / 2, 320);
+		context.fillText("S - START", canvas.width / 2, 350);
+		if (!window.isTournament)
+			username2 = "     HUMAN";
+	}
+	if (keys['4'] && init === 0) {
 		multiplayer = 1;
 		context.font = "20px 'Courier New', Courier, monospace";
 		context.textAlign = "center";
@@ -147,24 +159,33 @@ window.addEventListener("keydown", (e) => {
 		context.fillText("PLAYER 3 - F AND V", canvas.width / 2, 260);
 		context.fillText("PLAYER 4 - J AND M", canvas.width / 2, 290);
 		context.fillText("P - PAUSE", canvas.width / 2, 320);
-		context.fillText("G - START", canvas.width / 2, 350);
+		context.fillText("S - START", canvas.width / 2, 350);
 		username2 = "HUMAN PAIR";
 	}
-	if ((gameOver == true || init == 0) && (keys['g'])) {
+	if ((gameOver == true || init == 0) && (keys['s'] || keys['S']))
+	{
 		window.cancelAnimationFrame(ani);
 		reset_game();
 		context.clearRect(0, 0, canvas.width, canvas.height);
 	    ani = window.requestAnimationFrame(loop);
 		init = 1;
-		console.log("reset game g clicked");
+		console.log("start game clicked");
 	}
+
+	if ((gameOver == true || init == 0) && (keys['n'] || keys['N']) && window.isTournament) 
+	{
+		console.log("Get ready for next tournament game");
+		let winnerId = (score1 === 10) ? window.player1Id : window.player2Id;
+		window.onGameOver(winnerId);
+	}
+	
 	if (keys['p'] && gameOver == false && init == 1) {
 		pause = !pause;
 		if (pause == true) {
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("Paused, press P to continue", canvas.width / 4 + 50, 355);
+			context.fillText("Paused, press P to continue", canvas.width / 2, canvas.height / 2);
 		}
 		keys['p'] = false;
 	}
@@ -322,7 +343,6 @@ function score_2(){
 	context.fillText(score2, canvas.width / 2 + 60, 50);
 	context.font = "20px 'Courier New', Courier, monospace";
 	context.fillText(`${username2}`, canvas.width - 70, canvas.height - 10);
-
 }
 
 function drawAll(){
@@ -344,10 +364,25 @@ let AiLastUpdateTime = Date.now();
 function loop() {
 	if (init === 0) {
 		reset_game();
-		context.font = '20px \'Courier New\', Courier, monospace';
-        context.textAlign = 'center';
-        context.fillStyle = 'white';
-        context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2, 50);
+		if (window.isTournament)
+		{
+			const event = new KeyboardEvent('keydown', {
+				key: '2',
+				keyCode: 50,
+				which: 50,
+				code: 'Digit2',
+				bubbles: true,
+				cancelable: true
+			});
+			document.dispatchEvent(event);
+		}
+		else
+		{
+			context.font = '20px \'Courier New\', Courier, monospace';
+			context.textAlign = 'center';
+			context.fillStyle = 'white';
+			context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2, 50);
+		}
 		draw(ball);
 		draw(player1);
 		draw(player2);
@@ -364,16 +399,29 @@ function loop() {
         drawAll();
         if (score1 === 10 || score2 === 10) {
 			let x;
-            if (score1 === 10)
-                x = canvas.width / 4;
-            else
+			if (score1 === 10)
+				x = canvas.width / 4;
+			else
 				x = (canvas.width / 2) + (canvas.width / 4);
-			context.font = '50px \'Courier New\', Courier, monospace';
-            context.textAlign = 'center';
-            context.fillStyle = 'white';
-            context.fillText('WIN', x, 150);
-            context.font = '30px \'Courier New\', Courier, monospace';
-            context.fillText('G - PLAY AGAIN', x, 350);
+
+			if (window.isTournament)
+			{
+				context.font = '50px \'Courier New\', Courier, monospace';
+				context.textAlign = 'center';
+				context.fillStyle = 'white';
+				context.fillText('WIN', x, 150);
+				context.font = '30px \'Courier New\', Courier, monospace';
+				context.fillText('N - PLAY NEXT GAME', (canvas.width / 2) + 10, 350);
+			}
+			else
+			{
+				context.font = '50px \'Courier New\', Courier, monospace';
+				context.textAlign = 'center';
+				context.fillStyle = 'white';
+				context.fillText('WIN', x, 150);
+				context.font = '30px \'Courier New\', Courier, monospace';
+				context.fillText('G - PLAY AGAIN', x, 350);
+			}
             gameOver = true;
             window.cancelAnimationFrame(ani);
         }
@@ -385,13 +433,20 @@ function loop() {
         let opponentType;
 
 	    // Determines the opponent type based on the game mode
-	    if (ai === 1 && multiplayer === 0) {
-	        opponentType = 'AI';
-	    } else if (ai === 0 && multiplayer === 0) {
-	        opponentType = 'HUMAN';
-	    } else if (ai === 0 && multiplayer === 1) {
-	        opponentType = 'HUMAN PAIR';
-	    }
+		if (window.isTournament)
+		{
+			opponentType = username2;
+		} 
+		else
+		{
+			if (ai === 1 && multiplayer === 0) {
+				opponentType = 'AI';
+			} else if (ai === 0 && multiplayer === 0) {
+				opponentType = 'HUMAN';
+			} else if (ai === 0 && multiplayer === 1) {
+				opponentType = 'HUMAN PAIR';
+			}
+		}
 
 	    // Determines the result based on the score
 	    if (score1 === 10) {
@@ -406,9 +461,9 @@ function loop() {
 		let score = score1 + '-' + score2;
 		console.log('Score:', score);
 
-	    // Register the result in the backend
-	    registerMatchResult(opponentType, finalResult, score);
-
+	    // Register the result in the backend if not in a tournament
+		if (!window.isTournament)
+	    	registerMatchResult(opponentType, finalResult, score);
     }
 }
 
