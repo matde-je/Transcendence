@@ -86,11 +86,9 @@ export function showDashboard() {
 			<hr>
 			<button id="show-results" class="btn btn-primary">Show Results</button>
 			<hr>
-		</div>
-            <button id="show-rps" class="btn btn-primary">Show RPS Results</button>
+            <button id="show-rps" class="btn btn-primary">Show Rock-Paper-Scissors Results</button>
 			<hr>
-        </div>
-        </div>
+            </div>
     `;
         checkAuthentication();
 

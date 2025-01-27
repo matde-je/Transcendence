@@ -3,7 +3,7 @@ import { showLogin } from './login.js';
 import { showRegister } from './register.js';
 import { showDashboard, showEditUserForm } from './dashboard.js';
 import { getCookie, checkAuthentication } from './utils.js';
-import { showSinglePlayer, showMultiplayer } from './rps.js';
+import { showSinglePlayer, showMultiplayer, showWaitingList } from './rps.js';
 import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 
@@ -215,6 +215,7 @@ export function showRPS() {
     `;
     // Insert content into the main content area
     document.getElementById('content').innerHTML = rpsContent;
+    
     // Add listener for the Single Player button
     document.getElementById('singlePlayerBtn').addEventListener('click', (e) => {
         e.preventDefault();
@@ -279,6 +280,3 @@ function logout() {
 
 // Exposed the function to the global object if it is not already
 window.playSinglePlayerGame = playSinglePlayerGame;
-
-// Use a função showMultiplayer
-showMultiplayer();

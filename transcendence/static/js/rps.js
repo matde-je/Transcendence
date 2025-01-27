@@ -191,79 +191,67 @@ export async function showWaitingList() {
         if (!isUserInWaitingList) {
             document.getElementById('addToWaitingListBtn').addEventListener('click', async (e) => {
                 e.preventDefault();
-                if (!checkAuthentication()) {
-                    const addResponse = await fetch('/rps/add-to-waiting-list/', {
-                        method: 'POST',
-                        credentials: 'include',
-                        headers: {
-                            'X-CSRFToken': csrftoken
-                        }
-                    });
-
-                    if (!addResponse.ok) {
-                        throw new Error(`Error HTTP! status: ${addResponse.status}`);
+                const addResponse = await fetch('/rps/add-to-waiting-list/', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken': csrftoken
                     }
+                });
 
-                    alert('User added to the waiting list.');
-                    showWaitingList(); // Refresh the waiting list
-                } else {
-                    alert('Error adding to waiting list.');
+                if (!addResponse.ok) {
+                    throw new Error(`Error HTTP! status: ${addResponse.status}`);
                 }
+
+                alert('User added to the waiting list.');
+                showWaitingList(); // Refresh the waiting list
             });
         } else {
             document.getElementById('removeToWaitingListBtn').addEventListener('click', async (e) => {
                 e.preventDefault();
-                if (!checkAuthentication()) {
-                    const removeResponse = await fetch('/rps/remove_from_waiting_list/', {
-                        method: 'POST',
-                        credentials: 'include',
-                        headers: {
-                            'X-CSRFToken': csrftoken
-                        }
-                    });
-
-                    if (!removeResponse.ok) {
-                        throw new Error(`Error HTTP! status: ${removeResponse.status}`);
+                const removeResponse = await fetch('/rps/remove_from_waiting_list/', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken': csrftoken
                     }
+                });
 
-                    alert('User removed from the waiting list.');
-                    showWaitingList(); // Refresh the waiting list
-                } else {
-                    alert('Error removing from waiting list.');
+                if (!removeResponse.ok) {
+                    throw new Error(`Error HTTP! status: ${removeResponse.status}`);
                 }
+
+                alert('User removed from the waiting list.');
+                showWaitingList(); // Refresh the waiting list
             });
         }
 
         if(waiting_list_count > 1){
             document.getElementById('matchMakingBtn').addEventListener('click', async (e) => {
                 e.preventDefault();
-                if (!checkAuthentication()) {
-                    const matchResponse = await fetch('/rps/find_match/', {
-                        method: 'POST',
-                        credentials: 'include',
-                        headers: {
-                            'X-CSRFToken': csrftoken
-                        }
-                    });
-
-                    if (!matchResponse.ok) {
-                        throw new Error(`Error HTTP! status: ${matchResponse.status}`);
+                const matchResponse = await fetch('/rps/find_match/', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken': csrftoken
                     }
+                });
 
-                    const matchData = await matchResponse.json();
-                    const opponent = matchData.opponent; // Definir a variável opponent
-                    alert(`Match found: ${opponent}`);
-                    sessionStorage.setItem('opponent', opponent);
-
-                    showMultiplayer();
-                    history.pushState(
-                        { page: 'rps-multiplayer' },
-                        'Rock Paper Scissors Multiplayer',
-                        '/rock-paper-scissors/multiplayer'
-                    );
-                } else {
-                    alert('Error finding match. No compatible players found.');
+                if (!matchResponse.ok) {
+                    throw new Error(`Error HTTP! status: ${matchResponse.status}`);
                 }
+
+                const matchData = await matchResponse.json();
+                const opponent = matchData.opponent;
+                alert(`Match found: ${opponent}`);
+                sessionStorage.setItem('opponent', opponent);
+
+                showMultiplayer();
+                history.pushState(
+                    { page: 'rps-multiplayer' },
+                    'Rock Paper Scissors Multiplayer',
+                    '/rock-paper-scissors/multiplayer'
+                );
             });
         }
     } catch (error) {
