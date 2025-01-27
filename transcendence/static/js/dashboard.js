@@ -85,6 +85,8 @@ export function showDashboard() {
             <hr>
 			<button id="show-tournaments" class="btn btn-primary">Show Tournaments Results</button>
 			<hr>
+            <button id="show-rps" class="btn btn-primary">Show RPS Results</button>
+			<hr>
         </div>
         </div>
     `;
@@ -103,6 +105,10 @@ export function showDashboard() {
 		document.getElementById('show-tournaments').addEventListener('click', (e) => {
             e.preventDefault();
             showUserTournamentResults()
+        });
+        document.getElementById('show-rps').addEventListener('click', (e) => {
+            e.preventDefault();
+            showRockPaperScissor()
         });
 	})
     .catch(error => console.error('Error:', error));
@@ -222,8 +228,8 @@ export async function showUserTournamentResults() {
                 content.appendChild(div);
             });
 
-			// Calculate statistics
-            const total = tournaments.length;
+            // Calculate statistics
+            const total = tournaments.length; 
             const wins = tournaments.filter(t => t.is_winner).length;
             const losses = total - wins;
             const winPercentage = ((wins / total) * 100).toFixed(2);
@@ -240,9 +246,39 @@ export async function showUserTournamentResults() {
             content.appendChild(statsDiv);
         } else {
             content.innerHTML += '<p>You have not participated in any tournaments.</p>';
-        }
+        } 
     } catch (error) {
         console.error('Error fetching tournament results:', error);
         alert('Error fetching tournament results.');
+    }
+}
+
+
+export async function showRockPaperScissor() {
+    try {
+        const response = await fetch('/rps/get_rps_results/', {
+            method: 'GET',
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP! status: ${response.status}`);
+        }
+        const results = await response.json();
+        const content = document.getElementById('content');
+        content.innerHTML = '<h2>RPS Results</h2>';
+        const rpsResults = results;
+        const rpsResultsDiv = document.createElement('div');
+        rpsResultsDiv.innerHTML = `
+            <h3>Rock-Paper-Scissors Results</h3>
+            <p>Total Games: ${rpsResults.total_games}</p>
+            <p>Win Percentage: ${rpsResults.win_percentage}%</p>
+            <p>Wins: ${rpsResults.wins}</p>
+            <p>Losses: ${rpsResults.losses}</p>
+        `;
+        content.appendChild(rpsResultsDiv);
+    } catch (error) {
+        console.error('Error fetching Rock-Paper-Scissors results:', error);
+        alert('Error fetching Rock-Paper-Scissors results.');
     }
 }
