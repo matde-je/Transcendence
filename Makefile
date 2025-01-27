@@ -53,6 +53,16 @@ enroll-users:
 	@clear
 	docker compose --file docker-compose.yml run backend python manage.py enroll_users
 
+# Enroll all users in the waiting list
+waiting_list:
+	@clear
+	docker compose --file docker-compose.yml run backend python manage.py waiting_list
+
+win_percentages:
+	@clear
+	docker compose --file docker-compose.yml run backend python manage.py win_percentages
+
+
 # Migrate the database
 migrate:
 	@clear
