@@ -1,5 +1,4 @@
 import { getCookie, checkAuthentication, getAuthenticationStatus } from './utils.js';
-
 "use strict"
 
 ////////////////////////////////VARIABLES/////////////////////////////////////
@@ -26,17 +25,16 @@ export async function initializeGame() {
 		username1 = username;
 		canvas = document.getElementById("game");
 		context = canvas.getContext("2d");
-		canvas.width = 550;
-		canvas.height = 400;
+		canvas.width = 700
+		canvas.height = 500;
 		window.canvas = canvas;
 		window.context = context;
 		window.keys = {};
-		score1 = 0;
-		score2 = 0;
+		score1 = score2 = 0;
 		init = 0;
 		initialBallGravity = 1;
 		maxGravity = initialBallGravity * 2;
-		ballSpeed = 4;
+		ballSpeed = 5;
 		multiplayer = 0;
 		window.ai = 0;
 		window.previousBallDirection = 1;
@@ -48,14 +46,14 @@ export async function initializeGame() {
 }
 class Element {
 	constructor(options) {
-	this.x = options.x;
-	this.y = options.y;
-	this.width = options.width;
-	this.height = options.height;
-	this.diamet = options.diamet;
-	this.color = options.color;
-	this.speed = options.speed || 2;
-	this.gravity = options.gravity;
+		this.x = options.x ; // Assuming 550 was the original width
+		this.y = options.y; // Assuming 400 was the original height
+		this.width = options.width ;
+		this.height = options.height;
+		this.diamet = options.diamet ? options.diamet  : undefined;
+		this.color = options.color;
+		this.speed = options.speed || 2;
+		this.gravity = options.gravity;
 	}
 }
 
@@ -87,7 +85,7 @@ const player3 = new Element({
 });
 
 const player4 = new Element({
-	x: 525,
+	x: 530,
 	y: 230,
 	width: 12,
 	height: 60,
@@ -106,12 +104,11 @@ window.ball = new Element ( {
 
 
 function reset_game() {
-	score1 = 0;
-	score2 = 0;
-	player1.x = 10;
-	player1.y = 170;
-	player2.x = 525;
-	player2.y = 170;
+	score1 = score2 = 0;
+	player1.x = 10 * (window.canvas.width / 550);
+	player1.y = 170 * (window.canvas.height / 400);
+	player2.x = 530 * (window.canvas.width / 550);
+	player2.y = 170 * (window.canvas.height / 400);
 	ball.x = canvas.width / 2 - ball.diamet / 2;
 	ball.y = canvas.height / 2 - ball.diamet / 2;
 	ball.speed = ballSpeed;
@@ -127,10 +124,10 @@ window.addEventListener("keydown", (e) => {
 		context.font = "20px 'Courier New', Courier, monospace";
 		context.textAlign = "center";
 		context.fillStyle = "white";
-		context.fillText("PLAYER 1 - ARROW KEYS", canvas.width / 2, 260);
-		context.fillText("PLAYER 2 - Q AND A", canvas.width / 2, 290);
-		context.fillText("P - PAUSE", canvas.width / 2, 320);
-		context.fillText("G - START", canvas.width / 2, 350);
+		context.fillText("PLAYER 1 - ARROW KEYS", canvas.width / 2, canvas.height * 0.65);
+		context.fillText("PLAYER 2 - Q AND A", canvas.width / 2, canvas.height * 0.725);
+		context.fillText("P - PAUSE", canvas.width / 2, canvas.height * 0.80);
+		context.fillText("G - START",canvas.width / 2, canvas.height * 0.875);
 		username2 = "	 HUMAN";
 	}
 	if (keys['1']) {
@@ -138,9 +135,9 @@ window.addEventListener("keydown", (e) => {
 		context.font = "20px 'Courier New', Courier, monospace";
 		context.textAlign = "center";
 		context.fillStyle = "white";
-		context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
-		context.fillText("P - PAUSE", canvas.width / 2, 320);
-		context.fillText("G - START", canvas.width / 2, 350);
+		context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, canvas.height * 0.725);
+		context.fillText("P - PAUSE", canvas.width / 2, canvas.height * 0.80);
+		context.fillText("G - START",canvas.width / 2, canvas.height * 0.875);
 		username2 = "		AI";
 	}
 	if (keys['4']) {
@@ -148,12 +145,12 @@ window.addEventListener("keydown", (e) => {
 		context.font = "20px 'Courier New', Courier, monospace";
 		context.textAlign = "center";
 		context.fillStyle = "white";
-		context.fillText("PLAYER 1 - ARROW KEYS", canvas.width / 2, 200);
-		context.fillText("PLAYER 2 - Q AND A", canvas.width / 2, 230);
-		context.fillText("PLAYER 3 - F AND V", canvas.width / 2, 260);
-		context.fillText("PLAYER 4 - J AND M", canvas.width / 2, 290);
-		context.fillText("P - PAUSE", canvas.width / 2, 320);
-		context.fillText("G - START", canvas.width / 2, 350);
+		context.fillText("PLAYER 1 - ARROW KEYS", canvas.width / 2, canvas.height * 0.50);
+		context.fillText("PLAYER 2 - Q AND A", canvas.width / 2, canvas.height * 0.575);
+		context.fillText("PLAYER 3 - F AND V", canvas.width / 2, canvas.height * 0.65);
+		context.fillText("PLAYER 4 - J AND M", canvas.width / 2, canvas.height * 0.725);
+		context.fillText("P - PAUSE", canvas.width / 2, canvas.height * 0.80);
+		context.fillText("G - START",canvas.width / 2, canvas.height * 0.875);
 		username2 = "HUMAN PAIR";
 	}
 	if ((gameOver == true || init == 0) && (keys['g'])) {
@@ -167,10 +164,10 @@ window.addEventListener("keydown", (e) => {
 	if (keys['p'] && gameOver == false && init == 1) {
 		pause = !pause;
 		if (pause == true) {
-			context.font = "20px 'Courier New', Courier, monospace";
+			context.font = `${canvas.height * 0.05}px 'Courier New', Courier, monospace`;
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("Paused, press P to continue", canvas.width / 4 + 50, 355);
+			context.fillText("Paused, press P to continue", canvas.width / 2, canvas.height * 0.8);
 		}
 		keys['p'] = false;
 	}
@@ -234,7 +231,7 @@ function handleMoves() {
 			newY -= player3.gravity * 2; // move up
 		if (keys['v'] && player3.y + player3.height < canvas.height)
 			newY += player3.gravity * 2; // move down, but don't cross Player 2
-		if (!multiplayer || preventPaddleOverlap(player1, {...player3, y: newY}) && multiplayer)
+		if (preventPaddleOverlap(player1, {...player3, y: newY}))
 			player3.y = newY;
 
 		newY = player4.y;
@@ -242,7 +239,7 @@ function handleMoves() {
 			newY -= player4.gravity * 2; // move up, but don't go out
 		if (keys['m'] && player4.y + player3.height < canvas.height)
 			newY += player4.gravity * 2; // move down
-		if (!multiplayer || preventPaddleOverlap(player2, {...player4, y: newY}) && multiplayer)
+		if (preventPaddleOverlap(player2, {...player4, y: newY}))
 			player4.y = newY;
 	}
 }
@@ -359,24 +356,24 @@ function drawElements(element) {
 function score_1(){
 	context.font = "50px 'Courier New', Courier, monospace";
 	context.fillStyle = "#fff";
-	context.fillText(`${score1}`, canvas.width / 2 - 60, 50);
+	context.fillText(`${score1}`, canvas.width * 0.4, canvas.height * 0.125);
 	context.font = "20px 'Courier New', Courier, monospace";
-	context.fillText(`${username1}`, canvas.width - canvas.width + 60, canvas.height - 10);
+	context.fillText(`${username1}`, canvas.width * 0.11, canvas.height * 0.975);
 }
 
 function score_2(){
 	context.font = "50px 'Courier New', Courier, monospace";
 	context.fillStyle = "#fff";
-	context.fillText(score2, canvas.width / 2 + 60, 50);
+	context.fillText(score2, canvas.width * 0.6, canvas.height * 0.125);
 	context.font = "20px 'Courier New', Courier, monospace";
-	context.fillText(`${username2}`, canvas.width - 70, canvas.height - 10);
+	context.fillText(`${username2}`, canvas.width * 0.875, canvas.height * 0.975);
 
 }
 function drawFirstMenu() {
 	context.font = '20px \'Courier New\', Courier, monospace';
 	context.textAlign = 'center';
 	context.fillStyle = 'white';
-	context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2, 50);
+	context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2,  canvas.height * 0.125);
 }
 
 function drawWinGameMenu() {
@@ -389,9 +386,9 @@ function drawWinGameMenu() {
 		context.font = '50px \'Courier New\', Courier, monospace';
 		context.textAlign = 'center';
 		context.fillStyle = 'white';
-		context.fillText('WIN', x, 150);
+		context.fillText('WIN', x, canvas.height * 0.375);
 		context.font = '30px \'Courier New\', Courier, monospace';
-		context.fillText('G - PLAY AGAIN', x, 350);
+		context.fillText('G - PLAY AGAIN', x, canvas.height * 0.875);
 		gameOver = true;
 		window.cancelAnimationFrame(ani);
 	}
