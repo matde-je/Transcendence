@@ -32,7 +32,7 @@ export function showSinglePlayer() {
     </div>
     <div class="container mb-5 mt-5 pt-5 col-md-4 text-center">
             <div class="row justify-content-center">
-                <button class="btn btn-primary " id="backToMenuBtn">Back to Menu</button>
+                <button class="btn btn-secondary " id="backToMenuBtn">Back to Menu</button>
     </div>
         `;
 
@@ -105,7 +105,7 @@ export function showMultiplayer() {
     </div>
     <div class="container mb-5 mt-5 pt-5 col-md-4 text-center">
             <div class="row justify-content-center">
-                <button class="btn btn-primary " id="backToMenuBtn">Back to Menu</button>
+                <button class="btn btn-secondary " id="backToMenuBtn">Back to Menu</button>
     </div>
     `;
     document.getElementById('content').innerHTML = multiplayerContent;

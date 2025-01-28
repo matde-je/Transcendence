@@ -8,7 +8,7 @@ let score1 = 0;
 let score2 = 0;
 let ani;
 let gameOver = false;
-let pause = false;
+let pause;
 let init = 0;
 let initialBallGravity;
 let maxGravity;
@@ -17,6 +17,7 @@ let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
 let paddleGravity = 3;
+const keys = {};
 
 export async function initializeGame() {
 	checkAuthentication().then((username) => {
@@ -27,10 +28,10 @@ export async function initializeGame() {
 		canvas.height = 400;
 		window.canvas = canvas;
 		window.context = context;
-		window.keys = {};
 		score1 = 0;
 		score2 = 0;
 		init = 0;
+		pause = false;
 		initialBallGravity = 1;
 		maxGravity = initialBallGravity * 2;
 		ballSpeed = 7;
@@ -113,6 +114,7 @@ function reset_game() {
 	ball.speed = ballSpeed;
 	ball.gravity = initialBallGravity;
 	gameOver = false;
+	pause = false;
 }
 
 window.addEventListener("keydown", (e) => {
@@ -419,13 +421,11 @@ function loop() {
 		} else {
 			finalResult = 'lose';
 		}
-
 		console.log('Final result:', finalResult);
 		console.log('Opponent type:', opponentType);
 		console.log('Final score:', score1 + '-' + score2);
 		let score = score1 + '-' + score2;
 		console.log('Score:', score);
-
 		// Register the result in the backend
 		registerMatchResult(opponentType, finalResult, score);
 
