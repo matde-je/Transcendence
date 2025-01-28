@@ -558,7 +558,6 @@ export async function startPongMatch(idPlayer1, idPlayer2) {
 	// Remove previous scripts, if they exist
     document.getElementById('gameScript')?.remove();
     document.getElementById('aiScript')?.remove();
-//	document.getElementById('tournamentGameScript')?.remove();
 
     contentElement.innerHTML = `
         <div class="text-center mt-5 pt-5">

@@ -2,6 +2,9 @@
 
 import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { playMultiplayerGame } from './rps-multiplayer.js';
+import { showRPS } from './app.js';
+import { getCookie, checkAuthentication } from './utils.js';
+
 
 /**
  * Displays the Single Player mode interface.
@@ -29,6 +32,7 @@ export function showSinglePlayer() {
         </div>
         <h3 id="resultDisplay" class="mb-4 fw-bold" ></h3>
     </div>
+
         `;
 
     document.getElementById('content').innerHTML = singlePlayerContent;
@@ -116,4 +120,142 @@ export function showMultiplayer() {
         e.preventDefault();
         playMultiplayerGame('scissors', 2);
     });
+}
+
+export async function showWaitingList() {
+    try {
+        const csrftoken = getCookie('csrftoken');
+        const response = await fetch('/rps/get_waiting_list/', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const waitinglist = data.users;
+        const content = document.getElementById('content');
+         content.innerHTML = `
+            <h2>Waiting List</h2>
+            <div id="waitingListContainer"></div>
+        `;
+
+        const waiting_list_count = data.waiting_list_count;
+        
+        if(waiting_list_count > 1)
+            {
+                content.innerHTML += `
+                    <div class="d-flex justify-content-between mt-5">
+                        <button class="btn btn-primary" id="matchMakingBtn">MatchMaking</button>
+                    </div>
+                `;
+            }
+        const waitingListContainer = document.getElementById('waitingListContainer');
+
+        if (waitinglist.length > 0) {
+            waitinglist.forEach(element => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                <div class="container mb-5 mt-5 pt-5 col-md-4 text-start">
+                    <h5 class="text-start">${element.username}</h5>
+                </div>
+            `;
+                waitingListContainer.appendChild(div);
+            });
+        } else {
+            waitingListContainer.innerHTML = '<p>No users in the waiting list.</p>';
+        }
+
+        const isUserInWaitingList = data.is_in_waiting_list;
+       
+
+        if (isUserInWaitingList) {
+            content.innerHTML += `
+                <div class="d-flex justify-content-between mt-5">
+                    <button class="btn btn-danger" id="removeToWaitingListBtn">Remove from Waiting List</button>
+                </div>
+            `;
+        } else {
+            content.innerHTML += `
+                <div class="d-flex justify-content-between mt-5">
+                    <button class="btn btn-primary" id="addToWaitingListBtn">Add to Waiting List</button>
+                </div>
+            `;
+        }
+
+        if (!isUserInWaitingList) {
+            document.getElementById('addToWaitingListBtn').addEventListener('click', async (e) => {
+                e.preventDefault();
+                const addResponse = await fetch('/rps/add-to-waiting-list/', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    }
+                });
+
+                if (!addResponse.ok) {
+                    throw new Error(`Error HTTP! status: ${addResponse.status}`);
+                }
+
+                alert('User added to the waiting list.');
+                showWaitingList(); // Refresh the waiting list
+            });
+        } else {
+            document.getElementById('removeToWaitingListBtn').addEventListener('click', async (e) => {
+                e.preventDefault();
+                const removeResponse = await fetch('/rps/remove_from_waiting_list/', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    }
+                });
+
+                if (!removeResponse.ok) {
+                    throw new Error(`Error HTTP! status: ${removeResponse.status}`);
+                }
+
+                alert('User removed from the waiting list.');
+                showWaitingList(); // Refresh the waiting list
+            });
+        }
+
+        if(waiting_list_count > 1){
+            document.getElementById('matchMakingBtn').addEventListener('click', async (e) => {
+                e.preventDefault();
+                const matchResponse = await fetch('/rps/find_match/', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    }
+                });
+
+                if (!matchResponse.ok) {
+                    throw new Error(`Error HTTP! status: ${matchResponse.status}`);
+                }
+
+                const matchData = await matchResponse.json();
+                const opponent = matchData.opponent;
+                alert(`Match found: ${opponent}`);
+                sessionStorage.setItem('opponent', opponent);
+
+                showMultiplayer();
+                history.pushState(
+                    { page: 'rps-multiplayer' },
+                    'Rock Paper Scissors Multiplayer',
+                    '/rock-paper-scissors/multiplayer'
+                );
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching tournament results:', error);
+        alert('Error fetching tournament results.');
+    }
 }

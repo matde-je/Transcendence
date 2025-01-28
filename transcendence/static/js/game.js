@@ -420,7 +420,7 @@ function loop() {
 				context.fillStyle = 'white';
 				context.fillText('WIN', x, 150);
 				context.font = '30px \'Courier New\', Courier, monospace';
-				context.fillText('G - PLAY AGAIN', x, 350);
+				context.fillText('S - START NEW GAME', canvas.width / 2, 350);
 			}
             gameOver = true;
             window.cancelAnimationFrame(ani);

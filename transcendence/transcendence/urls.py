@@ -17,11 +17,25 @@ Including another URLconf
 
 # transcendence/urls.py
 
+# from django.contrib import admin
+# from django.urls import path, include, re_path
+# from django.conf import settings
+# from django.conf.urls.static import static
+# from django.urls import path, re_path
+# from . import views
+
+# urlpatterns = [
+#     path('admin/', admin.site.urls),
+#     path('users/', include('users.urls')),
+#     path('tournament/', include('tournament.urls')),
+# 	path('rps/', include('rps.urls')),
+#     re_path(r'^(?!admin|users|media/|static/).*$', views.index, name='index'),
+# ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
@@ -31,4 +45,11 @@ urlpatterns = [
 	path('rps/', include('rps.urls')),
 	path('pong/', include('pong_history.urls')),
     re_path(r'^(?!admin|users|media/|static/).*$', views.index, name='index'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+# Serve media files
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Only serve static files in development mode
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

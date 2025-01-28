@@ -2,99 +2,58 @@
 
 'use strict';
 
-/* AI logic for controlling the opponent */
+function predictBallYPos(ball, canvas, player2) {
+	let predictedY = ball.y;
+	let ballX = ball.x;
+	let tempGravity = ball.gravity;
+	const maxIterations = 100;
+	let iterations = 0;
 
-/**
- * Predicts the future position of the ball based on its current position, speed, and gravity.
- * Handles the ball bouncing off the top and bottom walls of the canvas.
- *
- * @returns {Object} An object containing the predicted x and y coordinates of the ball.
- * @returns {number} return.x - The predicted x-coordinate of the ball.
- * @returns {number} return.y - The predicted y-coordinate of the ball.
- */
-function predictBallPosition() {
-    // Predict the future position of the ball
-    let futureX = window.ball.x + window.ball.speed * window.aiRefreshView;
-    let futureY = window.ball.y + window.ball.gravity * window.aiRefreshView;
+	while (ballX < canvas.width - player2.width - 10 && iterations < maxIterations) {
+		// Simulate the ball's movement
+		ballX += ball.speed;
+		predictedY += tempGravity;
 
-    // Handle ball bouncing off the walls
-    if (futureY < 0) { // Bounce at the top
-        futureY = 0;
-    } else if (futureY + window.ball.height > window.canvas.height) { // Bounce at the bottom
-        futureY = window.canvas.height - window.ball.height;
-    }
-    return { x: futureX, y: futureY };
+		// Check for wall collisions
+		if (predictedY - ball.diamet < 0 || predictedY + ball.diamet > canvas.height) {
+			tempGravity = -tempGravity; // Reverse Y velocity on wall collision
+		}
+		iterations++;
+	}
+	return predictedY;
 }
 
-/**
- * Handles the movement of the AI paddle based on key presses.
- * Moves the AI paddle up when the 'ArrowUp' key is pressed and down when the 'ArrowDown' key is pressed.
- * Ensures the paddle stays within the bounds of the canvas.
- */
-function handleAiMove() {
-    // Move the AI paddle based on key presses
-    if (window.keys['ArrowUp'] && window.player2.y > 0) {
-        window.player2.y -= window.aiSpeed; // Move up
-    }
-    if (window.keys['ArrowDown'] && window.player2.y + window.player2.height < window.canvas.height) {
-        window.player2.y += window.aiSpeed; // Move down
-    }
+function aiLogic(ball, canvas) {
+
+	const currentTime = Date.now();
+	//console.log("Time since last hit:", currentTime - window.lastLeftHitTime);
+
+
+	if (ball.speed > 0) {
+		if (window.ballTurnedRight && (currentTime - window.lastLeftHitTime <= window.aiRefreshView))
+			return;
+
+		const targetY = predictBallYPos(ball, canvas, player2);
+		//console.log("targetY", targetY);
+		let newY = player2.y;
+
+		//Se distancia do centro da paddle ate a previsao targetY for maior que a
+		//aiPistancia percorrida em 1seg, a velocidade gravity mover na direcao da bola
+		const aiPaddleCenterPos = newY + player2.height / 2;
+		if (Math.abs(aiPaddleCenterPos - targetY) > player2.gravity) {
+			const direction = targetY < aiPaddleCenterPos ? -1 : 1;
+			newY += direction * player2.gravity;
+		}
+		// Move and Ensure paddle stays within canvas bounds if ball moving towards AI
+		if (ball.speed > 0)
+			//console.log("Paddle moved");
+			window.player2.y = Math.max(Math.min(newY, canvas.height - player2.height), 0);
+
+		//Reset ballTurnedRight after AI has processed it
+		window.ballTurnedRight = false;
 }
-
-/**
- * Simulates AI key press actions to control the paddle movement based on the predicted ball position.
- *
- * @param {Object} player2 - The AI player object.
- * @param {number} player2.y - The current y-coordinate of the AI player.
- * @param {number} player2.height - The height of the AI player.
- * @param {Object} predictedPosition - The predicted position of the ball.
- * @param {number} predictedPosition.y - The predicted y-coordinate of the ball.
- */
-function simulateAiKeyPress(player2, predictedPosition) {
-    // Determine which key to press based on the predicted ball position
-    let keyToPress = null;
-    if (predictedPosition.y < player2.y + player2.height / 2) {
-        keyToPress = 'ArrowUp'; // Move up
-    } else if (predictedPosition.y > player2.y + player2.height / 2) {
-        keyToPress = 'ArrowDown'; // Move down
-    }
-
-    // Reset key presses
-    window.keys['ArrowUp'] = false;
-    window.keys['ArrowDown'] = false;
-
-    if (keyToPress) {
-        window.keys[keyToPress] = true;
-        setTimeout(() => { // Simulate key release after a short delay
-            window.keys[keyToPress] = false;
-        }, 300); // 300 ms delay
-    }
-
-    // Prevent the AI paddle from moving out of bounds
-    if (player2.y < 0) {
-        window.keys['ArrowUp'] = false;
-    } else if (player2.y + player2.height > window.canvas.height) {
-        window.keys['ArrowDown'] = false;
-    }
-
-    handleAiMove();
-}
-
-/**
- * Controls the AI logic for updating the opponent's position in a game.
- *
- * @param {number} aiRefreshView - The interval in milliseconds at which the AI is allowed to update.
- */
-function aiLogic(aiRefreshView) {
-    const currentTime = Date.now();
-    console.log('Current Time - aiLastUpdateTime:', currentTime - window.aiLastUpdateTime);
-    // AI can only update once per specified refresh interval
-    if (currentTime - window.aiLastUpdateTime >= aiRefreshView) {
-        const predictedPosition = predictBallPosition();
-        console.log('Predicted ball position:', predictedPosition);
-        simulateAiKeyPress(window.player2, predictedPosition);
-        window.aiLastUpdateTime = currentTime;
-    }
+	else
+		return;
 }
 
 // Export the aiLogic function to the global window object

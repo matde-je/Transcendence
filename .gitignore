@@ -5,11 +5,12 @@ key.pem
 /transcendence/cert.crt
 /transcendence/cert.key
 /transcendence/__pycache__/
-/transcendence/media/avatars/
+/transcendence/media/
 /transcendence/pong_history/__pycache__/
 /transcendence/pong_history/migrations/__pycache__/
 /transcendence/rps/__pycache__/
 /transcendence/rps/migrations/__pycache__/
+/transcendence/staticfiles/
 /transcendence/tournament/__pycache__/
 /transcendence/tournament/migrations/__pycache__/
 /transcendence/tournament/services/__pycache__/
@@ -18,4 +19,3 @@ key.pem
 /transcendence/users/management/commands/__pycache__/
 /transcendence/users/migrations/__pycache__/
 /transcendence/users/services/__pycache__/
-/transcendence/media/
