@@ -37,7 +37,7 @@ export function initializeNavbar(authenticated) {
     let navBarContainer = document.getElementById('navbar');
     navBarContainer = document.createElement('nav'); //navigation
     navBarContainer.id = 'navbar';
-    navBarContainer.className = 'navbar navbar-expand-lg navbar-light bg-light fixed-top mb-5';
+    navBarContainer.className = 'navbar navbar-expand-lg navbar-light bg-light fixed-top';
     const container = document.createElement('div'); //group
     container.className = 'container-fluid';
     const navbarBrand = document.createElement('a'); //hyperlink
