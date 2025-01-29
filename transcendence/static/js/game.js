@@ -9,7 +9,7 @@ let score1 = 0;
 let score2 = 0;
 let ani;
 let gameOver = false;
-let pause = false;
+let pause;
 let init = 0;
 let initialBallGravity;
 let maxGravity;
@@ -32,6 +32,7 @@ export async function initializeGame() {
 		window.keys = {};
 		score1 = score2 = 0;
 		init = 0;
+		pause = false;
 		initialBallGravity = 1;
 		maxGravity = initialBallGravity * 2;
 		ballSpeed = 5;
@@ -114,6 +115,7 @@ function reset_game() {
 	ball.speed = ballSpeed;
 	ball.gravity = initialBallGravity;
 	gameOver = false;
+	pause = false;
 }
 
 //////////////////////////////KEYBOARD, EVENTLISTENER///////////////////////////////////
