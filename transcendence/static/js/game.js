@@ -35,7 +35,7 @@ export async function initializeGame() {
 		pause = false;
 		initialBallGravity = 1;
 		maxGravity = initialBallGravity * 2;
-		ballSpeed = 5;
+		ballSpeed = 4;
 		multiplayer = 0;
 		window.ai = 0;
 		window.previousBallDirection = 1;
@@ -51,7 +51,7 @@ class Element {
 		this.y = options.y; // Assuming 400 was the original height
 		this.width = options.width ;
 		this.height = options.height;
-		this.diamet = options.diamet ? options.diamet  : undefined;
+
 		this.color = options.color;
 		this.speed = options.speed || 2;
 		this.gravity = options.gravity;
@@ -97,7 +97,8 @@ const player4 = new Element({
 window.ball = new Element ( {
 	x: 175,
 	y: 200,
-	diamet: 8,
+	width: 10,
+	height: 10,
 	color: "#fff",
 	speed: ballSpeed,
 	gravity: initialBallGravity,
@@ -110,8 +111,8 @@ function reset_game() {
 	player1.y = 170 * (window.canvas.height / 400);
 	player2.x = 530 * (window.canvas.width / 550);
 	player2.y = 170 * (window.canvas.height / 400);
-	ball.x = canvas.width / 2 - ball.diamet / 2;
-	ball.y = canvas.height / 2 - ball.diamet / 2;
+	ball.x = canvas.width / 2 - ball.width / 2;
+	ball.y = canvas.height / 2 - ball.width / 2;
 	ball.speed = ballSpeed;
 	ball.gravity = initialBallGravity;
 	gameOver = false;
@@ -256,9 +257,9 @@ function preventPaddleOverlap(paddle1, paddle2) {
 
 function handleEdgeHit(player) {
 	ball.speed *= -1;
-	if (ball.y + (ball.diamet / 2) <= player.y + (player.height / 6)) //Thouch upper edge!!
+	if (ball.y + (ball.width / 2) <= player.y + (player.height / 6)) //Thouch upper edge!!
 		ball.gravity = -1 * maxGravity;
-	else if (ball.y + (ball.diamet / 2) >= player.y + (player.height * 5) / 6) // Thouch lower edge!!
+	else if (ball.y + (ball.width / 2) >= player.y + (player.height * 5) / 6) // Thouch lower edge!!
 		ball.gravity = maxGravity;
 	else
 		ball.gravity = Math.sign(ball.gravity) * initialBallGravity; // Thouch center!!
@@ -269,35 +270,35 @@ function ballHitPaddle() {
 		return ;
 	// Left side paddles (player1 and player3)
 	if (ball.x <= player1.x + player1.width && ball.speed < 0) {
-		if (ball.y + ball.diamet >= player1.y && ball.y <= player1.y + player1.height)
+		if (ball.y + ball.width >= player1.y && ball.y <= player1.y + player1.height)
 			handleEdgeHit(player1);
-		else if (multiplayer && ball.y + ball.diamet >= player3.y && ball.y <= player3.y + player3.height)
+		else if (multiplayer && ball.y + ball.width >= player3.y && ball.y <= player3.y + player3.height)
 			handleEdgeHit(player3);
 	}
 	// Right side paddles (player2 and player4)
-	else if (ball.x + ball.diamet >= player2.x && ball.speed > 0) {
-		if (ball.y + ball.diamet >= player2.y && ball.y <= player2.y + player2.height)
+	else if (ball.x + ball.width >= player2.x && ball.speed > 0) {
+		if (ball.y + ball.width >= player2.y && ball.y <= player2.y + player2.height)
 			handleEdgeHit(player2);
-		else if (multiplayer && ball.y + ball.diamet >= player4.y && ball.y <= player4.y + player4.height)
+		else if (multiplayer && ball.y + ball.width >= player4.y && ball.y <= player4.y + player4.height)
 			handleEdgeHit(player4);
 	}
-	if (ball.x <= player1.x + player1.width && ball.y + ball.diamet >= player1.y &&
+	if (ball.x <= player1.x + player1.width && ball.y + ball.width >= player1.y &&
 			ball.y <= player1.y + player1.height && ball.speed < 0) // There is collision!!
 		handleEdgeHit(player1);
-	else if (ball.x + ball.diamet >= player2.x && ball.y + ball.diamet >= player2.y &&
+	else if (ball.x + ball.width >= player2.x && ball.y + ball.width >= player2.y &&
 				ball.y <= player2.y + player2.height && ball.speed > 0) // There is collision!!
 		handleEdgeHit(player2);
 	//point scored
 	let randomSign = Math.random() < 0.5 ? -1 : 1;
-	if (ball.x + ball.diamet < 0) {
+	if (ball.x + ball.width < 0) {
 		score2 += 1;
-		ball.x = canvas.width / 2 - ball.diamet / 2;
-		ball.y = canvas.height / 2 - ball.diamet / 2;
+		ball.x = canvas.width / 2 - ball.width / 2;
+		ball.y = canvas.height / 2 - ball.width / 2;
 		ball.gravity = initialBallGravity * randomSign;
 	} else if (ball.x > canvas.width) {
 		score1 += 1;
-		ball.x = canvas.width / 2 - ball.diamet / 2;
-		ball.y = canvas.height / 2 - ball.diamet / 2;
+		ball.x = canvas.width / 2 - ball.width / 2;
+		ball.y = canvas.height / 2 - ball.width / 2;
 		ball.gravity = initialBallGravity * randomSign;
 	}
 }
@@ -322,12 +323,12 @@ function moveBall() {
 		ballTurnedRight = false;
 	}
 	//Keep in bounds
-	if (ball.y <= 0 || ball.y + ball.diamet >= canvas.height) {
+	if (ball.y <= 0 || ball.y + ball.width >= canvas.height) {
 		ball.gravity *= -1;
 		if (ball.y <= 0)
 			ball.y = 0;
 		else
-			ball.y = canvas.height - ball.diamet;
+			ball.y = canvas.height - ball.width;
 	}
 }
 
@@ -346,13 +347,7 @@ function center_line() {
 
 function drawElements(element) {
 	context.fillStyle = element.color;
-
-	if (element.diamet) {
-		context.beginPath();
-		context.arc(element.x, element.y, element.diamet, 0, Math.PI * 2);
-		context.fill();
-	}
-		context.fillRect(element.x, element.y, element.width, element.height);
+	context.fillRect(element.x, element.y, element.width, element.height);
 }
 
 function score_1(){
@@ -390,7 +385,7 @@ function drawWinGameMenu() {
 		context.fillStyle = 'white';
 		context.fillText('WIN', x, canvas.height * 0.375);
 		context.font = '30px \'Courier New\', Courier, monospace';
-		context.fillText('G - PLAY AGAIN', x, canvas.height * 0.875);
+		context.fillText('S - START NEW GAME', x, canvas.height * 0.875);
 		gameOver = true;
 		window.cancelAnimationFrame(ani);
 	}
