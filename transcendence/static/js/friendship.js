@@ -1,4 +1,5 @@
 import { getCookie } from './utils.js';
+
 /**
  * Creates a list section with a title and items, and appends it to the given content element.
  *
@@ -6,16 +7,12 @@ import { getCookie } from './utils.js';
  * @param {string} title - The title of the list section.
  * @param {string[]} items - An array of strings representing the items to be included in the list section.
  */
-
 function createList(content, title, items) {
     const section = document.createElement('section');
     section.className = 'mt-5 mb-5';
     const heading = document.createElement('h4');
     heading.textContent = title;
-    if (title === 'Friends')
-        heading.className = 'mb-4 text-center pt-5';
-    else
-        heading.className = 'mb-4 text-center mt-4';
+    heading.className = 'mb-4 text-center mt-4';
     section.appendChild(heading);
     const listGroup = document.createElement('div');
     listGroup.className = 'list-group';
@@ -122,7 +119,7 @@ export function removeFriend(user_id) {
     .then(response => {
         if (response.ok) {
             alert('Friendship removed.');
-            window.showFriends();
+           showFriends();
         } else {
             response.json().then(data => {
                 alert('Error removing friendship: ' + JSON.stringify(data));
@@ -165,26 +162,41 @@ export async function showFriends() {
     ])
     .then(([users, sentRequests, receivedRequests, friends]) => {
         const friendItems = friends.map(friend => {
-            const listItem = document.createElement('a');
-            listItem.className = 'list-group-item text-center list-group-item-action d-flex justify-content-between align-items-center gap-3'; 
+            const listItem = document.createElement('div');
+            listItem.className = 'list-group-item d-flex justify-content-between gap-3'; 
+            // Create a container for the username and status indicator
+            const userContainer = document.createElement('div');
+            userContainer.className = 'd-flex align-items-center gap-2';
+            // Create the online status indicator
+            const statusIndicator = document.createElement('span');
+            statusIndicator.className = 'status-indicator rounded-circle';
+            statusIndicator.classList.add('bg-secondary'); // Default color: gray 
+            // Set size of the status indicator
+            statusIndicator.classList.add('me-2', 'd-inline-block', 'p-1'); // p-1 for padding to make it round
             const usernameText = document.createElement('span');
             usernameText.textContent = friend.username;
-            listItem.appendChild(usernameText);
+            // Append the status indicator and username to the container
+            userContainer.appendChild(statusIndicator);
+            userContainer.appendChild(usernameText);
+            listItem.appendChild(userContainer);
             const button = document.createElement('button');
             button.textContent = 'Remove Friendship';
             button.className = 'btn btn-sm btn-danger';
             button.onclick = function() {
-                removeFriend(friend.id); // Use the friend.id when the button is clicked
+                removeFriend(friend.id);
             };
             listItem.appendChild(button);
+            // Store reference to update later via WebSocket
+            listItem.dataset.friendId = friend.id;
+            listItem.dataset.statusIndicator = statusIndicator;
             return listItem;
         });
         createList(content, 'Friends', friendItems);
         let socket;
-        if (!document.getElementById('friends-list-container')) {
-            const friendsListContainer = document.createElement('div');
-            friendsListContainer.id = 'friends-list-container';
-            content.appendChild(friendsListContainer);
+        if (!document.getElementById('friend-container')) {
+            const friend_container = document.createElement('div');
+            friend_container.id = 'friend-container';
+            content.appendChild(friend_container);
             socket = new WebSocket('wss://localhost:8000/ws/online_status/');
             socket.onopen = function() {
                 console.log("WebSocket connection established.");
@@ -195,17 +207,19 @@ export async function showFriends() {
             socket.onmessage = function(e) {
                 const data = JSON.parse(e.data);
                 console.log("Parsed data:", data);
-                let onlineFriends = [];
-                if (data.online_friends && data.online_friends.online_friends) {
-                    onlineFriends = data.online_friends.online_friends;
+                if (data.online_friends) {
+                    const onlineFriends = data.online_friends;
+                    // Loop through all friends and update their status indicator
+                    friendItems.forEach(listItem => {
+                        const friendId = listItem.dataset.friendId;
+                        const statusIndicator = listItem.querySelector('.status-indicator');
+                        if (onlineFriends.some(f => f.id == friendId)) {
+                            statusIndicator.classList.replace('bg-secondary', 'bg-success'); // Change to green
+                        } else {
+                            statusIndicator.classList.replace('bg-success', 'bg-secondary'); // Change back to gray
+                        }
+                    });
                 }
-                console.log("Online friends:", onlineFriends);
-                friendsListContainer.innerHTML = '';
-                createList(friendsListContainer, 'Online Friends', onlineFriends.map(friend => {
-                    const li = document.createElement('li');
-                    li.textContent = friend.username;
-                    return li;
-                }));
             };
             socket.onclose = function(e) {
                 console.log("WebSocket connection closed.");
@@ -218,8 +232,8 @@ export async function showFriends() {
         const requestItems = allRequests.map(request => {
             const formattedDate = new Date(request.created_at).toLocaleString();
             // Create the list item (DOM element)
-            const listItem = document.createElement('a');
-            listItem.className = 'list-group-item text-center list-group-item-action d-flex justify-content-between align-items-center';
+            const listItem = document.createElement('div');
+            listItem.className = 'list-group-item text-center d-flex justify-content-between align-items-center';
             // Check if the request is received or sent
             if (request.type === 'received') {
                 // Create the text for the received request
@@ -261,8 +275,8 @@ export async function showFriends() {
         );
         if (filteredUsers.length > 0) {
             const userItems = filteredUsers.map(user => {
-                const listItem = document.createElement('a');
-                listItem.className = 'list-group-item text-center list-group-item-action d-flex justify-content-between align-items-center gap-2';
+                const listItem = document.createElement('div');
+                listItem.className = 'list-group-item text-center d-flex justify-content-between align-items-center gap-2';
                 const usernameText = document.createElement('span');
                 usernameText.textContent = user.username;
                 listItem.appendChild(usernameText);
