@@ -13,44 +13,41 @@ import { getCookie } from './utils.js';
 export function showRegister() {
 	// Dynamically insert the registration form into the element with the ID 'content'
     document.getElementById('content').innerHTML = `
-       <div class="container" >
-        <h3 class="text-center mb-5 mt-5 pt-5">Registration</h3>
-        <div class="row justify-content-center">
+        <h3 class="text-center mb-4">Registration</h3>
+        <div class="row justify-content-center text-left">
             <div class="col-md-6 col-lg-4">
                 <form id="registerForm" enctype="multipart/form-data">
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-4">
                         <label for="username" class="form-label">Username:</label>
                         <input type="text" id="username" name="username" class="form-control" required placeholder="Enter your username">
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-4">
                         <label for="nickname" class="form-label">Nickname:</label>
                         <input type="text" id="nickname" name="nickname" class="form-control" required placeholder="Choose a nickname">
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-4">
                         <label for="email" class="form-label">Email:</label>
                         <input type="email" id="email" name="email" class="form-control" required placeholder="Enter your email">
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-4">
                         <label for="password1" class="form-label">Password:</label>
                         <input type="password" id="password1" name="password1" class="form-control" required placeholder="Create a password">
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-4">
                         <label for="password2" class="form-label">Confirm Password:</label>
                         <input type="password" id="password2" name="password2" class="form-control" required placeholder="Re-enter your password">
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-4">
                         <label for="avatar" class="form-label">Avatar:</label>
                         <input type="file" id="avatar" name="avatar" class="form-control">
                     </div>
-                    <div class="d-grid">
+                    <div class="text-center">
                         <button type="submit" class="btn btn-secondary">Register</button>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
-    `;
-
+        `;
 	// Add event listener for form submission
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
         e.preventDefault();

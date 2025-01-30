@@ -33,8 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Function to initialize and update the navbar
 export function initializeNavbar(authenticated) {
-    let navBarContainer = document.getElementById('navbar');
-    navBarContainer = document.createElement('nav'); //navigation
+    // let navBarContainer = document.getElementById('navbar');
+    const navBarContainer = document.createElement('nav'); //navigation
     navBarContainer.id = 'navbar';
     navBarContainer.className = 'navbar navbar-expand-lg navbar-light bg-light fixed-top';
     const container = document.createElement('div'); //group
@@ -54,7 +54,6 @@ export function initializeNavbar(authenticated) {
     navbarCollapse.id = 'navbarNav';
     const navLinksLeft = document.createElement('ul'); // Left side links
     navLinksLeft.className = 'navbar-nav'; // Default left-aligned links
-
     const navLinksRight = document.createElement('ul'); // Right side links (avatar & logout)
     navLinksRight.className = 'navbar-nav ml-auto';
     navbarCollapse.appendChild(navLinksLeft);
@@ -62,7 +61,6 @@ export function initializeNavbar(authenticated) {
     container.appendChild(navbarCollapse);
     navBarContainer.appendChild(container);
     document.body.appendChild(navBarContainer);
-
     if (authenticated) {
         fetch('/users/user/', {
             method: 'GET',
@@ -74,13 +72,11 @@ export function initializeNavbar(authenticated) {
             tournamentLink.className = 'nav-item';
             tournamentLink.innerHTML = '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
             navLinksLeft.appendChild(tournamentLink);
-            
             document.getElementById('tournament').addEventListener('click', (e) => {
                 e.preventDefault();
                 showTournamentMenu();
                 history.pushState({ page: 'tournament' }, 'Tournament', '/tournament');
             });
-
             const rpsLink = document.createElement('li');
             rpsLink.className = 'nav-item';
             rpsLink.innerHTML = '<a class="nav-link" href="/rock-paper-scissors" data-link>Rock Paper Scissors</a>';
@@ -91,7 +87,6 @@ export function initializeNavbar(authenticated) {
                 history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
                 console.log("rps log");
             });
-
                 const usernameLink = document.createElement('li');
                 usernameLink.className = 'nav-item';
                 usernameLink.innerHTML = `
@@ -112,7 +107,6 @@ export function initializeNavbar(authenticated) {
                 logoutLink.className = 'nav-item';
                 logoutLink.innerHTML = '<a class="nav-link" href="#" id="logout" data-link>Logout</a>';
                 navLinksRight.appendChild(logoutLink);
-        
                 logoutLink.querySelector('#logout').addEventListener('click', (e) => {
                     e.preventDefault();
                     logout();
@@ -128,12 +122,10 @@ export function initializeNavbar(authenticated) {
         loginLink.className = 'nav-item';
         loginLink.innerHTML = '<a class="nav-link" href="/login" data-link>Login</a>';
         navLinksRight.appendChild(loginLink);
-
         const registerLink = document.createElement('li');
         registerLink.className = 'nav-item';
         registerLink.innerHTML = '<a class="nav-link" href="/register" data-link>Register</a>';
         navLinksRight.appendChild(registerLink);
-
         loginLink.querySelector('a').addEventListener('click', (e) => {
             e.preventDefault();
             showLogin();
@@ -166,9 +158,7 @@ export function showHome() {
     document.getElementById('gameScript')?.remove();
     document.getElementById('aiScript')?.remove();
     contentElement.innerHTML = `
-        <div class="text-center mt-5 pt-5">
-            <h2 class="text-dark fw-bold mb-5">Pong Game</h2>
-        </div>
+        <h2 class="text-center text-dark fw-bold mb-5">Pong Game</h2>
         <div class="text-center"> 
             <div class="d-flex justify-content-center">
                 <canvas id="game" width="550" height="400" style="background-color: #000;"></canvas>
@@ -201,17 +191,15 @@ export function showHome() {
  */
 export function showRPS() {
     const rpsContent = `
-        <div class="container-fluid d-flex flex-column pt-5 mb-5 mt-5 ">
             <h2 class="text-center mb-3 mt-5 pt-5"> Rock - Paper - Scissors</h2>
-            <div class="d-flex justify-content-center mb-3 gap-4 p-3">
-                <button class="btn btn-secondary m-3" id="singlePlayerBtn" >Single Player</button>
-                <button class="btn btn-secondary m-3" id="multiplayerBtn" >Multiplayer</button>
+            <div class="d-flex justify-content-center gap-4 p-3">
+                <button class="btn btn-secondary m-3" id="singlePlayerBtn">Single Player</button>
+                <button class="btn btn-secondary m-3" id="multiplayerBtn">Multiplayer</button>
             </div>
-            <div class="d-flex justify-content-center mb-3 gap-4 p-3">
+            <div class="d-flex justify-content-center gap-4 p-3">
                 <button class="btn btn-secondary m-3" id="WaitingListBtn">WaitingList</button>
             </div>
-        </div>
-    `;
+            `;
     // Insert content into the main content area
     document.getElementById('content').innerHTML = rpsContent;
     // Add listener for the Single Player button
@@ -219,7 +207,7 @@ export function showRPS() {
         e.preventDefault();
         showSinglePlayer();
         history.pushState(
-            { page: 'rock-paper-scissors-singleplayer' },
+            {page: 'rock-paper-scissors-singleplayer'},
             'Single Player',
             '/rock-paper-scissors/singleplayer'
         );
@@ -263,6 +251,13 @@ function logout() {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+            // else {
+            //     console.log("logout web socket closing")
+            //     if (window.socket) {
+            //         console.log("web socket closing")
+            //         window.socket.close();  // Explicitly close the WebSocket
+            //     }
+            // }
             return response.json();
         })
         .then((data) => {

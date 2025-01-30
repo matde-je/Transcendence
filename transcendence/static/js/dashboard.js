@@ -30,37 +30,33 @@ export function showDashboard() {
     .then(response => response.json())
     .then(data => {
         content.innerHTML = `
-        <div class="container mt-5 mb-5 pt-5">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm text-left">
             	<div class="card-body mt-3">
             		<div class="text-center">
                     	<img src="${data.avatar}" alt="Avatar" width="70" class="rounded-circle" style="width: 70px; height: 70px; object-fit: cover;">
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item"><strong>Email:</strong> ${data.email}</li>
-                        <li class="list-group-item"><strong>Username:</strong> ${data.username}</li>
-                        <li class="list-group-item"><strong>Nickname:</strong> ${data.nickname}</li>
-                        <li class="list-group-item">
+                        <li class="list-group-item mb-3 mt-3"><strong>Email:</strong> ${data.email}</li>
+                        <li class="list-group-item mb-3"><strong>Username:</strong> ${data.username}</li>
+                        <li class="list-group-item mb-3"><strong>Nickname:</strong> ${data.nickname}</li>
+                        <li class="list-group-item mb-3">
                         <strong>Registration Date:</strong> ${new Date(data.date_joined).toLocaleString('pt-PT')}
                         </li>
                         <li class="list-group-item">
                             <strong>Last Login:</strong> ${new Date(data.last_login).toLocaleString('pt-PT')}
                         </li>
                     </ul>
-                    <div class="text-center mt-6">
+                    <div class="text-center mt-3">
                         <button id="edit-user" class="btn btn-secondary ">Edit Profile</button>
                     </div>
                 </div>
             </div>
-			<hr>
-			<button id="show-friends" class="btn btn-primary">Show Friends</button>
-            <hr>
-			<button id="show-tournaments" class="btn btn-primary">Show Tournaments Results</button>
-			<hr>
-			<button id="show-results" class="btn btn-primary">Show Results</button>
-			<hr>
-		</div>
-    `;
+            <div class="mt-5">
+			    <button id="show-friends" class="btn btn-secondary">Show Friends</button>
+			    <button id="show-tournaments" class="btn btn-secondary">Show Tournaments Results</button>
+			    <button id="show-results" class="btn btn-secondary">Show Results</button>
+            </div>
+        `;
         checkAuthentication();
         document.getElementById('edit-user').addEventListener('click', (e) => {
             e.preventDefault();
@@ -93,31 +89,32 @@ export function showDashboard() {
  */
 export function showEditUserForm(userData) {
     document.getElementById('content').innerHTML = `
-        <div  class= "mt-5 pt-5">
-        <h2>Editar Perfil</h2>
+        <h2 class="mb-4 mt-4 text-center">Editar Perfil</h2>
         <form id="edit-user-form" enctype="multipart/form-data">
-            <div class="form-group">
+            <div class="form-group text-left">
                 <label for="nickname">Nickname:</label>
                 <input type="text" id="nickname" name="nickname" class="form-control" value="${userData.nickname}" required>
             </div>
-            <div class="form-group">
+            <div class="form-group text-left">
                 <label for="first_name">Nome:</label>
                 <input type="text" id="first_name" name="first_name" class="form-control" value="${userData.first_name}" required>
             </div>
-            <div class="form-group">
+            <div class="form-group text-left">
                 <label for="last_name">Sobrenome:</label>
                 <input type="text" id="last_name" name="last_name" class="form-control" value="${userData.last_name}" required>
             </div>
-            <div class="form-group">
+            <div class="form-group text-left">
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" class="form-control" value="${userData.email}" required>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-3 text-left">
                 <label for="avatar">Avatar:</label>
                 <input type="file" id="avatar" name="avatar" class="form-control">
             </div>
-            <button type="submit" class="btn btn-success">Save</button>
-            <button type="button" id="cancel-edit" class="btn btn-secondary">Cancel</button>
+            <div class="text-left mt-4">
+                <button type="submit" class="btn btn-success">Save</button>
+                <button type="button" id="cancel-edit" class="btn btn-secondary">Cancel</button>
+            </div>
         </form> 
     `;
     document.getElementById('edit-user-form').addEventListener('submit', async (e) => {

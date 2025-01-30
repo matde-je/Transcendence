@@ -17,6 +17,7 @@ let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
 let paddleGravity = 3;
+let ai;
 const keys = {};
 
 export async function initializeGame() {

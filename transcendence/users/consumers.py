@@ -25,6 +25,7 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code): #standard parameter provided by Django Channels
         user = self.scope["user"]
         if user.is_authenticated:
+            logger.info(f"Disconnecting user: {user.username}")
             await self.set_offline(user)
             await self.channel_layer.group_discard("online_friends", self.channel_name)
             await self.channel_layer.group_send(
@@ -33,12 +34,12 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
                 }
             )
 
-    async def send_online_friends(self, online_friends):
+    async def send_online_friends(self, event):
         user = self.scope["user"]
         if not user.is_authenticated:
             return
         online_friends = await self.get_online_friends(user)
-        logger.info(f"Sending online friends: {online_friends}")
+        logger.info(f"Sending online friends list: {online_friends}")
         await self.send(text_data=json.dumps({
             "online_friends": online_friends
         }))

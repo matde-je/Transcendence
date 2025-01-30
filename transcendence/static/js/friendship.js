@@ -12,10 +12,7 @@ function createList(content, title, items) {
     section.className = 'mt-5 mb-5';
     const heading = document.createElement('h4');
     heading.textContent = title;
-    if (title === 'Friends')
-        heading.className = 'mb-4 text-center pt-5';
-    else
-        heading.className = 'mb-4 text-center mt-4';
+    heading.className = 'mb-4 text-center mt-4';
     section.appendChild(heading);
     const listGroup = document.createElement('div');
     listGroup.className = 'list-group';
@@ -165,8 +162,8 @@ export async function showFriends() {
     ])
     .then(([users, sentRequests, receivedRequests, friends]) => {
         const friendItems = friends.map(friend => {
-            const listItem = document.createElement('a');
-            listItem.className = 'list-group-item text-center list-group-item-action d-flex justify-content-between align-items-center gap-3'; 
+            const listItem = document.createElement('div');
+            listItem.className = 'list-group-item d-flex justify-content-between gap-3'; 
             // Create a container for the username and status indicator
             const userContainer = document.createElement('div');
             userContainer.className = 'd-flex align-items-center gap-2';
@@ -196,10 +193,10 @@ export async function showFriends() {
         });
         createList(content, 'Friends', friendItems);
         let socket;
-        if (!document.getElementById('friends-list-container')) {
-            const friendsListContainer = document.createElement('div');
-            friendsListContainer.id = 'friends-list-container';
-            content.appendChild(friendsListContainer);
+        if (!document.getElementById('friend-container')) {
+            const friend_container = document.createElement('div');
+            friend_container.id = 'friend-container';
+            content.appendChild(friend_container);
             socket = new WebSocket('wss://localhost:8000/ws/online_status/');
             socket.onopen = function() {
                 console.log("WebSocket connection established.");
@@ -235,8 +232,8 @@ export async function showFriends() {
         const requestItems = allRequests.map(request => {
             const formattedDate = new Date(request.created_at).toLocaleString();
             // Create the list item (DOM element)
-            const listItem = document.createElement('a');
-            listItem.className = 'list-group-item text-center list-group-item-action d-flex justify-content-between align-items-center';
+            const listItem = document.createElement('div');
+            listItem.className = 'list-group-item text-center d-flex justify-content-between align-items-center';
             // Check if the request is received or sent
             if (request.type === 'received') {
                 // Create the text for the received request
@@ -278,8 +275,8 @@ export async function showFriends() {
         );
         if (filteredUsers.length > 0) {
             const userItems = filteredUsers.map(user => {
-                const listItem = document.createElement('a');
-                listItem.className = 'list-group-item text-center list-group-item-action d-flex justify-content-between align-items-center gap-2';
+                const listItem = document.createElement('div');
+                listItem.className = 'list-group-item text-center d-flex justify-content-between align-items-center gap-2';
                 const usernameText = document.createElement('span');
                 usernameText.textContent = user.username;
                 listItem.appendChild(usernameText);
