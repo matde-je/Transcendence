@@ -44,7 +44,6 @@ SECURE_SSL_REDIRECT = False
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
-#channels 
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
@@ -228,7 +227,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# settings.py
 AUTH_USER_MODEL = 'users.CustomUser'
 
 CORS_ALLOWED_ORIGINS = [

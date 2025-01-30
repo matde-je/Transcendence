@@ -49,7 +49,6 @@ export function showRegister() {
             </div>
         </div>
     </div>
-
     `;
 
 	// Add event listener for form submission
@@ -61,10 +60,8 @@ export function showRegister() {
         const password1 = document.getElementById('password1').value;
         const password2 = document.getElementById('password2').value;
         const avatar = document.getElementById('avatar').files[0];
-
 		// Get the CSRF token from the cookie
         const csrftoken = getCookie('csrftoken');
-
 		// Create a FormData object and append the form data
         const formData = new FormData();
         formData.append('username', username);
@@ -73,7 +70,6 @@ export function showRegister() {
         formData.append('password1', password1);
         formData.append('password2', password2);
         formData.append('avatar', avatar);
-
 		// Send a POST request to the server to register the user
         const response = await fetch('/users/register/', {
             method: 'POST',
@@ -83,7 +79,6 @@ export function showRegister() {
             credentials: 'include',
             body: formData
         });
-
         if (response.ok) {
             const data = await response.json();
             alert('Registration successful');
@@ -98,7 +93,6 @@ export function showRegister() {
 
 /**
  * Displays error messages in an alert dialog.
- *
  * @param {Object} errors - An object containing error messages for each field.
  * @param {string[]} errors.field - An array of error messages for the field.
  */

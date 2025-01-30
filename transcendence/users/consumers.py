@@ -3,26 +3,23 @@ import json
 from asgiref.sync import sync_to_async
 import logging
 logger = logging.getLogger(__name__)
+from django.db.models import Q
+from django.apps import apps 
 
 class OnlineUsersConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         from django.contrib.auth.models import User
         user = self.scope["user"] #Django's authentication system 
-        logger.info(f"User: {user}")  
         if user.is_authenticated:
             await self.set_online(user)
             await self.channel_layer.group_add("online_friends", self.channel_name)
             await self.accept()
-            online_friends = await self.get_online_friends(user)
-            await self.send_online_friends(online_friends)
             await self.channel_layer.group_send(
                 "online_friends", {
                     "type": "send_online_friends",
-                    "online_friends": online_friends
                 }
             )
         else:
-            logger.info("User is not authenticated.")
             await self.close()
 
     async def disconnect(self, close_code): #standard parameter provided by Django Channels
@@ -30,20 +27,21 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
         if user.is_authenticated:
             await self.set_offline(user)
             await self.channel_layer.group_discard("online_friends", self.channel_name)
-            online_friends = await self.get_online_friends(user)
-            await self.send_online_friends(online_friends)
             await self.channel_layer.group_send(
                 "online_friends", {
                     "type": "send_online_friends",
-                    "online_friends": online_friends
                 }
             )
 
     async def send_online_friends(self, online_friends):
+        user = self.scope["user"]
+        if not user.is_authenticated:
+            return
+        online_friends = await self.get_online_friends(user)
         logger.info(f"Sending online friends: {online_friends}")
         await self.send(text_data=json.dumps({
             "online_friends": online_friends
-    }))
+        }))
 
     @sync_to_async #run synchronous functions inside asynchronous code (web socket)
     def set_online(self, user):
@@ -59,5 +57,23 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
 
     @sync_to_async
     def get_online_friends(self, user):
-        online_friends = user.friends.filter(is_online=True)  # Fetch online friends
-        return [friend.username for friend in online_friends] 
+        Friendship = apps.get_model('users', 'Friendship')
+        friendships = Friendship.objects.filter(
+            Q(from_user=user, accepted=True) | Q(to_user=user, accepted=True)
+            )  
+        friends = []
+        for friendship in friendships:
+            if friendship.from_user == user:
+                friends.append(friendship.to_user)
+            else:
+                friends.append(friendship.from_user)
+        online_friends = [friend for friend in friends if friend.is_online]
+        serialized_friends = [
+            {
+                "id": friend.id,
+                "username": friend.username,
+                "is_online": friend.is_online
+            }
+            for friend in online_friends
+        ]
+        return serialized_friends

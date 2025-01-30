@@ -9,7 +9,6 @@ import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthentication();
-
     const path = window.location.pathname;
     if (path === '/login') {
         showLogin();

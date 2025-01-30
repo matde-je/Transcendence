@@ -181,7 +181,6 @@ function handleMoves() {
 	if (!gameOver && !pause)
 	{
 		let newY;
-
 		// Player 1 movement
 		newY = player1.y;
 		if (keys['q'] && player1.y > 0)
@@ -190,7 +189,6 @@ function handleMoves() {
 			newY += player1.gravity * 2; //down
 		if (!multiplayer || preventPaddleOverlap({...player1, y: newY}, player3))
 			player1.y = newY;
-
 		// Player 2 movement
 		newY = player2.y;
 		if (keys['ArrowUp'] && player2.y > 0 && !ai)
@@ -199,7 +197,6 @@ function handleMoves() {
 			newY += player2.gravity * 2; //down
 		if (!multiplayer || preventPaddleOverlap({...player2, y: newY}, player4) && multiplayer)
 			player2.y = newY;
-
 		if (multiplayer)
 		{
 			// Player 3 movement
@@ -210,7 +207,6 @@ function handleMoves() {
 				newY += player3.gravity * 2; // move down, but don't cross Player 2
 			if (preventPaddleOverlap(player1, {...player3, y: newY}))
 				player3.y = newY;
-
 			// Player 4 movement
 			newY = player4.y;
 			if (keys['j'] && player4.y > 0)
@@ -230,7 +226,6 @@ function handleMoves() {
 			newY += player3.gravity * 2; // move down, but don't cross Player 2
 		if (!multiplayer || preventPaddleOverlap(player1, {...player3, y: newY}) && multiplayer)
 			player3.y = newY;
-
 		newY = player4.y;
 		if (keys['j'] && player4.y > 0)
 			newY -= player4.gravity * 2; // move up, but don't go out
@@ -414,7 +409,6 @@ function loop() {
 		} else if (ai === 0 && multiplayer === 1) {
 			opponentType = 'HUMAN PAIR';
 		}
-
 		// Determines the result based on the score
 		if (score1 === 10) {
 			finalResult = 'win';
@@ -434,15 +428,12 @@ function loop() {
 
 /**
  * Registers the result of a match by sending a POST request to the server.
- *
  * @param {string} opponent - The name of the opponent.
  * @param {string} result - The result of the match (e.g., 'win', 'lose', 'draw').
  * @param {number} score - The score of the match.
  */
 function registerMatchResult(opponent, result, score) {
-
 	const csrftoken = getCookie('csrftoken');
-
 	fetch('/pong/register_pong_history/', {
 		method: 'POST',
 		headers: {

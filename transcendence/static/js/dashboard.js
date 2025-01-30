@@ -1,5 +1,3 @@
-// static/js/dashboard.js
-
 import { checkAuthentication } from './utils.js';
 import { getCookie } from './utils.js';
 import { sendFriendRequest, acceptFriendRequest, removeFriend, showFriends } from './friendship.js';
@@ -11,34 +9,10 @@ window.showDashboard = showDashboard;
 
 /**
  * Creates a list section with a title and items, and appends it to the given content element.
- *
  * @param {HTMLElement} content - The parent element to which the list section will be appended.
  * @param {string} title - The title of the list section.
  * @param {string[]} items - An array of strings representing the items to be included in the list section.
  */
-
-function createList(content, title, items) {
-    const section = document.createElement('section');
-    section.className = 'mb-4';
-    const heading = document.createElement('h4');
-    heading.textContent = title;
-    heading.className = 'mb-4 text-center mt-4';
-    section.appendChild(heading);
-    const listGroup = document.createElement('div');
-    listGroup.className = 'list-group';
-    if (items.length > 0) {
-        items.forEach(item => {
-            listGroup.appendChild(item);
-        });
-    } else {
-        const emptyItem = document.createElement('div');
-        emptyItem.className = 'list-group-item text-muted text-center';
-        emptyItem.textContent = 'No users found.';
-        listGroup.appendChild(emptyItem);
-    }
-    section.appendChild(listGroup);
-    content.appendChild(section);
-}
 
 /**
  * Shows user's dashboard.
@@ -48,7 +22,6 @@ export function showDashboard() {
 	const csrftoken = getCookie('csrftoken');
     const content = document.getElementById('content');
     content.innerHTML = '';
-    
 	// Fetch user data
     fetch('/users/user/', {
         method: 'GET',
@@ -89,27 +62,22 @@ export function showDashboard() {
 		</div>
     `;
         checkAuthentication();
-
         document.getElementById('edit-user').addEventListener('click', (e) => {
             e.preventDefault();
             showEditUserForm(data);
         });
-
 		document.getElementById('show-friends').addEventListener('click', (e) => {
             e.preventDefault();
             showFriends();
         });
-
 		document.getElementById('show-tournaments').addEventListener('click', (e) => {
             e.preventDefault();
             showUserTournamentResults()
         });
-
 		document.getElementById('show-results').addEventListener('click', (e) => {
             e.preventDefault();
             showUserResults()
         });
-
 	})
     .catch(error => console.error('Error:', error));
 }
@@ -150,9 +118,8 @@ export function showEditUserForm(userData) {
             </div>
             <button type="submit" class="btn btn-success">Save</button>
             <button type="button" id="cancel-edit" class="btn btn-secondary">Cancel</button>
-        </form>
+        </form> 
     `;
-
     document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const nickname = document.getElementById('nickname').value;
@@ -169,9 +136,7 @@ export function showEditUserForm(userData) {
         if (avatar) {
             formData.append('avatar', avatar);
         }
-
         const csrfToken = getCookie('csrftoken');
-
         try {
             const response = await fetch('/users/user/update/', {
                 method: 'PUT',
@@ -195,7 +160,6 @@ export function showEditUserForm(userData) {
             alert('Error updating data.');
         }
     });
-
     document.getElementById('cancel-edit').addEventListener('click', (e) => {
         e.preventDefault();
         showDashboard();
@@ -208,15 +172,12 @@ export async function showUserTournamentResults() {
             method: 'GET',
             credentials: 'include',
         });
-
         if (!response.ok) {
             throw new Error(`Error HTTP! status: ${response.status}`);
         }
-
         const tournaments = await response.json();
         const content = document.getElementById('content');
         content.innerHTML = '<h2>Tournament Results</h2>';
-
         if (tournaments.length > 0) {
             tournaments.forEach(tournament => {
                 const div = document.createElement('div');
@@ -227,13 +188,11 @@ export async function showUserTournamentResults() {
                 `;
                 content.appendChild(div);
             });
-
 			// Calculate statistics
             const total = tournaments.length;
             const wins = tournaments.filter(t => t.is_winner).length;
             const losses = total - wins;
             const winPercentage = ((wins / total) * 100).toFixed(2);
-
 			// Show statistics
             const statsDiv = document.createElement('div');
             statsDiv.innerHTML = `
@@ -259,15 +218,12 @@ export async function showUserResults() {
             method: 'GET',
             credentials: 'include',
         });
-
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-
         const data = await response.json();
         const content = document.getElementById('content');
         content.innerHTML = '<h3 class="text-center mb-3">User Results</h3>';
-
         content.innerHTML += `
             <p>Total Matches: ${data.total_matches}</p>
             <p>Wins: ${data.total_wins}</p>
