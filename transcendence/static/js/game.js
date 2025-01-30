@@ -138,20 +138,20 @@ window.addEventListener("keydown", (e) => {
 		context.font = "20px 'Courier New', Courier, monospace";
 		context.textAlign = "center";
 		context.fillStyle = "white";
-		context.fillText("PLAYER 1 - ARROW KEYS", canvas.width / 2, canvas.height * 0.65);
-		context.fillText("PLAYER 2 - Q AND A", canvas.width / 2, canvas.height * 0.725);
+		context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, canvas.height * 0.725);
 		context.fillText("P - PAUSE", canvas.width / 2, canvas.height * 0.80);
 		context.fillText("S - START",canvas.width / 2, canvas.height * 0.875);
-		username2 = "	 HUMAN";
+		username2 = "		AI";
 	}
 	if (keys['2'] && init === 0) {
 		context.font = "20px 'Courier New', Courier, monospace";
 		context.textAlign = "center";
 		context.fillStyle = "white";
-		context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, canvas.height * 0.725);
+		context.fillText("PLAYER 1 - ARROW KEYS", canvas.width / 2, canvas.height * 0.65);
+		context.fillText("PLAYER 2 - Q AND A", canvas.width / 2, canvas.height * 0.725);
 		context.fillText("P - PAUSE", canvas.width / 2, canvas.height * 0.80);
 		context.fillText("S - START",canvas.width / 2, canvas.height * 0.875);
-		username2 = "		AI";
+		username2 = "	 HUMAN";
 	}
 	if (keys['4'] && init === 0) {
 		multiplayer = 1;
@@ -210,18 +210,18 @@ function handleMoves() {
 		// Player 1 movement
 		newY = player1.y;
 		if (keys['q'] && player1.y > 0)
-			newY -= player1.gravity * 2; //up
+			newY -= player1.gravity * 2; // move up
 		if (keys['a'] && player1.y + player1.height < canvas.height)
-			newY += player1.gravity * 2; //down
+			newY += player1.gravity * 2; //move down
 		if (!multiplayer || preventPaddleOverlap({...player1, y: newY}, player3))
 			player1.y = newY;
 
 		// Player 2 movement
 		newY = player2.y;
 		if (keys['ArrowUp'] && player2.y > 0 && !ai)
-			newY -= player2.gravity * 2; //up
+			newY -= player2.gravity * 2;
 		if (keys['ArrowDown'] && player2.y + player2.height < canvas.height && !ai)
-			newY += player2.gravity * 2; //down
+			newY += player2.gravity * 2;
 		if (!multiplayer || preventPaddleOverlap({...player2, y: newY}, player4) && multiplayer)
 			player2.y = newY;
 
@@ -230,18 +230,18 @@ function handleMoves() {
 			// Player 3 movement
 			newY = player3.y;
 			if (keys['f'] && player3.y - player1.height > 0)
-				newY -= player3.gravity * 2; // move up
+				newY -= player3.gravity * 2;
 			if (keys['v'] && player3.y + player3.height < canvas.height)
-				newY += player3.gravity * 2; // move down, but don't cross Player 2
+				newY += player3.gravity * 2;
 			if (preventPaddleOverlap(player1, {...player3, y: newY}))
 				player3.y = newY;
 
 			// Player 4 movement
 			newY = player4.y;
 			if (keys['j'] && player4.y > 0)
-				newY -= player4.gravity * 2; // move up, but don't go out
+				newY -= player4.gravity * 2;
 			if (keys['m'] && player4.y + player4.height < canvas.height)
-				newY += player4.gravity * 2; // move down
+				newY += player4.gravity * 2;
 			if (preventPaddleOverlap(player2, {...player4, y: newY}))
 				player4.y = newY;
 		}
@@ -289,6 +289,7 @@ function ballHitPaddle() {
 	else if (ball.x + ball.width >= player2.x && ball.y + ball.width >= player2.y &&
 				ball.y <= player2.y + player2.height && ball.speed > 0) // There is collision!!
 		handleEdgeHit(player2);
+
 	//point scored
 	let randomSign = Math.random() < 0.5 ? -1 : 1;
 	if (ball.x + ball.width < 0) {
