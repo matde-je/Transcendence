@@ -40,9 +40,6 @@ export async function checkAuthentication() {
     try {
         const response = await fetch('/users/check-auth/', {
             method: 'GET',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-            },
             credentials: 'include',
         });
         
@@ -53,13 +50,31 @@ export async function checkAuthentication() {
         const data = await response.json();
 		localStorage.setItem('username', data.username);
         isAuthenticated = data.is_authenticated || false;
-        initializeNavbar(isAuthenticated);
+
+		initializeNavbar(isAuthenticated);
         
         return isAuthenticated ? data.username : ' Anonymous';
     } catch (error) {
         console.error('Error:', error);
         alert(`Error: ${error.message}`);
         return ' Anonymous';
+    }
+}
+
+export async function getUsernameById(userId) {
+    try {
+        const response = await fetch(`/users/user/${userId}/`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error(`Error getting user details: ${response.status}`);
+        }
+        const userData = await response.json();
+        return userData.username;
+    } catch (error) {
+        console.error('Error getting username:', error);
+        return 'Unknown User';
     }
 }
 

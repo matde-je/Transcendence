@@ -111,9 +111,13 @@ function playGame() {
 /**
  * Registers the multiplayer match result with the backend.
  * @param {string} result - The result of the match.
- * @param {string} opponent - The opponent of the logged-in player.
  */
-async function registerMultiplayerMatch(result, opponent) {
+async function registerMultiplayerMatch(result) {
+    let opponent = sessionStorage.getItem('opponent');
+    if (!opponent) {
+        opponent = 'HUMAN';
+    }
+
     const response = await fetch('/rps/register_match/', {
         method: 'POST',
         headers: {
@@ -122,13 +126,14 @@ async function registerMultiplayerMatch(result, opponent) {
         },
         body: JSON.stringify({
             result: result.includes('Player 1') ? 'win' : 'lose',
-            opponent: "HUMAN"
+            opponent: opponent
         })
     });
 
     const data = await response.json();
     if (data.status === 'success') {
         console.log('Match registered successfully');
+        sessionStorage.removeItem('opponent'); // Clear the opponent variable
     } else {
         console.error('Error registering match:', data.error);
     }
@@ -146,8 +151,8 @@ function resetScores() {
 
 // Add event listener for key presses
 document.addEventListener('keydown', (event) => {
+    const key = event.key;
     if (window.location.pathname === '/rock-paper-scissors/multiplayer') {
-        const key = event.key;
         switch (key) {
             // Player 1 keys
             case 'q':

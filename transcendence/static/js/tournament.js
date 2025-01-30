@@ -1,6 +1,7 @@
 // static/js/tournament.js
 
-import { getCookie, isPowerOfTwo, nextPowerOfTwo, getRoundName } from './utils.js';
+import { getCookie, isPowerOfTwo, nextPowerOfTwo, getRoundName, getUsernameById } from './utils.js';
+import { initializeGame } from './game.js';
 
 /**
  * Shows Tournament Menu
@@ -11,9 +12,9 @@ export function showTournamentMenu() {
         <div class="container-fluid d-flex flex-column pt-5 mb-5 mt-5 ">
             <h2 class="text-center mb-3 mt-5 pt-5">Tournament menu</h2>
             <div class="d-flex justify-content-center mb-5 gap-4 p-3">
-                <button id="createTournamentBtn" class="btn btn-success me-3">Create Tournament</button>
-                <button id="listOpenTournamentsBtn" class="btn btn-primary">List Open Tournaments</button>
-                <button id="showResultsBtn" class="btn btn-secondary">Tournament Results</button>
+                <button type="button" id="createTournamentBtn" class="btn btn-success me-3">Create Tournament</button>
+                <button type="button" id="listOpenTournamentsBtn" class="btn btn-primary">List Open Tournaments</button>
+                <button type="button" id="showResultsBtn" class="btn btn-secondary">Tournament Results</button>
             </div>
             <div id="tournamentContent"></div>
         </div>
@@ -78,27 +79,27 @@ export async function listOpenTournaments() {
 
                     if (isEnrolled) {
                         actionButton = `<div class="d-flex justify-content-center">
-                                            <button onclick="removeUserFromTournament(${tournament.id})" class="btn btn-danger btn-sm">Quit Tournament</button>
+                                            <button type="button" onclick="removeUserFromTournament(${tournament.id})" class="btn btn-danger btn-sm">Quit Tournament</button>
                                         </div>`;
                                         } 
 					if (!isEnrolled && !tournament.is_started) {
                         actionButton = `
                         <div class="d-flex justify-content-center">
-                            <button onclick="addUserToTournament(${tournament.id})" class="btn btn-primary btn-sm">Participate</button>
+                            <button type="button" onclick="addUserToTournament(${tournament.id})" class="btn btn-primary btn-sm">Participate</button>
                         </div>`;
                     }
 
 					if (isCreator && !tournament.is_started) {
 						deleteTournamentButton = `
                         <div class="d-flex justify-content-center">
-                            <button onclick="deleteTournament(${tournament.id})" class="btn btn-danger btn-sm">Delete Tournament</button>
+                            <button type="button" onclick="deleteTournament(${tournament.id})" class="btn btn-danger btn-sm">Delete Tournament</button>
                         </div>`;
 					}
 
                     if (isEnrolled && !tournament.is_started) {
                         startTournamentButton = `
                         <div class="d-flex justify-content-center">
-                            <button onclick="startTournament(${tournament.id})" class="btn btn-success btn-sm">Start Tournament</button>
+                            <button type="button" onclick="startTournament(${tournament.id})" class="btn btn-success btn-sm">Start Tournament</button>
                         </div>`;
                     }
                     
@@ -428,7 +429,7 @@ export async function startMatchmaking(tournamentId)
 				</ul>
 			</p>
             <div class="mb-5 mt-3 pt-2">
-			<button id="start-matches" class="btn btn-primary">Start Matches</button>
+			<button type="button" id="start-matches" class="btn btn-primary">Start Matches</button>
 		</div>
         </div>`;
 
@@ -480,20 +481,14 @@ async function executeMatches(matches, tournamentId, currentRound) {
             return;
         }
 
-		// Inform the players who will play
-        alert(`Start a Match between ${match.player1_username} and ${match.player2_username}`);
-
-		// Simulate the match and determine the winner
-        winnerId = await simulatePlayMatch(match.player1, match.player2);
-
-		console.log('PFV - ID Vencedor da Partida:', winnerId);
+		// Start the Pong match
+        winnerId = await startPongMatch(match.player1, match.player2);
 
 		// Update the match result in the backend
         await updateMatch(tournamentId, match.id, winnerId);
 
         // Shows the winner of the match
         const winnerUsername = winnerId === match.player1 ? match.player1_username : match.player2_username;
-        alert(`Match Winner: ${winnerUsername}`);
 		console.log('PFV - Vencedor da Partida:', winnerUsername);
     }
 
@@ -537,27 +532,69 @@ async function executeMatches(matches, tournamentId, currentRound) {
 	{
 		const nextRound = currentRound - 1;
 		alert(`Next Round: ${getRoundName(nextRound)}`);
-		selectWinnersAndMatchmake(tournamentId, currentRound);
+		selectWinnersAndMatchmake(tournamentId, nextRound);
 	}
 }
 
-/**
- * Simulates a match between two players and returns the winner.
- *
- * @param {string} player1 - The name of the first player.
- * @param {string} player2 - The name of the second player.
- * @returns {Promise<string>} A promise that resolves to the name of the winning player.
- */
-function simulatePlayMatch(player1, player2) {
-    return new Promise((resolve) => {
-        // Simulates a match with a 50% chance of each player winning
-        const winner = Math.random() < 0.5 ? player1 : player2;
-        setTimeout(() => {
-            resolve(winner);
-        }, 1000);
+export async function startPongMatch(idPlayer1, idPlayer2) {
+    let contentElement = document.getElementById('content');
+    if (!contentElement) {
+        contentElement = document.createElement('div');
+        contentElement.id = 'content';
+        document.body.appendChild(contentElement);
+    } else {
+        contentElement.innerHTML = '';
+    }
+
+	window.isTournament = true;
+	// Set the usernames in the global object
+	window.username1 = await getUsernameById(idPlayer1);
+	window.username2 = await getUsernameById(idPlayer2);
+
+	// Set the player IDs in the global object
+	window.player1Id = idPlayer1;
+    window.player2Id = idPlayer2;
+	
+	// Remove previous scripts, if they exist
+    document.getElementById('gameScript')?.remove();
+    document.getElementById('aiScript')?.remove();
+
+    contentElement.innerHTML = `
+        <div class="text-center mt-5 pt-5">
+            <h2 class="text-dark fw-bold mb-5">Tournament Pong Match</h2>
+        </div>
+        <div class="text-center"> 
+			<div class='d-flex justify-content-between'>
+				<p><b>Player 1</b>: ${window.username1}</p>
+				<p><b>Player 2</b>: ${window.username2}</p>
+			</div>
+            <div class="d-flex justify-content-center">
+                <canvas id="game" width="550" height="400" style="background-color: #000;"></canvas>
+            </div>
+        </div>
+    `;
+
+    // Create a Promise that resolves when the game is over
+    return new Promise((resolve, reject) => {
+        // Define a global callback to receive the winnerId
+        window.onGameOver = (winnerId) => {
+            // Clean up the global callback
+            delete window.onGameOver;
+			console.log('PFV - a chamar resolve winnerID:', winnerId);
+            resolve(winnerId);
+        };
+
+        // Load and initialize the game script
+        const pongMatch = document.createElement('script');
+        pongMatch.type = 'module';
+        pongMatch.src = '/static/js/game.js';
+        pongMatch.id = 'gameScript';
+        pongMatch.onload = () => {
+            initializeGame();
+        };
+        document.body.appendChild(pongMatch);
     });
 }
-
 /**
  * Updates the match with the given matchId by setting the winner to the specified winnerId.
  *
@@ -621,8 +658,6 @@ async function updateMatch(tournamentId, matchId, winnerId) {
     }
 }
 
-// transcendence/static/js/tournament.js
-
 /**
  * Seleciona os vencedores de um round e realiza o matchmaking.
  *
@@ -630,7 +665,7 @@ async function updateMatch(tournamentId, matchId, winnerId) {
  * @param {number} roundNumber - Número do round.
  */
 export async function selectWinnersAndMatchmake(tournamentId, roundNumber) {
-	let currentRound = roundNumber - 1;
+	let lastRound = roundNumber + 1;
 
     const csrftoken = getCookie('csrftoken');
 
@@ -642,7 +677,7 @@ export async function selectWinnersAndMatchmake(tournamentId, roundNumber) {
                 'X-CSRFToken': csrftoken
             },
             credentials: 'include',
-            body: JSON.stringify({ round_number: roundNumber })
+            body: JSON.stringify({ round_number: lastRound })
         });
 
         if (response.ok) {
@@ -650,25 +685,25 @@ export async function selectWinnersAndMatchmake(tournamentId, roundNumber) {
             alert('Matchmaking carried out successfully!');
 
             const matches = data.matches;
-            currentRound = data.round;
+            roundNumber = data.round;
             
 			console.log('PFV - Matches:', matches);
 
             // Shows the round and the names of the participants
             content.innerHTML = `
                 <h2>Tournament Match Making</h2>
-                <p>Round: ${getRoundName(currentRound)}</p>
+                <p>Round: ${getRoundName(roundNumber)}</p>
                 <p>
                     <ul>
                         ${matches.map((match, index) => `<li>Match: ${index + 1}<br>${match.player1_username} vs ${match.player2_username}</li><br>`).join('')}
                     </ul>
                 </p>
-                <button id="start-round" class="btn btn-primary">Start Round</button>
+                <button type="button" id="start-round" class="btn btn-primary">Start Round</button>
             `;
 
             document.getElementById('start-round').addEventListener('click', async (e) => {
                 e.preventDefault();
-                await executeMatches(matches, tournamentId, currentRound);
+                await executeMatches(matches, tournamentId, roundNumber);
             });
         } else {
             const errorData = await response.json();
