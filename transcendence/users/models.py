@@ -33,6 +33,8 @@ class Friendship(models.Model):
                 previous = Friendship.objects.get(pk=self.pk)
                 if not previous.accepted and self.accepted:
                     self.accepted_at = timezone.now()
+                    self.from_user.friends.add(self.to_user)
+                    self.to_user.friends.add(self.from_user)
                     Friendship.objects.get_or_create(
                         from_user=self.to_user,
                         to_user=self.from_user,
