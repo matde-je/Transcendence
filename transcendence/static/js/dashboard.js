@@ -67,7 +67,7 @@ export async function showDashboard() {
 			    <button id="show-tournaments" class="btn btn-secondary">Show Tournaments Results</button>
 			    <button id="show-results" class="btn btn-secondary">Show Pong Results</button>
 			<hr>
-            <button id="show-rps" class="btn btn-primary">Show Rock-Paper-Scissors Results</button>
+            <button id="show-rps" class="btn btn-secondary">Show Rock-Paper-Scissors Results</button>
             </div>
         	`;
         checkAuthentication();

@@ -147,7 +147,6 @@ export function initializeNavbar(authenticated) {
 import { initializeGame } from './game.js';
 
 export function showHome() {
-	
     let contentElement = document.getElementById('content');
     if (!contentElement) {
         contentElement = document.createElement('div');

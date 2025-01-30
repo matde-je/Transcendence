@@ -30,11 +30,6 @@ export function showSinglePlayer() {
                 </div>
         </div>
         <h3 id="resultDisplay" class="mb-4 fw-bold" ></h3>
-        <div class="container mb-5 mt-5 col-md-2 text-center">
-            <div class="row justify-content-center">
-                <button class="btn btn-secondary d-inline-block" id="backToMenuBtn">Back to Menu</button>
-            </div>
-        </div>
     `;
     document.getElementById('content').innerHTML = singlePlayerContent;
 
@@ -91,10 +86,6 @@ export function showMultiplayer() {
                 </div>
             </div>
         <h3 id="resultDisplay" class="mb-4 fw-bold" ></h3> 
-        </div>
-        <div class="container mb-5 mt-5 col-md-2 text-center">
-                <div class="row justify-content-center">
-                    <button class="btn btn-secondary d-inline-block" id="backToMenuBtn">Back to Menu</button>
         </div>
     `;
     document.getElementById('content').innerHTML = multiplayerContent;
