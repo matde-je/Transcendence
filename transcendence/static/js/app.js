@@ -4,7 +4,6 @@ import { showRegister } from './register.js';
 import { showDashboard, showEditUserForm } from './dashboard.js';
 import { getCookie, checkAuthentication } from './utils.js';
 import { showSinglePlayer, showMultiplayer, showWaitingList } from './rps.js';
-import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -252,16 +251,14 @@ function logout() {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            // else {
-            //     console.log("logout web socket closing")
-            //     if (window.socket) {
-            //         console.log("web socket closing")
-            //         window.socket.close();  // Explicitly close the WebSocket
-            //     }
-            // }
             return response.json();
         })
         .then((data) => {
+			// Close the WebSocket connection to signal to the server that the user is offline
+            if (window.socket) {
+				console.log("web socket closing")
+                window.socket.close();
+            }
             showHome();
             history.pushState({ page: 'home' }, 'Home', '/');
             checkAuthentication();

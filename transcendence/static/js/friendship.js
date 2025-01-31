@@ -197,8 +197,11 @@ export async function showFriends() {
             const friend_container = document.createElement('div');
             friend_container.id = 'friend-container';
             content.appendChild(friend_container);
+
             socket = new WebSocket('wss://localhost:8000/ws/online_status/');
-            socket.onopen = function() {
+			window.socket = socket; // Store the socket in the window object
+            
+			socket.onopen = function() {
                 console.log("WebSocket connection established.");
             };
             socket.onerror = function(error) {
