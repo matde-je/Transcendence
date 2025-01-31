@@ -16,12 +16,10 @@ export function playSinglePlayerGame(playerChoice) {
     const resultDisplay = document.getElementById('resultDisplay');
     const playerScoreDisplay = document.getElementById('playerScoreDisplay');
     const computerScoreDisplay = document.getElementById('computerScoreDisplay');
-
     if (!playerDisplay || !computerDisplay || !resultDisplay || !playerScoreDisplay || !computerScoreDisplay) {
         console.error('One or more display elements are missing.');
         return;
     }
-
     playGame(playerChoice, playerDisplay, computerDisplay, resultDisplay, playerScoreDisplay, computerScoreDisplay);
 }
 
@@ -32,10 +30,8 @@ export function playSinglePlayerGame(playerChoice) {
 function playGame(playerChoice, playerDisplay, computerDisplay, resultDisplay, playerScoreDisplay, computerScoreDisplay) {
     const computerChoice = choices[Math.floor(Math.random() * choices.length)];
     let result = '';
-
     if (playerScore === 3 || computerScore === 3)
         resetScores();
-
     if (playerChoice === computerChoice) {
         result = "It's a tie!";
     } else {
@@ -51,19 +47,16 @@ function playGame(playerChoice, playerDisplay, computerDisplay, resultDisplay, p
                 break;
         }
     }
-
     if (result === 'You win!') {
         playerScore++;
     } else if (result === 'You lose!') {
         computerScore++;
     }
-
     playerDisplay.textContent = `Player: ${capitalizeFirstLetter(playerChoice)}`;
     computerDisplay.textContent = `Computer: ${capitalizeFirstLetter(computerChoice)}`;
     resultDisplay.textContent = result;
     playerScoreDisplay.innerText = `Score: ${playerScore}`;
     computerScoreDisplay.innerText = `Score: ${computerScore}`;
-
     if (playerScore === 3 || computerScore === 3) {
         const finalResult = playerScore === 3 ? 'You won the game!' : 'You lost the game!';
         resultDisplay.innerText = finalResult;
@@ -87,7 +80,6 @@ async function registerMatch(result, opponent) {
             opponent: "AI"
         })
     });
-
     const data = await response.json();
     if (data.status === 'success') {
         console.log('Match registered successfully');

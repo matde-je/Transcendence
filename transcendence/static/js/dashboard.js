@@ -11,34 +11,10 @@ window.showDashboard = showDashboard;
 
 /**
  * Creates a list section with a title and items, and appends it to the given content element.
- *
  * @param {HTMLElement} content - The parent element to which the list section will be appended.
  * @param {string} title - The title of the list section.
  * @param {string[]} items - An array of strings representing the items to be included in the list section.
  */
-
-function createList(content, title, items) {
-    const section = document.createElement('section');
-    section.className = 'mb-4';
-    const heading = document.createElement('h4');
-    heading.textContent = title;
-    heading.className = 'mb-4 text-center mt-4';
-    section.appendChild(heading);
-    const listGroup = document.createElement('div');
-    listGroup.className = 'list-group';
-    if (items.length > 0) {
-        items.forEach(item => {
-            listGroup.appendChild(item);
-        });
-    } else {
-        const emptyItem = document.createElement('div');
-        emptyItem.className = 'list-group-item text-muted text-center';
-        emptyItem.textContent = 'No users found.';
-        listGroup.appendChild(emptyItem);
-    }
-    section.appendChild(listGroup);
-    content.appendChild(section);
-}
 
 /**
  * Shows user's dashboard.
@@ -57,7 +33,6 @@ export async function showDashboard() {
 
     const content = document.getElementById('content');
     content.innerHTML = '';
-    
 	// Fetch user data
     fetch('/users/user/', {
         method: 'GET',
@@ -66,56 +41,48 @@ export async function showDashboard() {
     .then(response => response.json())
     .then(data => {
         content.innerHTML = `
-        <div class="container mt-5 mb-5 pt-5">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm text-left">
             	<div class="card-body mt-3">
             		<div class="text-center">
                     	<img src="${data.avatar}" alt="Avatar" width="70" class="rounded-circle" style="width: 70px; height: 70px; object-fit: cover;">
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item"><strong>Email:</strong> ${data.email}</li>
-                        <li class="list-group-item"><strong>Username:</strong> ${data.username}</li>
-                        <li class="list-group-item"><strong>Nickname:</strong> ${data.nickname}</li>
-                        <li class="list-group-item">
+                        <li class="list-group-item mb-3 mt-3"><strong>Email:</strong> ${data.email}</li>
+                        <li class="list-group-item mb-3"><strong>Username:</strong> ${data.username}</li>
+                        <li class="list-group-item mb-3"><strong>Nickname:</strong> ${data.nickname}</li>
+                        <li class="list-group-item mb-3">
                         <strong>Registration Date:</strong> ${new Date(data.date_joined).toLocaleString('pt-PT')}
                         </li>
                         <li class="list-group-item">
                             <strong>Last Login:</strong> ${new Date(data.last_login).toLocaleString('pt-PT')}
                         </li>
                     </ul>
-                    <div class="text-center mt-6">
+                    <div class="text-center mt-3">
                         <button id="edit-user" class="btn btn-secondary ">Edit Profile</button>
                     </div>
                 </div>
             </div>
+            <div class="mt-5">
+			    <button id="show-friends" class="btn btn-secondary">Show Friends</button>
+			    <button id="show-tournaments" class="btn btn-secondary">Show Tournaments Results</button>
+			    <button id="show-results" class="btn btn-secondary">Show Pong Results</button>
 			<hr>
-			<button id="show-friends" class="btn btn-primary">Show Friends</button>
-            <hr>
-			<button id="show-tournaments" class="btn btn-primary">Show Tournaments Results</button>
-			<hr>
-			<button id="show-results" class="btn btn-primary">Show Pong Results</button>
-			<hr>
-            <button id="show-rps" class="btn btn-primary">Show Rock-Paper-Scissors Results</button>
-			<hr>
-		</div>
-    	`;
+            <button id="show-rps" class="btn btn-secondary">Show Rock-Paper-Scissors Results</button>
+            </div>
+        	`;
         checkAuthentication();
-
         document.getElementById('edit-user').addEventListener('click', (e) => {
             e.preventDefault();
             showEditUserForm(data);
         });
-
 		document.getElementById('show-friends').addEventListener('click', (e) => {
             e.preventDefault();
             showFriends();
         });
-
 		document.getElementById('show-tournaments').addEventListener('click', (e) => {
             e.preventDefault();
             showUserTournamentResults()
         });
-
 		document.getElementById('show-results').addEventListener('click', (e) => {
             e.preventDefault();
             showUserResults()
@@ -141,34 +108,34 @@ export async function showDashboard() {
  */
 export function showEditUserForm(userData) {
     document.getElementById('content').innerHTML = `
-        <div  class= "mt-5 pt-5">
-        <h2>Editar Perfil</h2>
+        <h2 class="mb-4 mt-4 text-center">Editar Perfil</h2>
         <form id="edit-user-form" enctype="multipart/form-data">
-            <div class="form-group">
+            <div class="form-group text-left">
                 <label for="nickname">Nickname:</label>
                 <input type="text" id="nickname" name="nickname" class="form-control" value="${userData.nickname}" required>
             </div>
-            <div class="form-group">
+            <div class="form-group text-left">
                 <label for="first_name">Nome:</label>
                 <input type="text" id="first_name" name="first_name" class="form-control" value="${userData.first_name}" required>
             </div>
-            <div class="form-group">
+            <div class="form-group text-left">
                 <label for="last_name">Sobrenome:</label>
                 <input type="text" id="last_name" name="last_name" class="form-control" value="${userData.last_name}" required>
             </div>
-            <div class="form-group">
+            <div class="form-group text-left">
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" class="form-control" value="${userData.email}" required>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-3 text-left">
                 <label for="avatar">Avatar:</label>
                 <input type="file" id="avatar" name="avatar" class="form-control">
             </div>
-            <button type="submit" class="btn btn-success">Save</button>
-            <button type="button" id="cancel-edit" class="btn btn-secondary">Cancel</button>
-        </form>
+            <div class="text-left mt-4">
+                <button type="submit" class="btn btn-success">Save</button>
+                <button type="button" id="cancel-edit" class="btn btn-secondary">Cancel</button>
+            </div>
+        </form> 
     `;
-
     document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const nickname = document.getElementById('nickname').value;
@@ -185,9 +152,7 @@ export function showEditUserForm(userData) {
         if (avatar) {
             formData.append('avatar', avatar);
         }
-
         const csrfToken = getCookie('csrftoken');
-
         try {
             const response = await fetch('/users/user/update/', {
                 method: 'PUT',
@@ -211,7 +176,6 @@ export function showEditUserForm(userData) {
             alert('Error updating data.');
         }
     });
-
     document.getElementById('cancel-edit').addEventListener('click', (e) => {
         e.preventDefault();
         showDashboard();
@@ -224,15 +188,12 @@ export async function showUserTournamentResults() {
             method: 'GET',
             credentials: 'include',
         });
-
         if (!response.ok) {
             throw new Error(`Error HTTP! status: ${response.status}`);
         }
-
         const tournaments = await response.json();
         const content = document.getElementById('content');
         content.innerHTML = '<h2>Tournament Results</h2>';
-
         if (tournaments.length > 0) {
             tournaments.forEach(tournament => {
                 const div = document.createElement('div');
@@ -243,13 +204,11 @@ export async function showUserTournamentResults() {
                 `;
                 content.appendChild(div);
             });
-
-            // Calculate statistics
-            const total = tournaments.length; 
+			// Calculate statistics
+            const total = tournaments.length;
             const wins = tournaments.filter(t => t.is_winner).length;
             const losses = total - wins;
             const winPercentage = ((wins / total) * 100).toFixed(2);
-
 			// Show statistics
             const statsDiv = document.createElement('div');
             statsDiv.innerHTML = `
@@ -275,15 +234,12 @@ export async function showUserResults() {
             method: 'GET',
             credentials: 'include',
         });
-
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-
         const data = await response.json();
         const content = document.getElementById('content');
         content.innerHTML = '<h3 class="text-center mb-3">User Results</h3>';
-
         content.innerHTML += `
             <p>Total Matches: ${data.total_matches}</p>
             <p>Wins: ${data.total_wins}</p>
