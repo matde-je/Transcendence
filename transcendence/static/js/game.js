@@ -18,9 +18,9 @@ let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
 let paddleGravity = 3;
-let ai;
+//let ai;
 const aiRefreshView = 1000;
-const keys = {};
+//const keys = {};
 window.isTournament = false;
 
 export async function initializeGame() {
@@ -122,7 +122,7 @@ function reset_game() {
 	player1.y = 170 * (window.canvas.height / 400);
 	player2.x = 530 * (window.canvas.width / 550);
 	player2.y = 170 * (window.canvas.height / 400);
-	
+
 	if (multiplayer) {
 		player3.x = 10 * (window.canvas.width / 550);
 		player3.y = 230 * (window.canvas.height / 400);
