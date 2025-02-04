@@ -267,7 +267,7 @@ export async function showRockPaperScissor() {
         }
         const results = await response.json();
         const content = document.getElementById('content');
-        content.innerHTML = '<h2>RPS Results</h2>';
+        content.innerHTML = '';
         const rpsResults = results;
         const rpsResultsDiv = document.createElement('div');
         rpsResultsDiv.innerHTML = `
