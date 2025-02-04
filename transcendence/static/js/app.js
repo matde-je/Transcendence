@@ -1,15 +1,22 @@
 // static/js/app.js
 import { showLogin } from './login.js';
 import { showRegister } from './register.js';
-import { showDashboard, showEditUserForm } from './dashboard.js';
-import { getCookie, checkAuthentication } from './utils.js';
+import { showDashboard } from './dashboard.js';
 import { showSinglePlayer, showMultiplayer, showWaitingList } from './rps.js';
-import { playSinglePlayerGame } from './rps-singleplayer.js';
-import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
+import { showTournamentMenu } from './tournament.js';
+import { getCookie, getAuthenticationStatus, checkAuthentication } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    checkAuthentication();
-    const path = window.location.pathname;
+//	alert("PFV " + getAuthenticationStatus());
+//    initializeNavbar(getAuthenticationStatus());
+	checkAuthentication();
+    handleNavigation(window.location.pathname);
+    window.addEventListener('popstate', (event) => {
+        handleNavigation(event.state?.path || '/');
+    });
+});
+
+function handleNavigation(path) {
     if (path === '/login') {
         showLogin();
     } else if (path === '/register') {
@@ -22,123 +29,189 @@ document.addEventListener('DOMContentLoaded', () => {
         showSinglePlayer();
     } else if (path === '/rock-paper-scissors/multiplayer') {
         showMultiplayer();
-    } else if (path === '/tournament/create/') {
-        showCreateTournamentForm();
+//    } else if (path === '/tournament/create/') {
+//        showCreateTournamentForm();
     } else if (path === '/tournament') {
         showTournamentMenu();
     } else {
         showHome();
     }
-});
+}
 
 // Function to initialize and update the navbar
 export function initializeNavbar(authenticated) {
-    // let navBarContainer = document.getElementById('navbar');
-    const navBarContainer = document.createElement('nav'); //navigation
-    navBarContainer.id = 'navbar';
-    navBarContainer.className = 'navbar navbar-expand-lg navbar-light bg-light fixed-top';
-    const container = document.createElement('div'); //group
-    container.className = 'container-fluid';
-    const navbarBrand = document.createElement('a'); //hyperlink
-    navbarBrand.className = 'navbar-brand';
-    navbarBrand.href = '/';
-    navbarBrand.innerText = 'Pong';
-    navbarBrand.addEventListener('click', (e) => {
-        e.preventDefault();
-        showHome();
-        history.pushState({ page: 'home' }, 'Home', '/');
-    });
-    container.appendChild(navbarBrand);
-    const navbarCollapse = document.createElement('div');
-    navbarCollapse.className = 'collapse navbar-collapse';
-    navbarCollapse.id = 'navbarNav';
-    const navLinksLeft = document.createElement('ul'); // Left side links
-    navLinksLeft.className = 'navbar-nav'; // Default left-aligned links
-    const navLinksRight = document.createElement('ul'); // Right side links (avatar & logout)
-    navLinksRight.className = 'navbar-nav ml-auto';
-    navbarCollapse.appendChild(navLinksLeft);
-    navbarCollapse.appendChild(navLinksRight);
-    container.appendChild(navbarCollapse);
-    navBarContainer.appendChild(container);
-    document.body.appendChild(navBarContainer);
-    if (authenticated) {
-        fetch('/users/user/', {
-            method: 'GET',
-            credentials: 'include',
-        })
-        .then(response => response.json())
-        .then(data => {
-            const tournamentLink = document.createElement('li');
-            tournamentLink.className = 'nav-item';
-            tournamentLink.innerHTML = '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
-            navLinksLeft.appendChild(tournamentLink);
-            document.getElementById('tournament').addEventListener('click', (e) => {
-                e.preventDefault();
-                showTournamentMenu();
-                history.pushState({ page: 'tournament' }, 'Tournament', '/tournament');
-            });
-            const rpsLink = document.createElement('li');
-            rpsLink.className = 'nav-item';
-            rpsLink.innerHTML = '<a class="nav-link" href="/rock-paper-scissors" data-link>Rock Paper Scissors</a>';
-            navLinksLeft.appendChild(rpsLink);
-            rpsLink.querySelector('a').addEventListener('click', (e) => {
-                e.preventDefault();
-                showRPS();
-                history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
-                console.log("rps log");
-            });
-                const usernameLink = document.createElement('li');
-                usernameLink.className = 'nav-item';
-                usernameLink.innerHTML = `
-                        <a class="nav-link" href="/dashboard" data-link>
-                            <img src="${data.avatar}" alt="Avatar" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;">
-                        </a>
-                `;
-                const existingAvatar = navLinksRight.querySelector('img');
-                if (!existingAvatar) {
-                    navLinksRight.appendChild(usernameLink);
-                    usernameLink.querySelector('a').addEventListener('click', (e) => {
-                        e.preventDefault();
-                        showDashboard();
-                        history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard'); 
-                    });
-                }
-                const logoutLink = document.createElement('li');
-                logoutLink.className = 'nav-item';
-                logoutLink.innerHTML = '<a class="nav-link" href="#" id="logout" data-link>Logout</a>';
-                navLinksRight.appendChild(logoutLink);
-                logoutLink.querySelector('#logout').addEventListener('click', (e) => {
+
+	// Remove existing navbar if present to avoid duplicates
+	const existingNavbar = document.getElementById('navbar');
+	if (existingNavbar) {
+		existingNavbar.remove();
+	}
+	
+	const navBarContainer = document.createElement('nav'); //navigation
+	navBarContainer.id = 'navbar';
+	navBarContainer.className = 'navbar navbar-expand-lg navbar-light bg-light fixed-top';
+	const container = document.createElement('div'); //group
+	container.className = 'container-fluid';
+	const navbarBrand = document.createElement('a'); //hyperlink
+	navbarBrand.className = 'navbar-brand';
+	navbarBrand.href = '/';
+	navbarBrand.innerText = 'Pong';
+	navbarBrand.addEventListener('click', (e) => {
+		e.preventDefault();
+		showHome();
+		history.pushState({ page: 'home' }, 'Home', '/');
+	});
+
+	container.appendChild(navbarBrand);
+	const navbarCollapse = document.createElement('div');
+	navbarCollapse.className = 'collapse navbar-collapse';
+	navbarCollapse.id = 'navbarNav';
+	const navLinksLeft = document.createElement('ul'); // Left side links
+	navLinksLeft.className = 'navbar-nav'; // Default left-aligned links
+	const navLinksRight = document.createElement('ul'); // Right side links (avatar & logout)
+	navLinksRight.className = 'navbar-nav ml-auto';
+	navbarCollapse.appendChild(navLinksLeft);
+	navbarCollapse.appendChild(navLinksRight);
+	container.appendChild(navbarCollapse);
+	navBarContainer.appendChild(container);
+	document.body.appendChild(navBarContainer);
+
+	if (authenticated) {
+		fetch('/users/user/', {
+			method: 'GET',
+			credentials: 'include',
+		})
+		.then(response => response.json())
+		.then(data => {
+
+			const tournamentLink = document.createElement('li');
+			tournamentLink.className = 'nav-item';
+			tournamentLink.innerHTML = '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
+			navLinksLeft.appendChild(tournamentLink);
+
+            const tournamentAnchor = tournamentLink.querySelector('a');
+            if (tournamentAnchor) {
+                tournamentAnchor.addEventListener('click', (e) => {
                     e.preventDefault();
-                    logout();
+                    showTournamentMenu();
+                    history.pushState({ page: 'tournament' }, 'Tournament', '/tournament');
                 });
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                alert(`Error: ${error.message}`);
-            }); 
-    }
-    else {
-        const loginLink = document.createElement('li'); //list 
-        loginLink.className = 'nav-item';
-        loginLink.innerHTML = '<a class="nav-link" href="/login" data-link>Login</a>';
-        navLinksRight.appendChild(loginLink);
-        const registerLink = document.createElement('li');
-        registerLink.className = 'nav-item';
-        registerLink.innerHTML = '<a class="nav-link" href="/register" data-link>Register</a>';
-        navLinksRight.appendChild(registerLink);
-        loginLink.querySelector('a').addEventListener('click', (e) => {
-            e.preventDefault();
-            showLogin();
-            history.pushState({ page: 'login' }, 'Login', '/login');
-            console.log("login log");
-        });
-        registerLink.querySelector('a').addEventListener('click', (e) => {
-            e.preventDefault();
-        showRegister();
-            history.pushState({ page: 'register' }, 'Register', '/register');
-            console.log("register log");
-        });
-    }
+            }
+
+			const rpsLink = document.createElement('li');
+			rpsLink.className = 'nav-item';
+			rpsLink.innerHTML = '<a class="nav-link" href="/rock-paper-scissors" data-link>Rock Paper Scissors</a>';
+			navLinksLeft.appendChild(rpsLink);
+
+			const rpsAnchor = rpsLink.querySelector('a');
+            if (rpsAnchor) {
+                rpsAnchor.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showRPS();
+                    history.pushState({ page: 'rock-paper-scissors' }, 'Rock Paper Scissors', '/rock-paper-scissors');
+                });
+            }
+
+			const usernameLink = document.createElement('li');
+			usernameLink.className = 'nav-item';
+
+			// Create the anchor element
+			const dashboardAnchor = document.createElement('a');
+			dashboardAnchor.className = 'nav-link';
+			dashboardAnchor.href = '/dashboard';
+			dashboardAnchor.setAttribute('data-link', '');
+
+			// Create the image element
+			const avatarImg = document.createElement('img');
+			avatarImg.src = data.avatar;
+			avatarImg.alt = 'Avatar';
+			avatarImg.className = 'rounded-circle';
+			avatarImg.style.width = '30px';
+			avatarImg.style.height = '30px';
+			avatarImg.style.objectFit = 'cover';
+			
+			// Add the image to the anchor element
+			dashboardAnchor.appendChild(avatarImg);
+			usernameLink.appendChild(dashboardAnchor);
+
+			const existingAvatar = navLinksRight.querySelector('img');
+			// If the avatar is not already present, add usernameLink to the navbar
+			if (!existingAvatar) {
+				navLinksRight.appendChild(usernameLink); 
+			}
+			
+			dashboardAnchor.addEventListener('click', (e) => {
+				e.preventDefault();
+				showDashboard();
+				history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard'); 
+			});
+
+			const logoutLink = document.createElement('li');
+			logoutLink.className = 'nav-item';
+
+			// Create the Logout link
+			const logoutAnchor = document.createElement('a');
+			logoutAnchor.className = 'nav-link';
+			logoutAnchor.href = '#';
+			logoutAnchor.innerText = 'Logout';
+			logoutAnchor.setAttribute('data-link', '');
+			logoutAnchor.addEventListener('click', (e) => {
+				e.preventDefault();
+				logout();
+			});
+			logoutLink.appendChild(logoutAnchor);
+			navLinksRight.appendChild(logoutLink);
+		})
+		.catch((error) => {
+			console.error('Error:', error);
+			alert(`Error: ${error.message}`);
+		}); 
+	}
+	else {
+		// Cria o link Login
+		const loginLink = document.createElement('li'); //list 
+		loginLink.className = 'nav-item';
+		const loginAnchor = document.createElement('a');
+		loginAnchor.className = 'nav-link';
+		loginAnchor.href = '/login';
+		loginAnchor.innerText = 'Login';
+		loginAnchor.setAttribute('data-link', '');
+		loginAnchor.addEventListener('click', (e) => {
+			e.preventDefault();
+			showLogin();
+			history.pushState({ page: 'login' }, 'Login', '/login');
+			console.log("login log");
+		});
+		loginLink.appendChild(loginAnchor);
+		navLinksRight.appendChild(loginLink);
+
+		// Cria o link Register
+		const registerLink = document.createElement('li');
+		registerLink.className = 'nav-item';
+		const registerAnchor = document.createElement('a');
+		registerAnchor.className = 'nav-link';
+		registerAnchor.href = '/register';
+		registerAnchor.innerText = 'Register';
+		registerAnchor.setAttribute('data-link', '');
+		registerAnchor.addEventListener('click', (e) => {
+			e.preventDefault();
+			showRegister();
+			history.pushState({ page: 'register' }, 'Register', '/register');
+			console.log("register log");
+		});
+		registerLink.appendChild(registerAnchor);
+		navLinksRight.appendChild(registerLink);
+	}
+
+	const navLinks = document.querySelectorAll('a[data-link]');
+	navLinks.forEach(link => {
+		link.addEventListener('click', (event) => {
+			event.preventDefault();
+			const path = event.target.getAttribute('href');
+			history.pushState({ path }, '', path);
+			handleNavigation(path);
+		});
+	});
 }
 
 /**
@@ -256,9 +329,16 @@ function logout() {
             return response.json();
         })
         .then((data) => {
+			// Close the WebSocket connection to signal to the server that the user is offline
+            if (window.socket) {
+				console.log("web socket closing")
+                window.socket.close();
+            }
+//			alert("PFV " + getAuthenticationStatus());
+//			initializeNavbar(getAuthenticationStatus());
+			checkAuthentication();
             showHome();
             history.pushState({ page: 'home' }, 'Home', '/');
-            checkAuthentication();
         })
         .catch((error) => {
             console.error('Error:', error);

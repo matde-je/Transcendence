@@ -2,6 +2,7 @@
 
 import { showDashboard } from './dashboard.js';
 import { getCookie, checkAuthentication } from './utils.js';
+// import { initializeNavbar } from './app.js';
 
 /**
  * Displays the login form and handles the login process.
@@ -57,6 +58,9 @@ export function showLogin() {
             const data = await response.json();
             showDashboard();
             history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard');
+
+//			alert("PFV " + getAuthenticationStatus());
+//			initializeNavbar(getAuthenticationStatus());
             checkAuthentication();
         } else {
             const data = await response.json();
