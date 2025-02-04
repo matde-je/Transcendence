@@ -139,7 +139,7 @@ function reset_game() {
 //////////////////////////////KEYBOARD, EVENTLISTENER///////////////////////////////////
 
 window.addEventListener("keydown", (e) => {
-	keys[e.key] = true; //mark the key as pressed
+	keys[e.key] = true; //mark the key as pressed ///FALHA AQUI
 	if (keys['1'] && init === 0) {
 		ai = 1;
 		context.font = "20px 'Courier New', Courier, monospace";
@@ -203,7 +203,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 window.addEventListener("keyup", (e) => {
-	keys[e.key] = false; //mark the key as released
+	keys[e.key] = false; //mark the key as released	///FALHA AQUI
 });
 
 /////////////////////////////////MOVES ENGINE//////////////////////////////////////
@@ -479,13 +479,28 @@ function tournamentEndGame() {
 /////////////////////////////////MAIN LOOP/////////////////////////////////////
 
 function loop() {
+	console.log('NEW LOOP');
 	if (init === 0) {
 		reset_game();
-	drawFirstMenu();
-	drawElements(ball);
-	drawElements(player1);
-	drawElements(player2);
+	if (window.isTournament)
+		{
+			const event = new KeyboardEvent('keydown', {
+				key: '2',
+				keyCode: 50,
+				which: 50,
+				code: 'Digit2',
+				bubbles: true,
+				cancelable: true
+			});
+			document.dispatchEvent(event);
+		}
+		else
+			drawFirstMenu();
+		draw(ball);
+		draw(player1);
+		draw(player2);
 	}
+
 	if (!gameOver && !pause && init === 1) {
 		handleMoves();
 		if (window.ai) {
@@ -496,6 +511,8 @@ function loop() {
 		drawAll();
 		drawWinGameMenu();
 	}
+
+
 	if (!gameOver && score1 < 10 && score2 < 10 && init === 1) {
 		ani = window.requestAnimationFrame(loop);
 	} else if (gameOver && getAuthenticationStatus())
