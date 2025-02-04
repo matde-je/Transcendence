@@ -11,6 +11,7 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
         from django.contrib.auth.models import User
         user = self.scope["user"] #Django's authentication system 
         if user.is_authenticated:
+            # self.user_group = f"user_{user.id}"
             await self.set_online(user)
             await self.channel_layer.group_add("online_friends", self.channel_name)
             await self.accept()
@@ -19,6 +20,7 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
                     "type": "send_online_friends",
                 }
             )
+            await self.notify_friends(user)
         else:
             await self.close()
 
@@ -33,6 +35,20 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
                     "type": "send_online_friends",
                 }
             )
+            await self.notify_friends(user)
+
+    # async def notify_friends(self, user):
+    # """Send updated friend list to all friends of the user."""
+    # online_friends = await self.get_online_friends(user)
+    # for friend in online_friends:
+    #     friend_group = f"user_{friend['id']}"  # Notify each friend
+    #     await self.channel_layer.group_send(
+    #         friend_group,
+    #         {
+    #             "type": "send_online_friends",
+    #             "online_friends": online_friends
+    #         }
+    #     )
 
     async def send_online_friends(self, event):
         user = self.scope["user"]
@@ -41,6 +57,7 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
         online_friends = await self.get_online_friends(user)
         logger.info(f"Sending online friends list: {online_friends}")
         await self.send(text_data=json.dumps({
+            # "online_friends": event["online_friends"]
             "online_friends": online_friends
         }))
 

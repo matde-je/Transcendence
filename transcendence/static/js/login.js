@@ -55,6 +55,33 @@ export function showLogin() {
         });
 		// Handle the response from the server
         if (response.ok) {
+            window.socket = new WebSocket('wss://localhost:8000/ws/online_status/');
+            window.socket.onopen = function() {
+                console.log("WebSocket connection established.");
+            };
+            window.socket.onerror = function(error) {
+                console.error("WebSocket error:", error);
+            };
+            window.socket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                console.log("Parsed data:", data);
+                if (data.online_friends) {
+                    window.onlineFriends = data.online_friends;
+                    // Loop through all friends and update their status indicator
+                    // friendItems.forEach(listItem => {
+                    //     const friendId = listItem.dataset.friendId;
+                    //     const statusIndicator = listItem.querySelector('.status-indicator');
+                    //     if (onlineFriends.some(f => f.id == friendId)) {
+                    //         statusIndicator.classList.replace('bg-secondary', 'bg-success'); // Change to green
+                    //     } else {
+                    //         statusIndicator.classList.replace('bg-success', 'bg-secondary'); // Change back to gray
+                    //     }
+                    // });
+                }
+            };
+            window.socket.onclose = function(e) {
+                console.log("WebSocket connection closed.");
+            };
             const data = await response.json();
             showDashboard();
             history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard');

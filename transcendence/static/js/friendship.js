@@ -132,7 +132,7 @@ export function removeFriend(user_id) {
     });
 }
 
-window.socket;
+// window.socket;
 export async function showFriends() {
     const content = document.getElementById('content');
     content.innerHTML = '';
@@ -197,36 +197,42 @@ export async function showFriends() {
             const friend_container = document.createElement('div');
             friend_container.id = 'friend-container';
             content.appendChild(friend_container);
-
-            socket = new WebSocket('wss://localhost:8000/ws/online_status/');
-			window.socket = socket; // Store the socket in the window object
-            
-			socket.onopen = function() {
-                console.log("WebSocket connection established.");
-            };
-            window.socket.onerror = function(error) {
-                console.error("WebSocket error:", error);
-            };
-            window.socket.onmessage = function(e) {
-                const data = JSON.parse(e.data);
-                console.log("Parsed data:", data);
-                if (data.online_friends) {
-                    const onlineFriends = data.online_friends;
-                    // Loop through all friends and update their status indicator
-                    friendItems.forEach(listItem => {
-                        const friendId = listItem.dataset.friendId;
-                        const statusIndicator = listItem.querySelector('.status-indicator');
-                        if (onlineFriends.some(f => f.id == friendId)) {
-                            statusIndicator.classList.replace('bg-secondary', 'bg-success'); // Change to green
-                        } else {
-                            statusIndicator.classList.replace('bg-success', 'bg-secondary'); // Change back to gray
-                        }
-                    });
-                }
-            };
-            window.socket.onclose = function(e) {
-                console.log("WebSocket connection closed.");
-            };
+            // socket = new WebSocket('wss://localhost:8000/ws/online_status/');
+			// window.socket = socket; // Store the socket in the window object
+			// window.socket.onopen = function() {
+            //     console.log("WebSocket connection established.");
+            // };
+            // window.socket.onerror = function(error) {
+            //     console.error("WebSocket error:", error);
+            // };
+            // if (window.socket && window.socket.readyState === WebSocket.OPEN) {
+            //     console.log("WebSocket is already open.");
+            // } else {
+            //     window.socket = new WebSocket('wss://localhost:8000/ws/online_status/');
+            // }     
+            // window.socket.onmessage = function(e) {
+            //     const data = JSON.parse(e.data);
+            //     console.log("Parsed data:", data);
+            //     }
+            // };
+            // window.socket.onclose = function(e) {
+                //     console.log("WebSocket connection closed.");
+                // };
+            console.log(window.onlineFriends);
+            if (window.onlineFriends) {
+                //const onlineFriends = data.online_friends;
+                // Loop through all friends and update their status indicator
+                console.log(window.onlineFriends);
+                friendItems.forEach(listItem => {
+                    const friendId = listItem.dataset.friendId;
+                    const statusIndicator = listItem.querySelector('.status-indicator');
+                    if (window.onlineFriends.some(f => f.id == friendId)) {
+                        statusIndicator.classList.replace('bg-secondary', 'bg-success'); // Change to green
+                    } else {
+                        statusIndicator.classList.replace('bg-success', 'bg-secondary'); // Change back to gray
+                    }
+                });
+            }
         }
         const allRequests = [
             ...receivedRequests.map(request => ({ ...request, type: 'received' })),

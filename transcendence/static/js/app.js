@@ -77,6 +77,16 @@ export function initializeNavbar(authenticated) {
 	document.body.appendChild(navBarContainer);
 
 	if (authenticated) {
+		// window.socket = new WebSocket('wss://localhost:8000/ws/online_status/');
+		// window.socket.onopen = function() {
+		// 	console.log("WebSocket connection established.");
+		// };
+		// window.socket.onerror = function(error) {
+		// 	console.error("WebSocket error:", error);
+		// };
+		// window.socket.onclose = function(e) {
+		// 	console.log("WebSocket connection closed.");
+		// };
 		fetch('/users/user/', {
 			method: 'GET',
 			credentials: 'include',
@@ -313,7 +323,8 @@ export function showRPS() {
  * Logs out the user by making a POST request to the server.
  */
 function logout() {
-    window.socket.send(JSON.stringify({"action": "logout"}));
+	if (window.socket && window.socket.readyState === WebSocket.OPEN)
+    	window.socket.send(JSON.stringify({"action": "logout"}));
     const csrftoken = getCookie('csrftoken');
     fetch('/users/logout/', {
         method: 'POST',
