@@ -158,14 +158,14 @@ export function showHome() {
     document.getElementById('gameScript')?.remove();
     document.getElementById('aiScript')?.remove();
     contentElement.innerHTML = `
-        <h2 class="text-center text-dark fw-bold mb-5">Pong Game</h2>
+        <h2 class="text-center text-dark mb-5">Pong Game</h2>
         <div class="text-center"> 
             <div class="d-flex justify-content-center">
                 <canvas id="game" width="550" height="400" style="background-color: #000;"></canvas>
             </div>
         </div>
         <div class="text-center mt-4">
-            <p class="fs-6 fw-bold text-dark">To unlock new features and games,</p>
+            <p class="fs-6 text-dark">To unlock new features and games,</p>
             <p class="fs-6 text-dark">Register your User and Login!</p>
         </div>
         `;
@@ -240,6 +240,7 @@ export function showRPS() {
  * Logs out the user by making a POST request to the server.
  */
 function logout() {
+    window.socket.send(JSON.stringify({"action": "logout"}));
     const csrftoken = getCookie('csrftoken');
     fetch('/users/logout/', {
         method: 'POST',
@@ -252,13 +253,6 @@ function logout() {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            // else {
-            //     console.log("logout web socket closing")
-            //     if (window.socket) {
-            //         console.log("web socket closing")
-            //         window.socket.close();  // Explicitly close the WebSocket
-            //     }
-            // }
             return response.json();
         })
         .then((data) => {

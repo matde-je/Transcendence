@@ -132,6 +132,7 @@ export function removeFriend(user_id) {
     });
 }
 
+window.socket;
 export async function showFriends() {
     const content = document.getElementById('content');
     content.innerHTML = '';
@@ -192,19 +193,18 @@ export async function showFriends() {
             return listItem;
         });
         createList(content, 'Friends', friendItems);
-        let socket;
         if (!document.getElementById('friend-container')) {
             const friend_container = document.createElement('div');
             friend_container.id = 'friend-container';
             content.appendChild(friend_container);
-            socket = new WebSocket('wss://localhost:8000/ws/online_status/');
-            socket.onopen = function() {
+            window.socket = new WebSocket('wss://localhost:8000/ws/online_status/');
+            window.socket.onopen = function() {
                 console.log("WebSocket connection established.");
             };
-            socket.onerror = function(error) {
+            window.socket.onerror = function(error) {
                 console.error("WebSocket error:", error);
             };
-            socket.onmessage = function(e) {
+            window.socket.onmessage = function(e) {
                 const data = JSON.parse(e.data);
                 console.log("Parsed data:", data);
                 if (data.online_friends) {
@@ -221,7 +221,7 @@ export async function showFriends() {
                     });
                 }
             };
-            socket.onclose = function(e) {
+            window.socket.onclose = function(e) {
                 console.log("WebSocket connection closed.");
             };
         }
