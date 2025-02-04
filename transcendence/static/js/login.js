@@ -1,9 +1,11 @@
 // static/js/login.js
 
 import { showDashboard } from './dashboard.js';
+import { update_onlinestatus_ui } from './friendship.js';
 import { getCookie, checkAuthentication } from './utils.js';
 // import { initializeNavbar } from './app.js';
 
+window.socket = 0;
 /**
  * Displays the login form and handles the login process.
  *
@@ -67,16 +69,7 @@ export function showLogin() {
                 console.log("Parsed data:", data);
                 if (data.online_friends) {
                     window.onlineFriends = data.online_friends;
-                    // Loop through all friends and update their status indicator
-                    // friendItems.forEach(listItem => {
-                    //     const friendId = listItem.dataset.friendId;
-                    //     const statusIndicator = listItem.querySelector('.status-indicator');
-                    //     if (onlineFriends.some(f => f.id == friendId)) {
-                    //         statusIndicator.classList.replace('bg-secondary', 'bg-success'); // Change to green
-                    //     } else {
-                    //         statusIndicator.classList.replace('bg-success', 'bg-secondary'); // Change back to gray
-                    //     }
-                    // });
+                    update_onlinestatus_ui();
                 }
             };
             window.socket.onclose = function(e) {
