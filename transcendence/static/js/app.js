@@ -4,6 +4,7 @@ import { showRegister } from './register.js';
 import { showDashboard } from './dashboard.js';
 import { showSinglePlayer, showMultiplayer, showWaitingList } from './rps.js';
 import { showTournamentMenu } from './tournament.js';
+import { update_onlinestatus_ui } from './friendship.js';
 import { getCookie, getAuthenticationStatus, checkAuthentication } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,15 +39,14 @@ function handleNavigation(path) {
     }
 }
 
+window.socket = 0;
 // Function to initialize and update the navbar
 export function initializeNavbar(authenticated) {
-
 	// Remove existing navbar if present to avoid duplicates
 	const existingNavbar = document.getElementById('navbar');
 	if (existingNavbar) {
 		existingNavbar.remove();
 	}
-	
 	const navBarContainer = document.createElement('nav'); //navigation
 	navBarContainer.id = 'navbar';
 	navBarContainer.className = 'navbar navbar-expand-lg navbar-light bg-light fixed-top';
@@ -75,25 +75,31 @@ export function initializeNavbar(authenticated) {
 	container.appendChild(navbarCollapse);
 	navBarContainer.appendChild(container);
 	document.body.appendChild(navBarContainer);
-
 	if (authenticated) {
-		// window.socket = new WebSocket('wss://localhost:8000/ws/online_status/');
-		// window.socket.onopen = function() {
-		// 	console.log("WebSocket connection established.");
-		// };
-		// window.socket.onerror = function(error) {
-		// 	console.error("WebSocket error:", error);
-		// };
-		// window.socket.onclose = function(e) {
-		// 	console.log("WebSocket connection closed.");
-		// };
+		window.socket = new WebSocket('wss://localhost:8000/ws/online_status/');
+		window.socket.onopen = function() {
+			console.log("WebSocket connection established.");
+		};
+		window.socket.onerror = function(error) {
+			console.error("WebSocket error:", error);
+		};
+		window.socket.onmessage = function(e) {
+			const data = JSON.parse(e.data);
+			console.log("Parsed data:", data);
+			if (data.online_friends) {
+				window.onlineFriends = data.online_friends;
+				update_onlinestatus_ui();
+			}
+		};
+		window.socket.onclose = function(e) {
+			console.log("WebSocket connection closed.");
+		};
 		fetch('/users/user/', {
 			method: 'GET',
 			credentials: 'include',
 		})
 		.then(response => response.json())
 		.then(data => {
-
 			const tournamentLink = document.createElement('li');
 			tournamentLink.className = 'nav-item';
 			tournamentLink.innerHTML = '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
@@ -107,7 +113,6 @@ export function initializeNavbar(authenticated) {
                     history.pushState({ page: 'tournament' }, 'Tournament', '/tournament');
                 });
             }
-
 			const rpsLink = document.createElement('li');
 			rpsLink.className = 'nav-item';
 			rpsLink.innerHTML = '<a class="nav-link" href="/rock-paper-scissors" data-link>Rock Paper Scissors</a>';
