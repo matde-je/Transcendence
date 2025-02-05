@@ -13,10 +13,10 @@ let init = 0;
 let initialBallGravity = 1;
 let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
+let paddleGravity = 3;
 let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
-let paddleGravity = 3;
 const aiRefreshView = 1000;
 
 window.isTournament = false;
@@ -74,7 +74,7 @@ const player1 = new Element ( {
 	gravity: paddleGravity,
 });
 
-const player2 = new Element ( {
+window.player2 = new Element ( {
 	x: 530,
     y: 170, // Center vertically
 	width: 12,
@@ -104,8 +104,8 @@ const player4 = new Element({
 window.ball = new Element ( {
 	x: 175,
 	y: 200,
-	width: 12,
-	height: 12,
+	width: 10,
+	height: 10,
 	color: "#fff",
 	speed: ballSpeed,
 	gravity: initialBallGravity,
@@ -422,9 +422,9 @@ function loop() {
 		handleMoves();
         bounceBall();
         paddleCollision();
-        if (window.ai) {
-			window.aiLogic(window.aiRefreshView);
-        }
+		if (window.ai) {
+			aiLogic(window.ball, window.canvas);
+		}
         drawAll();
         if (score1 === 10 || score2 === 10) {
 			let x;
