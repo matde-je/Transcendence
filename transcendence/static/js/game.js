@@ -50,7 +50,6 @@ export async function initializeGame() {
 	window.paddleGravity = paddleGravity;
 	window.aiRefreshView = aiRefreshView;
 	ani = window.requestAnimationFrame(loop);
-	pause = false;
 }
 
 class Element {
@@ -131,7 +130,6 @@ function reset_game() {
 	ball.speed = ballSpeed;
 	ball.gravity = initialBallGravity;
 	gameOver = false;
-	pause = false;
 }
 
 //////////////////////////////KEYBOARD, EVENTLISTENER///////////////////////////////////
@@ -434,23 +432,23 @@ function loop() {
 				x = (canvas.width / 2) + (canvas.width / 4);
 
 			if (window.isTournament)
-			{
-				context.font = '50px \'Courier New\', Courier, monospace';
-				context.textAlign = 'center';
-				context.fillStyle = 'white';
-				context.fillText('WIN', x, canvas.height * 0.375);
-				context.font = '30px \'Courier New\', Courier, monospace';
-				context.fillText('S - START NEW GAME', x, canvas.height * 0.875);
-			}
-			else
-			{
-				context.font = '50px \'Courier New\', Courier, monospace';
-				context.textAlign = 'center';
-				context.fillStyle = 'white';
-				context.fillText('WIN', x, canvas.height * 0.375);
-				context.font = '30px \'Courier New\', Courier, monospace';
-				context.fillText('S - START NEW GAME', x, canvas.height * 0.875);
-			}
+				{
+					context.font = '50px \'Courier New\', Courier, monospace';
+					context.textAlign = 'center';
+					context.fillStyle = 'white';
+					context.fillText('WIN', x, canvas.height * 0.375);
+					context.font = '30px \'Courier New\', Courier, monospace';
+					context.fillText('N - PLAY NEXT GAME', x, canvas.height * 0.875);
+				}
+				else
+				{
+					context.font = '50px \'Courier New\', Courier, monospace';
+					context.textAlign = 'center';
+					context.fillStyle = 'white';
+					context.fillText('WIN', x, canvas.height * 0.375);
+					context.font = '30px \'Courier New\', Courier, monospace';
+					context.fillText('S - START NEW GAME', x, canvas.height * 0.875);
+				}
             gameOver = true;
             window.cancelAnimationFrame(ani);
         }
