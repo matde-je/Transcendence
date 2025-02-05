@@ -41,7 +41,7 @@ install:
 # Create a superuser in Django
 create_superuser:
 	@clear
-	docker compose --file docker-compose.yml run backend python manage.py createsuperuser
+	docker-compose --file docker-compose.yml run backend python manage.py createsuperuser
 
 # Create users
 create_users:

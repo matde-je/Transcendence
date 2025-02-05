@@ -19,6 +19,7 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
                     "type": "send_online_friends",
                 }
             )
+            # await self.notify_friends(user)
         else:
             await self.close()
 
@@ -33,6 +34,7 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
                     "type": "send_online_friends",
                 }
             )
+            # await self.notify_friends(user)
 
     async def send_online_friends(self, event):
         user = self.scope["user"]
@@ -41,8 +43,26 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
         online_friends = await self.get_online_friends(user)
         logger.info(f"Sending online friends list: {online_friends}")
         await self.send(text_data=json.dumps({
+            # "online_friends": event["online_friends"]
             "online_friends": online_friends
         }))
+
+    async def receive(self, text_data):
+        """Handle messages from the WebSocket."""
+        user = self.scope["user"]
+        # if not user.is_authenticated:
+        #     return
+        data = json.loads(text_data)
+        # If the user sends a logout event
+        if data.get("type") == "logout":
+            logger.info(f"User {user.username} is logging out via WebSocket")
+            await self.set_offline(user)  # Set user as offline
+            await self.channel_layer.group_discard("online_friends", self.channel_name)
+            await self.channel_layer.group_send(
+                "online_friends", {
+                    "type": "send_online_friends",
+                }
+            )
 
     @sync_to_async #run synchronous functions inside asynchronous code (web socket)
     def set_online(self, user):
