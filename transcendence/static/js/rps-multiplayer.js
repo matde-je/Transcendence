@@ -150,7 +150,7 @@ function resetScores() {
 }
 
 // Add event listener for key presses
-document.addEventListener('keydown', (event) => {
+window.addEventListener('keydown', (event) => {
     const key = event.key;
     if (window.location.pathname === '/rock-paper-scissors/multiplayer') {
         switch (key) {

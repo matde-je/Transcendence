@@ -132,6 +132,23 @@ export function removeFriend(user_id) {
     });
 }
 
+window.friendItems = [];
+
+export async function update_onlinestatus_ui() {
+    if (window.onlineFriends) {
+        window.friendItems.forEach(listItem => {
+            const friendId = listItem.dataset.friendId;
+            const statusIndicator = listItem.querySelector('.status-indicator');
+            if (window.onlineFriends.some(f => f.id == friendId)) {
+                statusIndicator.classList.replace('bg-secondary', 'bg-success'); // Change to green
+            } else {
+                statusIndicator.classList.replace('bg-success', 'bg-secondary'); // Change back to gray
+            }
+        });
+    }
+}
+
+// window.socket;
 export async function showFriends() {
     const content = document.getElementById('content');
     content.innerHTML = '';
@@ -161,7 +178,7 @@ export async function showFriends() {
         }).then(response => response.json())
     ])
     .then(([users, sentRequests, receivedRequests, friends]) => {
-        const friendItems = friends.map(friend => {
+        window.friendItems = friends.map(friend => {
             const listItem = document.createElement('div');
             listItem.className = 'list-group-item d-flex justify-content-between gap-3'; 
             // Create a container for the username and status indicator
@@ -191,39 +208,12 @@ export async function showFriends() {
             listItem.dataset.statusIndicator = statusIndicator;
             return listItem;
         });
-        createList(content, 'Friends', friendItems);
-        let socket;
+        createList(content, 'Friends', window.friendItems);
         if (!document.getElementById('friend-container')) {
             const friend_container = document.createElement('div');
             friend_container.id = 'friend-container';
             content.appendChild(friend_container);
-            socket = new WebSocket('wss://localhost:8000/ws/online_status/');
-            socket.onopen = function() {
-                console.log("WebSocket connection established.");
-            };
-            socket.onerror = function(error) {
-                console.error("WebSocket error:", error);
-            };
-            socket.onmessage = function(e) {
-                const data = JSON.parse(e.data);
-                console.log("Parsed data:", data);
-                if (data.online_friends) {
-                    const onlineFriends = data.online_friends;
-                    // Loop through all friends and update their status indicator
-                    friendItems.forEach(listItem => {
-                        const friendId = listItem.dataset.friendId;
-                        const statusIndicator = listItem.querySelector('.status-indicator');
-                        if (onlineFriends.some(f => f.id == friendId)) {
-                            statusIndicator.classList.replace('bg-secondary', 'bg-success'); // Change to green
-                        } else {
-                            statusIndicator.classList.replace('bg-success', 'bg-secondary'); // Change back to gray
-                        }
-                    });
-                }
-            };
-            socket.onclose = function(e) {
-                console.log("WebSocket connection closed.");
-            };
+           update_onlinestatus_ui();
         }
         const allRequests = [
             ...receivedRequests.map(request => ({ ...request, type: 'received' })),
