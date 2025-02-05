@@ -48,6 +48,7 @@ export async function initializeGame() {
 	window.aiSpeed = 70;
 	window.aiRefreshView = 1000; // 1 sec, 1000 ms
 	window.aiLastUpdateTime = Date.now();
+	pause = false;
 	ani = window.requestAnimationFrame(loop);
 }
 
@@ -122,8 +123,9 @@ function reset_game() {
 	ball.speed = ballSpeed;
 	ball.gravity = initialBallGravity;
 	gameOver = false;
+	pause = false;
 }
-
+ 
 window.keys = {};
 
 window.addEventListener("keydown", (e) => {
@@ -167,7 +169,8 @@ window.addEventListener("keydown", (e) => {
 		window.cancelAnimationFrame(ani);
 		reset_game();
 		context.clearRect(0, 0, canvas.width, canvas.height);
-	    ani = window.requestAnimationFrame(loop);
+		if (window.location.href === "https://localhost:8000/" || window.location.href === "https://localhost:8000/tournament")
+	    	ani = window.requestAnimationFrame(loop);
 		init = 1;
 		console.log("start game clicked");
 	}
