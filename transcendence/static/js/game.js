@@ -39,7 +39,7 @@ export async function initializeGame() {
 	canvas.height = 500;
 	window.canvas = canvas;
 	window.context = context;
-	window.keys = {};
+
 	score1 = score2 = 0;
 	init = 0;
 	pause = false;
@@ -158,7 +158,8 @@ window.addEventListener("keydown", (e) => {
 		context.fillText("PLAYER 2 - Q AND A", canvas.width / 2, canvas.height * 0.725);
 		context.fillText("P - PAUSE", canvas.width / 2, canvas.height * 0.80);
 		context.fillText("S - START",canvas.width / 2, canvas.height * 0.875);
-		username2 = "	 HUMAN";
+		if (!window.isTournament)
+			username2 = "     HUMAN";
 	}
 	if (keys['4'] && init === 0) {
 		multiplayer = 1;
@@ -496,9 +497,9 @@ function loop() {
 		}
 		else
 			drawFirstMenu();
-		draw(ball);
-		draw(player1);
-		draw(player2);
+		drawElements(ball);
+		drawElements(player1);
+		drawElements(player2);
 	}
 
 	if (!gameOver && !pause && init === 1) {
