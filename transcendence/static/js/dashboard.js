@@ -1,7 +1,7 @@
 // static/js/dashboard.js
 
-import { checkAuthentication, getCookie, getAuthenticationStatus } from './utils.js';
-import { showHome, initializeNavbar } from './app.js';
+import { checkAuthentication, getCookie } from './utils.js';
+import { showHome } from './app.js';
 import { sendFriendRequest, acceptFriendRequest, removeFriend, showFriends } from './friendship.js';
 
 window.sendFriendRequest = sendFriendRequest;
@@ -22,16 +22,12 @@ window.showDashboard = showDashboard;
 export async function showDashboard() {
 
 	const username = await checkAuthentication();
-	
-//	alert("PFV " + getAuthenticationStatus());
-//	initializeNavbar(getAuthenticationStatus());
-	checkAuthentication();
 
     if (username === ' Anonymous') {
         showHome();
         return;
     }
-
+	
 	// Get CSRF token
 	const csrftoken = getCookie('csrftoken');
 
@@ -74,7 +70,7 @@ export async function showDashboard() {
             <button id="show-rps" class="btn btn-secondary">Show Rock-Paper-Scissors Results</button>
             </div>
         	`;
-//        checkAuthentication();
+        checkAuthentication();
         document.getElementById('edit-user').addEventListener('click', (e) => {
             e.preventDefault();
             showEditUserForm(data);
@@ -267,7 +263,7 @@ export async function showRockPaperScissor() {
         }
         const results = await response.json();
         const content = document.getElementById('content');
-        content.innerHTML = '';
+        content.innerHTML = '<h2>RPS Results</h2>';
         const rpsResults = results;
         const rpsResultsDiv = document.createElement('div');
         rpsResultsDiv.innerHTML = `

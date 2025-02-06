@@ -81,7 +81,7 @@ export async function listOpenTournaments() {
                         actionButton = `<div class="d-flex justify-content-center">
                                             <button type="button" onclick="removeUserFromTournament(${tournament.id})" class="btn btn-danger btn-sm">Quit Tournament</button>
                                         </div>`;
-                                        } 
+                                        }
 					if (!isEnrolled && !tournament.is_started) {
                         actionButton = `
                         <div class="d-flex justify-content-center">
@@ -102,10 +102,10 @@ export async function listOpenTournaments() {
                             <button type="button" onclick="startTournament(${tournament.id})" class="btn btn-success btn-sm">Start Tournament</button>
                         </div>`;
                     }
-                    
+
                     const listItem = document.createElement('li');
                     listItem.className = 'list-group-item py-4';
-                    listItem.innerHTML = ` 
+                    listItem.innerHTML = `
                      <div>
                         <div class="text-center mb-2">
                             <strong>${tournament.name}</strong> - Created by <em>${tournament.creator_username}</em>
@@ -237,7 +237,7 @@ export function showCreateTournamentForm() {
                     </div>
                 </form>
             </div>
-        </div> 
+        </div>
     </div>
     `;
     document.getElementById('content').innerHTML = formContent;
@@ -321,7 +321,7 @@ async function startTournament(tournamentId) {
 
         // Start tournament
         const names = participants.map((p) => p.username).join('\n');
-		
+
         const response = await fetch(`/tournament/${tournamentId}/start/`, {
             method: 'POST',
             headers: {
@@ -341,7 +341,7 @@ async function startTournament(tournamentId) {
     }
 }
 
-export async function startMatchmaking(tournamentId) 
+export async function startMatchmaking(tournamentId)
 {
 	const csrftoken = getCookie('csrftoken');
 
@@ -498,7 +498,7 @@ async function executeMatches(matches, tournamentId, currentRound) {
 		alert('The tournament has ended.');
 
 		const csrftoken = getCookie('csrftoken');
-	
+
 		fetch(`/tournament/${tournamentId}/finish/`, {
 			method: 'PATCH',
 			headers: {
@@ -554,7 +554,7 @@ export async function startPongMatch(idPlayer1, idPlayer2) {
 	// Set the player IDs in the global object
 	window.player1Id = idPlayer1;
     window.player2Id = idPlayer2;
-	
+
 	// Remove previous scripts, if they exist
     document.getElementById('gameScript')?.remove();
     document.getElementById('aiScript')?.remove();
@@ -563,7 +563,7 @@ export async function startPongMatch(idPlayer1, idPlayer2) {
         <div class="text-center mt-5 pt-5">
             <h2 class="text-dark fw-bold mb-5">Tournament Pong Match</h2>
         </div>
-        <div class="text-center"> 
+        <div class="text-center">
 			<div class='d-flex justify-content-between'>
 				<p><b>Player 1</b>: ${window.username1}</p>
 				<p><b>Player 2</b>: ${window.username2}</p>
@@ -686,7 +686,7 @@ export async function selectWinnersAndMatchmake(tournamentId, roundNumber) {
 
             const matches = data.matches;
             roundNumber = data.round;
-            
+
 			console.log('PFV - Matches:', matches);
 
             // Shows the round and the names of the participants
