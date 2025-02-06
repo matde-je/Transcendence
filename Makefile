@@ -41,7 +41,7 @@ install:
 # Create a superuser in Django
 create_superuser:
 	@clear
-	docker-compose --file docker-compose.yml run backend python manage.py createsuperuser
+	docker compose --file docker-compose.yml run backend python manage.py createsuperuser
 
 # Create users
 create_users:
@@ -62,6 +62,9 @@ win_percentages:
 	@clear
 	docker compose --file docker-compose.yml run backend python manage.py win_percentages
 
+create_friendships:
+	@clear
+	docker compose --file docker-compose.yml run backend python manage.py create_friendships
 
 # Migrate the database
 migrate:

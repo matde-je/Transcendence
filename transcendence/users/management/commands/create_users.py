@@ -7,7 +7,7 @@ class Command(BaseCommand):
     help = 'It automatically creates 32 users in the database.'
 
     def handle(self, *args, **kwargs):
-        for i in range(1, 6):
+        for i in range(1, 5):
             username = f'user{i}'
             email = f'user{i}@42.com'
             password = '123'
