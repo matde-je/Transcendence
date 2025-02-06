@@ -62,6 +62,9 @@ win_percentages:
 	@clear
 	docker compose --file docker-compose.yml run backend python manage.py win_percentages
 
+create_friendships:
+	@clear
+	docker compose --file docker-compose.yml run backend python manage.py create_friendships
 
 # Migrate the database
 migrate:

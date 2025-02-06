@@ -37,7 +37,7 @@ export function playMultiplayerGame(choice, player) {
  * @param {string} choice - The player's choice.
  * @param {number} player - The player number.
  */
-function choose(choice, player) {
+export function choose(choice, player) {
     if (player === 1) {
         player1Choice = choice;
     } else if (player === 2) {
@@ -150,8 +150,8 @@ function resetScores() {
 }
 
 // Add event listener for key presses
-document.addEventListener('keydown', (event) => {
-    const key = event.key;
+window.addEventListener('keydown', (event) => {
+    let key = event.key;
     if (window.location.pathname === '/rock-paper-scissors/multiplayer') {
         switch (key) {
             // Player 1 keys

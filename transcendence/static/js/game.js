@@ -1,4 +1,5 @@
 import { getCookie, checkAuthentication, getAuthenticationStatus } from './utils.js';
+import { choose } from './rps-multiplayer.js';
 
 "use strict"
 
@@ -13,7 +14,7 @@ let init = 0;
 let initialBallGravity = 1;
 let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
-let paddleGravity = 3;
+let paddleGravity = 2;
 let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
@@ -22,6 +23,7 @@ const aiRefreshView = 1000;
 window.isTournament = false;
 
 export async function initializeGame() {
+	pause = false;
 	if (window.isTournament)
 	{
 		username1 = window.username1;
@@ -112,11 +114,12 @@ window.ball = new Element ( {
 
 
 function reset_game() {
+	pause = false;
 	score1 = score2 = 0;
 	player1.x = 10 * (window.canvas.width / 550);
 	player1.y = 170 * (window.canvas.height / 400);
-	player2.x = 530 * (window.canvas.width / 550);
-	player2.y = 170 * (window.canvas.height / 400);
+	window.player2.x = 530 * (window.canvas.width / 550);
+	window.player2.y = 170 * (window.canvas.height / 400);
 
 	if (multiplayer) {
 		player3.x = 10 * (window.canvas.width / 550);
@@ -138,66 +141,71 @@ window.keys = {};
 
 window.addEventListener("keydown", (e) => {
 	keys[e.key] = true; //mark the key as pressed
-	if (keys['1'] && init === 0) {
-		ai = 1;
-		context.font = "20px 'Courier New', Courier, monospace";
-		context.textAlign = "center";
-		context.fillStyle = "white";
-		context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
-		context.fillText("P - PAUSE", canvas.width / 2, 320);
-		context.fillText("S - START", canvas.width / 2, 350);
-		username2 = "        AI";
-	}
-	if (keys['2'] && init === 0) {
-		context.font = "20px 'Courier New', Courier, monospace";
-		context.textAlign = "center";
-		context.fillStyle = "white";
-		context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, 260);
-		context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 290);
-		context.fillText("P - PAUSE", canvas.width / 2, 320);
-		context.fillText("S - START", canvas.width / 2, 350);
-		if (!window.isTournament)
-			username2 = "     HUMAN";
-	}
-	if (keys['4'] && init === 0) {
-		multiplayer = 1;
-		context.font = "20px 'Courier New', Courier, monospace";
-		context.textAlign = "center";
-		context.fillStyle = "white";
-		context.fillText("PLAYER 1 - ARROW KEYS", canvas.width / 2, 200);
-		context.fillText("PLAYER 2 - Q AND A", canvas.width / 2, 230);
-		context.fillText("PLAYER 3 - F AND V", canvas.width / 2, 260);
-		context.fillText("PLAYER 4 - J AND M", canvas.width / 2, 290);
-		context.fillText("P - PAUSE", canvas.width / 2, 320);
-		context.fillText("S - START", canvas.width / 2, 350);
-		username2 = "HUMAN PAIR";
-	}
-	if ((gameOver == true || init == 0) && (keys['s'] || keys['S']))
-	{
-		window.cancelAnimationFrame(ani);
-		reset_game();
-		context.clearRect(0, 0, canvas.width, canvas.height);
-	    ani = window.requestAnimationFrame(loop);
-		init = 1;
-		console.log("start game clicked");
-	}
-
-	if ((gameOver == true || init == 0) && (keys['n'] || keys['N']) && window.isTournament)
-	{
-		console.log("Get ready for next tournament game");
-		let winnerId = (score1 === 10) ? window.player1Id : window.player2Id;
-		window.onGameOver(winnerId);
-	}
-
-	if (keys['p'] && gameOver == false && init == 1) {
-		pause = !pause;
-		if (pause == true) {
+	if (window.location.pathname === '/rock-paper-scissors/multiplayer'){
+		return;
+	}else{
+		if (keys['1'] && init === 0) {
+			ai = 1;
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("Paused, press P to continue", canvas.width / 2, canvas.height / 2);
+			context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
+			context.fillText("P - PAUSE", canvas.width / 2, 320);
+			context.fillText("S - START", canvas.width / 2, 350);
+			username2 = "        AI";
 		}
-		keys['p'] = false;
+		if (keys['2'] && init === 0) {
+			context.font = "20px 'Courier New', Courier, monospace";
+			context.textAlign = "center";
+			context.fillStyle = "white";
+			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, 260);
+			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 290);
+			context.fillText("P - PAUSE", canvas.width / 2, 320);
+			context.fillText("S - START", canvas.width / 2, 350);
+			if (!window.isTournament)
+				username2 = "     HUMAN";
+		}
+		if (keys['4'] && init === 0) {
+			multiplayer = 1;
+			context.font = "20px 'Courier New', Courier, monospace";
+			context.textAlign = "center";
+			context.fillStyle = "white";
+			context.fillText("PLAYER 1 - ARROW KEYS", canvas.width / 2, 200);
+			context.fillText("PLAYER 2 - Q AND A", canvas.width / 2, 230);
+			context.fillText("PLAYER 3 - F AND V", canvas.width / 2, 260);
+			context.fillText("PLAYER 4 - J AND M", canvas.width / 2, 290);
+			context.fillText("P - PAUSE", canvas.width / 2, 320);
+			context.fillText("S - START", canvas.width / 2, 350);
+			username2 = "HUMAN PAIR";
+		}
+		if ((gameOver == true || init == 0) && (keys['s'] || keys['S']))
+		{
+			window.cancelAnimationFrame(ani);
+			reset_game();
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			if (window.location.href === "https://localhost:8000/" || window.location.href === "https://localhost:8000/tournament")
+				ani = window.requestAnimationFrame(loop);
+			init = 1;
+			console.log("start game clicked");
+		}
+
+		if ((gameOver == true || init == 0) && (keys['n'] || keys['N']) && window.isTournament)
+		{
+			console.log("Get ready for next tournament game");
+			let winnerId = (score1 === 10) ? window.player1Id : window.player2Id;
+			window.onGameOver(winnerId);
+		}
+
+		if (keys['p'] && gameOver == false && init == 1) {
+			pause = !pause;
+			if (pause == true) {
+				context.font = "20px 'Courier New', Courier, monospace";
+				context.textAlign = "center";
+				context.fillStyle = "white";
+				context.fillText("Paused, press P to continue", canvas.width / 2, canvas.height / 2);
+			}
+			keys['p'] = false;
+		}
 	}
 });
 
