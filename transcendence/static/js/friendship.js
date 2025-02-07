@@ -51,7 +51,7 @@ export function sendFriendRequest(user_id) {
     .then(response => {
         if (response.ok) {
             alert('Friend request sent.');
-            showDashboard();
+            showFriends();
         } else {
             response.json().then(data => {
                 alert('Error sending request: ' + data.detail);

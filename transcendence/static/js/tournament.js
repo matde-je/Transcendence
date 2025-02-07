@@ -332,12 +332,14 @@ async function startTournament(tournamentId) {
         if (response.ok) {
             startMatchmaking(tournamentId);
         } else {
-            const data = await response.json();
-            alert('Error starting tournament: ' + JSON.stringify(data));
-        }
+			const data = await response.json();
+			alert(data.detail || 'Error starting tournament.');
+			listOpenTournaments();
+		}
     } catch (error) {
         console.error('Error starting tournament:', error);
         alert('Error starting tournament.');
+		listOpenTournaments();
     }
 }
 
@@ -518,6 +520,7 @@ async function executeMatches(matches, tournamentId, currentRound) {
 			return response.json();
 		})
 		.then(data => {
+			window.isTournament = false;
 			console.log('Tournament updated successfully:', data);
 			content.innerHTML = `
 				<h3 class="text-center mb-3 mt-5 pt-5">Welcome to Pong Tournament</h3>

@@ -150,8 +150,8 @@ window.addEventListener("keydown", (e) => {
 			context.textAlign = "center";
 			context.fillStyle = "white";
 			context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
-			context.fillText("P - PAUSE", canvas.width / 2, 320);
-			context.fillText("S - START", canvas.width / 2, 350);
+			context.fillText("P - PAUSE", canvas.width / 2, 410);
+			context.fillText("S - START", canvas.width / 2, 440);
 			username2 = "        AI";
 		}
 		if (keys['2'] && init === 0) {
@@ -160,8 +160,8 @@ window.addEventListener("keydown", (e) => {
 			context.fillStyle = "white";
 			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, 260);
 			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 290);
-			context.fillText("P - PAUSE", canvas.width / 2, 320);
-			context.fillText("S - START", canvas.width / 2, 350);
+			context.fillText("P - PAUSE", canvas.width / 2, 410);
+			context.fillText("S - START", canvas.width / 2, 440);
 			if (!window.isTournament)
 				username2 = "     HUMAN";
 		}
@@ -170,12 +170,12 @@ window.addEventListener("keydown", (e) => {
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("PLAYER 1 - ARROW KEYS", canvas.width / 2, 200);
-			context.fillText("PLAYER 2 - Q AND A", canvas.width / 2, 230);
-			context.fillText("PLAYER 3 - F AND V", canvas.width / 2, 260);
-			context.fillText("PLAYER 4 - J AND M", canvas.width / 2, 290);
-			context.fillText("P - PAUSE", canvas.width / 2, 320);
-			context.fillText("S - START", canvas.width / 2, 350);
+			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, 200);
+			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 230);
+			context.fillText("PLAYER 3 - F AND V   ", canvas.width / 2, 260);
+			context.fillText("PLAYER 4 - J AND M   ", canvas.width / 2, 290);
+			context.fillText("P - PAUSE", canvas.width / 2, 410);
+			context.fillText("S - START", canvas.width / 2, 440);
 			username2 = "HUMAN PAIR";
 		}
 		if ((gameOver == true || init == 0) && (keys['s'] || keys['S']))
@@ -418,7 +418,6 @@ function loop() {
 			context.fillStyle = 'white';
 			context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2,  canvas.height * 0.125);
 		}
-		draw(ball);
 		draw(player1);
 		draw(player2);
     }
