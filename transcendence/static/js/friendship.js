@@ -1,4 +1,5 @@
 import { getCookie } from './utils.js';
+import { sendInvite } from './remote.js';
 
 /**
  * Creates a list section with a title and items, and appends it to the given content element.
@@ -196,14 +197,29 @@ export async function showFriends() {
             userContainer.appendChild(statusIndicator);
             userContainer.appendChild(usernameText);
             listItem.appendChild(userContainer);
+
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'ms-auto d-flex gap-2';
+
+            if (window.onlineFriends.some(f => f.id == friend.id)) {
+                const inviteButton = document.createElement('button');
+                inviteButton.textContent = 'Send invite';
+                inviteButton.className = 'btn btn-sm btn-primary';
+                inviteButton.onclick = function() {
+                    sendInvite(friend.id);
+                };
+                buttonContainer.appendChild(inviteButton);
+            }
+
             const button = document.createElement('button');
             button.textContent = 'Remove Friendship';
             button.className = 'btn btn-sm btn-danger';
             button.onclick = function() {
                 removeFriend(friend.id);
             };
-            listItem.appendChild(button);
-            // Store reference to update later via WebSocket
+            buttonContainer.appendChild(button);
+
+            listItem.appendChild(buttonContainer);
             listItem.dataset.friendId = friend.id;
             listItem.dataset.statusIndicator = statusIndicator;
             return listItem;

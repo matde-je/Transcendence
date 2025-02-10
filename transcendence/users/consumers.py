@@ -98,3 +98,47 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
             for friend in online_friends
         ]
         return serialized_friends
+
+class AlertConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope["user"]
+        if self.user.is_authenticated:
+            await self.channel_layer.group_add(
+                f"user_{self.user.id}",
+                self.channel_name
+            )
+            await self.accept()
+            print(f"User {self.user.id} connected to WebSocket.")
+        else:
+            await self.close()
+
+    async def disconnect(self, close_code):
+        if self.user.is_authenticated:
+            await self.channel_layer.group_discard(
+                f"user_{self.user.id}",
+                self.channel_name
+            )
+            print(f"User {self.user.id} disconnected from WebSocket.")
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        message = data.get('message')
+        recipient_id = data.get('recipient_id')
+        print(f"Received message: {message} for recipient: {recipient_id}")
+
+        if message and recipient_id:
+            await self.channel_layer.group_send(
+                f"user_{recipient_id}",
+                {
+                    'type': 'send_alert',
+                    'message': message
+                }
+            )
+            print(f"Sent message to group user_{recipient_id}")
+
+    async def send_alert(self, event):
+        message = event['message']
+        await self.send(text_data=json.dumps({
+            'message': message
+        }))
+        print(f"Alert sent to user: {message}")

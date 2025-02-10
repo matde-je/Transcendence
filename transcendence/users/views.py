@@ -15,6 +15,8 @@ from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.db import transaction
 from django.utils import timezone
 from .services.tournament_service import create_tournament_for_user
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 class UserList(generics.ListAPIView):
     queryset = CustomUser.objects.all()
@@ -209,4 +211,14 @@ def user_results(request):
 
     serializer = UserResultsSerializer(data)
     return Response(serializer.data)
+
+def send_alert_to_user(user_id, message):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"user_{user_id}",
+        {
+            'type': 'send_alert',
+            'message': message
+        }
+    )
 
