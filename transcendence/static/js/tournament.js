@@ -138,6 +138,7 @@ export async function listOpenTournaments() {
  */
 export async function addUserToTournament(tournamentId) {
     const csrftoken = getCookie('csrftoken');
+    console.log('CSRF Token:', csrftoken);
     try {
         const response = await fetch(`/tournament/${tournamentId}/join/`, {
             method: 'POST',
