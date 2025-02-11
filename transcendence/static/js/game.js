@@ -185,7 +185,7 @@ window.addEventListener("keydown", (e) => {
 			window.cancelAnimationFrame(ani);
 			reset_game();
 			context.clearRect(0, 0, canvas.width, canvas.height);
-			if (window.location.href === "https://localhost:8000/" || window.location.href === "https://localhost:8000/tournament")
+			if (window.location.href === "https://localhost:8000/" || window.isTournament == true)
 				ani = window.requestAnimationFrame(loop);
 			init = 1;
 			console.log("start game clicked");
@@ -424,7 +424,7 @@ function loop() {
 		draw(player2);
     }
 	console.log()
-    if (!gameOver && !pause && init === 1) {
+    if (!gameOver && !pause && init === 1 && (window.location.href === "https://localhost:8000/" || window.isTournament == true)) {
 		console.log("loop game");
 		handleMoves();
         bounceBall();

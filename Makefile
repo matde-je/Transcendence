@@ -1,7 +1,7 @@
 # Starts and build all containers defined in docker-compose.yml
 run:
 	@clear
-	docker compose --file docker-compose.yml up --build
+	docker-compose --file docker-compose.yml up --build
 
 # Stop all containers defined in docker-compose.yml
 stop:
@@ -106,7 +106,7 @@ logs:
 generate-certs:
 	@clear
 	@echo "Generating SSL certificates..."
-	@openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/C=PT/ST=Lisboa/L=Lisboa/O=42/OU=42/CN=matde-je.42.fr"
+	@openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/C=PT/ST=Lisboa/L=Lisboa/O=42/OU=42/CN=localhost"
 	@echo "Certificates generated and saved..."
 
 # Copy the certificates to the app directory

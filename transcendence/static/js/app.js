@@ -1,13 +1,14 @@
 // static/js/app.js
 import { showLogin } from './login.js';
 import { showRegister } from './register.js';
-import { showDashboard, showEditUserForm } from './dashboard.js';
+import { showDashboard, showEditUserForm, showRockPaperScissor, showTournamentResults, showPongResults } from './dashboard.js';
 import { getCookie, checkAuthentication } from './utils.js';
 import { showSinglePlayer, showMultiplayer, showWaitingList } from './rps.js';
+import { update_onlinestatus_ui } from './friendship.js';
 import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+function handleRouteChange() {
     checkAuthentication();
     const path = window.location.pathname;
     if (path === '/login') {
@@ -18,10 +19,20 @@ document.addEventListener('DOMContentLoaded', () => {
         showDashboard();
     } else if (path === '/rock-paper-scissors') {
         showRPS();
+    } else if (path === '/rps-results') {
+        showRockPaperScissor();
+    } else if (path === '/pong-results') {
+        showPongResults();
+    } else if (path === '/tournament-results') {
+        showTournamentResults();
+    } else if (path === '/show-friends') {
+        showFriends();
     } else if (path === '/rock-paper-scissors/singleplayer') {
         showSinglePlayer();
     } else if (path === '/rock-paper-scissors/multiplayer') {
         showMultiplayer();
+    } else if (path === '/rock-paper-scissors/WaitingList') {
+        showWaitingList();
     } else if (path === '/tournament/create/') {
         showCreateTournamentForm();
     } else if (path === '/tournament') {
@@ -29,11 +40,19 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         showHome();
     }
-});
+}
 
+window.addEventListener('popstate', handleRouteChange);
+document.addEventListener('DOMContentLoaded', handleRouteChange);
+
+window.socket = 0;
 // Function to initialize and update the navbar
 export function initializeNavbar(authenticated) {
     // let navBarContainer = document.getElementById('navbar');
+    const existingNavbar = document.getElementById('navbar');
+	if (existingNavbar) {
+		existingNavbar.remove();
+	}
     const navBarContainer = document.createElement('nav'); //navigation
     navBarContainer.id = 'navbar';
     navBarContainer.className = 'navbar navbar-expand-lg navbar-light bg-light fixed-top';
@@ -62,6 +81,24 @@ export function initializeNavbar(authenticated) {
     navBarContainer.appendChild(container);
     document.body.appendChild(navBarContainer);
     if (authenticated) {
+		window.socket = new WebSocket('wss://localhost:8000/ws/online_status/');
+		window.socket.onopen = function() {
+			console.log("WebSocket connection established.");
+		};
+		window.socket.onerror = function(error) {
+			console.error("WebSocket error:", error);
+		};
+		window.socket.onmessage = function(e) {
+			const data = JSON.parse(e.data);
+			console.log("Parsed data:", data);
+			if (data.online_friends) {
+				window.onlineFriends = data.online_friends;
+				update_onlinestatus_ui();
+			}
+		};
+		window.socket.onclose = function(e) {
+			console.log("WebSocket connection closed.");
+		};
         fetch('/users/user/', {
             method: 'GET',
             credentials: 'include',
@@ -72,7 +109,7 @@ export function initializeNavbar(authenticated) {
             tournamentLink.className = 'nav-item';
             tournamentLink.innerHTML = '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
             navLinksLeft.appendChild(tournamentLink);
-            document.getElementById('tournament').addEventListener('click', (e) => {
+            tournamentLink.querySelector('a').addEventListener('click', (e) => {
                 e.preventDefault();
                 showTournamentMenu();
                 history.pushState({ page: 'tournament' }, 'Tournament', '/tournament');
@@ -134,7 +171,7 @@ export function initializeNavbar(authenticated) {
         });
         registerLink.querySelector('a').addEventListener('click', (e) => {
             e.preventDefault();
-        showRegister();
+            showRegister();
             history.pushState({ page: 'register' }, 'Register', '/register');
             console.log("register log");
         });
@@ -198,9 +235,7 @@ export function showRPS() {
             <div class="d-flex justify-content-center gap-4 p-3">
                 <button class="btn btn-secondary m-3" id="singlePlayerBtn">Single Player</button>
                 <button class="btn btn-secondary m-3" id="multiplayerBtn">Multiplayer</button>
-            </div>
-            <div class="d-flex justify-content-center gap-4 p-3">
-                <button class="btn btn-secondary m-3" id="WaitingListBtn">WaitingList</button>
+                <button class="btn btn-secondary m-3" id="WaitingListBtn">Waiting List</button>
             </div>
             `;
     // Insert content into the main content area
@@ -255,16 +290,11 @@ function logout() {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            // else {
-            //     console.log("logout web socket closing")
-            //     if (window.socket) {
-            //         console.log("web socket closing")
-            //         window.socket.close();  // Explicitly close the WebSocket
-            //     }
-            // }
             return response.json();
         })
         .then((data) => {
+            if (window.socket)
+                window.socket.close();
             showHome();
             history.pushState({ page: 'home' }, 'Home', '/');
             checkAuthentication();
