@@ -9,15 +9,13 @@ import { initializeGame } from './game.js';
 export function showTournamentMenu() {
     const content = document.getElementById('content');
     content.innerHTML = `
-        <div class="container-fluid d-flex flex-column pt-5 mb-5 mt-5 ">
-            <h2 class="text-center mb-3 mt-5 pt-5">Tournament menu</h2>
+    <h2 class="text-center mb-5 mt-5 pt-5">Tournament Menu</h2>
             <div class="d-flex justify-content-center mb-5 gap-4 p-3">
                 <button type="button" id="createTournamentBtn" class="btn btn-success me-3">Create Tournament</button>
                 <button type="button" id="listOpenTournamentsBtn" class="btn btn-primary">List Open Tournaments</button>
                 <button type="button" id="showResultsBtn" class="btn btn-secondary">Tournament Results</button>
             </div>
             <div id="tournamentContent"></div>
-        </div>
     `;
 
     document.getElementById('createTournamentBtn').addEventListener('click', (e) => {
@@ -200,11 +198,11 @@ export async function showTournamentResults() {
         });
         const data = await response.json();
         const tournamentContent = document.getElementById('tournamentContent');
-        tournamentContent.innerHTML = '<h3 class="text-center mb-3">Tournament Results</h3>';
+        tournamentContent.innerHTML = '<h4 class="text-center mb-3">Tournament Results</h4>';
         if (data.length > 0) {
-            const list = document.createElement('ul');
+            const list = document.createElement('div');
             data.forEach(tournament => {
-                const listItem = document.createElement('li');
+                const listItem = document.createElement('div');
                 listItem.textContent = `${tournament.name} - Winner ${tournament.winner_username}`;
                 list.appendChild(listItem);
             });
@@ -223,23 +221,21 @@ export async function showTournamentResults() {
  */
 export function showCreateTournamentForm() {
     const formContent = `
-        <div class="container" >
-        <h1 class="text-center mb-5 mt-5 pt-5">Create Tournament</h1>
+        <h2 class="mb-4 mt-5">Create Tournament</h2>
         <div class="row justify-content-center mb-4">
             <div class="col-md-6 col-lg-4">
                 <form id="createTournamentForm">
-                    <div class="form-group mb-3">
-                        <label for="tournamentName" class="form-label">Tournament Name:</label>
-                        <input type="text" id="tournamentName" name="tournamentName" class="form-control" placeholder="Enter tournament name" required>
+                    <div class="form-group mb-3 mt-3">
+                        <label for="tournamentName" class="form-label fs-5">Name:</label>
+                        <input type="text" id="tournamentName" name="tournamentName" class="form-control text-center" placeholder="Enter tournament name" required>
                     </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-secondary">Create Tournament</button>
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-secondary">Create</button>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
-    `;
+        `;
     document.getElementById('content').innerHTML = formContent;
 
     // Add form submission event
@@ -523,7 +519,7 @@ async function executeMatches(matches, tournamentId, currentRound) {
 			window.isTournament = false;
 			console.log('Tournament updated successfully:', data);
 			content.innerHTML = `
-				<h3 class="text-center mb-3 mt-5 pt-5">Welcome to Pong Tournament</h3>
+				<h3 class="text-center mb-5 mt-5 pt-5">Welcome to Pong Tournament</h3>
 				<p class="text-center">The tournament has concluded. Thank you for playing!</p>
 			`;
 			})

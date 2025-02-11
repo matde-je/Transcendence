@@ -78,19 +78,23 @@ export async function showDashboard() {
 		document.getElementById('show-friends').addEventListener('click', (e) => {
             e.preventDefault();
             showFriends();
+            history.pushState({ page: 'friends' }, 'friends', '/friends');
         });
 		document.getElementById('show-tournaments').addEventListener('click', (e) => {
             e.preventDefault();
-            showUserTournamentResults()
+            showTournamentResults()
+            history.pushState({ page: 'tournament-results' }, 'tournament-results', '/tournament-results');
         });
 		document.getElementById('show-results').addEventListener('click', (e) => {
             e.preventDefault();
-            showUserResults()
+            showPongResults()
+            history.pushState({ page: 'pong-results' }, 'pong-results', '/pong-results');
         });
 
         document.getElementById('show-rps').addEventListener('click', (e) => {
             e.preventDefault();
             showRockPaperScissor()
+            history.pushState({ page: 'rps' }, 'RPS', '/rps-results');
         });
 	})
     .catch(error => console.error('Error:', error));
@@ -182,7 +186,7 @@ export function showEditUserForm(userData) {
     });
 }
 
-export async function showUserTournamentResults() {
+export async function showTournamentResults() {
     try {
         const response = await fetch('/tournament/user/results/', {
             method: 'GET',
@@ -193,7 +197,7 @@ export async function showUserTournamentResults() {
         }
         const tournaments = await response.json();
         const content = document.getElementById('content');
-        content.innerHTML = '<h2>Tournament Results</h2>';
+        content.innerHTML = '<h2 class="mb-4 mt-4">Tournament Results</h2>';
         if (tournaments.length > 0) {
             tournaments.forEach(tournament => {
                 const div = document.createElement('div');
@@ -212,7 +216,7 @@ export async function showUserTournamentResults() {
 			// Show statistics
             const statsDiv = document.createElement('div');
             statsDiv.innerHTML = `
-                <h3>Statistics</h3>
+                <h3 class="mt-5 mb-4">Statistics</h3>
                 <p>Total Tournaments: ${total}</p>
                 <p>Total Wins: ${wins}</p>
                 <p>Total Losses: ${losses}</p>
@@ -228,7 +232,7 @@ export async function showUserTournamentResults() {
     }
 }
 
-export async function showUserResults() {
+export async function showPongResults() {
     try {
         const response = await fetch('/users/results/', {
             method: 'GET',
@@ -239,7 +243,7 @@ export async function showUserResults() {
         }
         const data = await response.json();
         const content = document.getElementById('content');
-        content.innerHTML = '<h3 class="text-center mb-3">User Results</h3>';
+        content.innerHTML = '<h3 class="mb-4 mt-5">Pong Results</h3>';
         content.innerHTML += `
             <p>Total Matches: ${data.total_matches}</p>
             <p>Wins: ${data.total_wins}</p>
@@ -263,17 +267,15 @@ export async function showRockPaperScissor() {
         }
         const results = await response.json();
         const content = document.getElementById('content');
-        content.innerHTML = '<h2>RPS Results</h2>';
         const rpsResults = results;
-        const rpsResultsDiv = document.createElement('div');
-        rpsResultsDiv.innerHTML = `
-            <h3>Rock-Paper-Scissors Results</h3>
+        content.innerHTML = `
+            <h3 class="pt-5 mb-5">Rock-Paper-Scissors Results</h3>
             <p>Total Games: ${rpsResults.total_games}</p>
             <p>Win Percentage: ${rpsResults.win_percentage}%</p>
             <p>Wins: ${rpsResults.wins}</p>
             <p>Losses: ${rpsResults.losses}</p>
         `;
-        content.appendChild(rpsResultsDiv);
+        // content.appendChild(rpsResultsDiv);
     } catch (error) {
         console.error('Error fetching Rock-Paper-Scissors results:', error);
         alert('Error fetching Rock-Paper-Scissors results.');
