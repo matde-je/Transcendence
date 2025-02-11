@@ -4,6 +4,7 @@ import { showRegister } from './register.js';
 import { showDashboard, showEditUserForm, showRockPaperScissor, showTournamentResults, showPongResults } from './dashboard.js';
 import { getCookie, checkAuthentication } from './utils.js';
 import { showSinglePlayer, showMultiplayer, showWaitingList } from './rps.js';
+import { update_onlinestatus_ui } from './friendship.js';
 import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 
@@ -44,7 +45,7 @@ function handleRouteChange() {
 window.addEventListener('popstate', handleRouteChange);
 document.addEventListener('DOMContentLoaded', handleRouteChange);
 
-
+window.socket = 0;
 // Function to initialize and update the navbar
 export function initializeNavbar(authenticated) {
     // let navBarContainer = document.getElementById('navbar');
@@ -80,6 +81,24 @@ export function initializeNavbar(authenticated) {
     navBarContainer.appendChild(container);
     document.body.appendChild(navBarContainer);
     if (authenticated) {
+		window.socket = new WebSocket('wss://localhost:8000/ws/online_status/');
+		window.socket.onopen = function() {
+			console.log("WebSocket connection established.");
+		};
+		window.socket.onerror = function(error) {
+			console.error("WebSocket error:", error);
+		};
+		window.socket.onmessage = function(e) {
+			const data = JSON.parse(e.data);
+			console.log("Parsed data:", data);
+			if (data.online_friends) {
+				window.onlineFriends = data.online_friends;
+				update_onlinestatus_ui();
+			}
+		};
+		window.socket.onclose = function(e) {
+			console.log("WebSocket connection closed.");
+		};
         fetch('/users/user/', {
             method: 'GET',
             credentials: 'include',
@@ -271,6 +290,8 @@ function logout() {
             return response.json();
         })
         .then((data) => {
+            if (window.socket)
+                window.socket.close();
             showHome();
             history.pushState({ page: 'home' }, 'Home', '/');
             checkAuthentication();
