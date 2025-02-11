@@ -437,6 +437,7 @@ export async function startMatchmaking(tournamentId)
 
 		document.getElementById('start-matches').addEventListener('click', async (e) => {
 			e.preventDefault();
+			window.isTournament = true;
 			await executeMatches(matches, tournamentId, currentRound);
 		});
 
@@ -535,7 +536,7 @@ async function executeMatches(matches, tournamentId, currentRound) {
 	{
 		const nextRound = currentRound - 1;
 		alert(`Next Round: ${getRoundName(nextRound)}`);
-		selectWinnersAndMatchmake(tournamentId, nextRound);
+		selectWinnersAndMatchMake(tournamentId, nextRound);
 	}
 }
 
@@ -549,7 +550,7 @@ export async function startPongMatch(idPlayer1, idPlayer2) {
         contentElement.innerHTML = '';
     }
 
-	window.isTournament = true;
+//	window.isTournament = true;
 	// Set the usernames in the global object
 	window.username1 = await getUsernameById(idPlayer1);
 	window.username2 = await getUsernameById(idPlayer2);
@@ -667,7 +668,7 @@ async function updateMatch(tournamentId, matchId, winnerId) {
  * @param {number} tournamentId - ID do torneio.
  * @param {number} roundNumber - Número do round.
  */
-export async function selectWinnersAndMatchmake(tournamentId, roundNumber) {
+export async function selectWinnersAndMatchMake(tournamentId, roundNumber) {
 	let lastRound = roundNumber + 1;
 
     const csrftoken = getCookie('csrftoken');

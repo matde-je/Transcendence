@@ -144,7 +144,7 @@ window.addEventListener("keydown", (e) => {
 	if (window.location.pathname === '/rock-paper-scissors/multiplayer'){
 		return;
 	}else{
-		if (keys['1'] && init === 0) {
+		if (keys['1'] && init === 0 && window.isTournament === false) {
 			ai = 1;
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
@@ -165,7 +165,8 @@ window.addEventListener("keydown", (e) => {
 			if (!window.isTournament)
 				username2 = "     HUMAN";
 		}
-		if (keys['4'] && init === 0) {
+
+		if (keys['4'] && init === 0 && window.isTournament === false) {
 			multiplayer = 1;
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
@@ -178,7 +179,8 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("S - START", canvas.width / 2, 440);
 			username2 = "HUMAN PAIR";
 		}
-		if ((gameOver == true || init == 0) && (keys['s'] || keys['S']))
+
+		if (((gameOver == true && window.isTournament == false) || init == 0) && (keys['s'] || keys['S']))
 		{
 			window.cancelAnimationFrame(ani);
 			reset_game();
@@ -189,7 +191,7 @@ window.addEventListener("keydown", (e) => {
 			console.log("start game clicked");
 		}
 
-		if ((gameOver == true || init == 0) && (keys['n'] || keys['N']) && window.isTournament)
+		if (gameOver === true && (keys['n'] || keys['N']) && window.isTournament === true)
 		{
 			console.log("Get ready for next tournament game");
 			let winnerId = (score1 === 10) ? window.player1Id : window.player2Id;

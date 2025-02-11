@@ -147,6 +147,9 @@ export function initializeNavbar(authenticated) {
 import { initializeGame } from './game.js';
 
 export function showHome() {
+	
+	window.isTournament = false;
+
     let contentElement = document.getElementById('content');
     if (!contentElement) {
         contentElement = document.createElement('div');
