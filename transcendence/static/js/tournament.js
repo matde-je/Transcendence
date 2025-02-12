@@ -1,10 +1,10 @@
 // static/js/tournament.js
 
-import { getCookie, isPowerOfTwo, nextPowerOfTwo, getRoundName, getUsernameById } from './utils.js';
+import { getCookie, checkAuthentication, isPowerOfTwo, nextPowerOfTwo, getRoundName, getUsernameById } from './utils.js';
 import { initializeGame } from './game.js';
 
 // Declare global window.currentRound
-window.window.currentRound = 0;
+window.currentRound = 0;
 
 /**
  * Shows Tournament Menu
@@ -295,6 +295,10 @@ async function deleteTournament(tournamentId) {
 }
 
 async function startTournament(tournamentId) {
+
+	window.isTournament = true;
+	checkAuthentication();
+
 	const csrftoken = getCookie('csrftoken');
     try {
         // Get participants
@@ -521,6 +525,7 @@ async function executeMatches(matches, tournamentId, round) {
 		})
 		.then(data => {
 			window.isTournament = false;
+			checkAuthentication();
 			console.log('Tournament updated successfully:', data);
 			content.innerHTML = `
 				<h3 class="text-center mb-5 mt-5 pt-5">Pong Tournament</h3>
