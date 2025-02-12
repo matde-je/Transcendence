@@ -3,6 +3,9 @@
 import { getCookie, isPowerOfTwo, nextPowerOfTwo, getRoundName, getUsernameById } from './utils.js';
 import { initializeGame } from './game.js';
 
+// Declare global window.currentRound
+window.window.currentRound = 0;
+
 /**
  * Shows Tournament Menu
  */
@@ -373,7 +376,7 @@ export async function startMatchmaking(tournamentId)
 
         // Assign pairs of players
         const matches = [];
-        let currentRound = numberOfRounds;
+        window.currentRound = numberOfRounds;
         for (let i = 0; i < participants.length; i += 2) {
             const player1 = participants[i].user_id;
             const player2 = participants[i + 1].user_id;
@@ -384,7 +387,7 @@ export async function startMatchmaking(tournamentId)
                 player2: player2,
 				player1_username: player1_username,
 				player2_username: player2_username,
-                round: currentRound,
+                round: window.currentRound,
                 tournament: tournamentId,
                 started_at: new Date().toISOString(),
                 completed: false,
@@ -434,7 +437,7 @@ export async function startMatchmaking(tournamentId)
 		document.getElementById('start-matches').addEventListener('click', async (e) => {
 			e.preventDefault();
 			window.isTournament = true;
-			await executeMatches(matches, tournamentId, currentRound);
+			await executeMatches(matches, tournamentId, window.currentRound);
 		});
 
     } catch (error) {
@@ -448,10 +451,10 @@ export async function startMatchmaking(tournamentId)
  *
  * @param {Array} matches - An array of match objects to be played.
  * @param {number} tournamentId - The ID of the tournament.
- * @param {number} currentRound - The current round number of the tournament.
+ * @param {number} round - The current round number of the tournament.
  * @returns {Promise<void>} A promise that resolves when all matches have been executed.
  */
-async function executeMatches(matches, tournamentId, currentRound) {
+async function executeMatches(matches, tournamentId, round) {
 	let winnerId;
     for (const match of matches) {
 
@@ -468,6 +471,7 @@ async function executeMatches(matches, tournamentId, currentRound) {
         });
 
         if (!matchResponse.ok) {
+			console.log('Error when fetching match data.');
             alert('Error when fetching match data.');
             continue;
         }
@@ -481,20 +485,19 @@ async function executeMatches(matches, tournamentId, currentRound) {
         }
 
 		// Start the Pong match
-        winnerId = await startPongMatch(match.player1, match.player2);
+        winnerId = await startPongMatch(match.player1, match.player2, round);
 
 		// Update the match result in the backend
         await updateMatch(tournamentId, match.id, winnerId);
 
         // Shows the winner of the match
         const winnerUsername = winnerId === match.player1 ? match.player1_username : match.player2_username;
-		console.log('PFV - Vencedor da Partida:', winnerUsername);
+		console.log('Match Winner: ', winnerUsername);
     }
 
-    alert(`Round ${getRoundName(currentRound)} finished.`);
+	console.log(`Round ${getRoundName(round)} finished.`);
 
-	if(currentRound === 1) {
-		alert('The tournament has ended.');
+	if(round === 1) {
 
 		const csrftoken = getCookie('csrftoken');
 
@@ -520,8 +523,10 @@ async function executeMatches(matches, tournamentId, currentRound) {
 			window.isTournament = false;
 			console.log('Tournament updated successfully:', data);
 			content.innerHTML = `
-				<h3 class="text-center mb-5 mt-5 pt-5">Welcome to Pong Tournament</h3>
-				<p class="text-center">The tournament has concluded. Thank you for playing!</p>
+				<h3 class="text-center mb-5 mt-5 pt-5">Pong Tournament</h3>
+				<p class="text-center"><br>Congratulations !!!</p>
+				<p class="text-center"><br>Player <b>${window.username1}</b> has won the Tournament !</p>
+				<p class="text-center"><br><br><br>The tournament has finished. Thank you for playing!</p>
 			`;
 			})
 		.catch(error => {
@@ -530,13 +535,13 @@ async function executeMatches(matches, tournamentId, currentRound) {
 	}
 	else
 	{
-		const nextRound = currentRound - 1;
-		alert(`Next Round: ${getRoundName(nextRound)}`);
+		const nextRound = round - 1;
+//		alert(`Next Round: ${getRoundName(nextRound)}`);
 		selectWinnersAndMatchMake(tournamentId, nextRound);
 	}
 }
 
-export async function startPongMatch(idPlayer1, idPlayer2) {
+export async function startPongMatch(idPlayer1, idPlayer2, round) {
     let contentElement = document.getElementById('content');
     if (!contentElement) {
         contentElement = document.createElement('div');
@@ -546,7 +551,6 @@ export async function startPongMatch(idPlayer1, idPlayer2) {
         contentElement.innerHTML = '';
     }
 
-//	window.isTournament = true;
 	// Set the usernames in the global object
 	window.username1 = await getUsernameById(idPlayer1);
 	window.username2 = await getUsernameById(idPlayer2);
@@ -554,6 +558,9 @@ export async function startPongMatch(idPlayer1, idPlayer2) {
 	// Set the player IDs in the global object
 	window.player1Id = idPlayer1;
     window.player2Id = idPlayer2;
+
+	// Set the current round in the global object
+	window.currentRound = round;
 
 	// Remove previous scripts, if they exist
     document.getElementById('gameScript')?.remove();
@@ -580,7 +587,6 @@ export async function startPongMatch(idPlayer1, idPlayer2) {
         window.onGameOver = (winnerId) => {
             // Clean up the global callback
             delete window.onGameOver;
-			console.log('PFV - a chamar resolve winnerID:', winnerId);
             resolve(winnerId);
         };
 
@@ -605,9 +611,9 @@ export async function startPongMatch(idPlayer1, idPlayer2) {
  * @throws {Error} Throws an error if the update request fails.
  */
 async function updateMatch(tournamentId, matchId, winnerId) {
-    console.log('PFV - updateMatch(tournamentId):', tournamentId);
-    console.log('PFV - updateMatch(matchId):', matchId);
-    console.log('PFV - updateMatch(winnerId):', winnerId);
+    console.log('updateMatch with tournamentId: ', tournamentId);
+    console.log('updateMatch with matchId: ', matchId);
+    console.log('updateMatch with winnerId: ', winnerId);
 
     const csrftoken = getCookie('csrftoken');
 
@@ -682,12 +688,12 @@ export async function selectWinnersAndMatchMake(tournamentId, roundNumber) {
 
         if (response.ok) {
             const data = await response.json();
-            alert('Matchmaking carried out successfully!');
-
             const matches = data.matches;
-            roundNumber = data.round;
 
-			console.log('PFV - Matches:', matches);
+            roundNumber = data.round;
+			
+            console.log('Matchmaking carried out successfully!');
+			console.log('Matches:', matches);
 
             // Shows the round and the names of the participants
             content.innerHTML = `

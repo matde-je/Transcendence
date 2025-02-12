@@ -447,6 +447,12 @@ function loop() {
 					context.fillStyle = 'white';
 					context.fillText('WIN', x, canvas.height * 0.375);
 					context.font = '30px \'Courier New\', Courier, monospace';
+					if (window.currentRound === 1)
+					{
+						context.fillText('TOURNAMENT FINISHED', x, canvas.height * 0.750);
+						context.fillText('PRESS N TO CONTINUE', x, canvas.height * 0.875);
+					}
+					else
 					context.fillText('N - PLAY NEXT GAME', x, canvas.height * 0.875);
 				}
 				else
