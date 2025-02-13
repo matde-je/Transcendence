@@ -2,7 +2,7 @@
 
 import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { playMultiplayerGame } from './rps-multiplayer.js';
-import { showRPS } from './app.js';
+import { showRPS} from './app.js';
 import { getCookie, checkAuthentication } from './utils.js';
 
 

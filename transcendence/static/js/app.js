@@ -8,14 +8,17 @@ import { update_onlinestatus_ui } from './friendship.js';
 import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 
-function handleRouteChange() {
-    checkAuthentication();
+async function handleRouteChange() {
+    const username = await checkAuthentication();
     const path = window.location.pathname;
     if (path === '/login') {
         showLogin();
     } else if (path === '/register') {
         showRegister();
-    } else if (path === '/dashboard') {
+    } 
+    else if (username === ' Anonymous')
+        showHome();
+    else if (path === '/dashboard') {
         showDashboard();
     } else if (path === '/rock-paper-scissors') {
         showRPS();
@@ -221,9 +224,7 @@ export function initializeNavbar(authenticated) {
 import { initializeGame } from './game.js';
 
 export function showHome() {
-	
 	window.isTournament = false;
-
     let contentElement = document.getElementById('content');
     if (!contentElement) {
         contentElement = document.createElement('div');
@@ -242,8 +243,8 @@ export function showHome() {
             </div>
         </div>
         <div class="text-center mt-4">
-            <p class="fs-6 fw-bold text-dark">To unlock new features and games,</p>
-            <p class="fs-6 text-dark">Register your User and Login!</p>
+            <p class="fs-6 fw-bold">To unlock new features and games,</p>
+            <p class="fs-6">Register your User and Login!</p>
         </div>
         `;
         const gameScript = document.createElement('script');
