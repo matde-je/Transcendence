@@ -19,15 +19,7 @@ window.showDashboard = showDashboard;
 /**
  * Shows user's dashboard.
  */
-export async function showDashboard() {
-
-	const username = await checkAuthentication();
-
-    if (username === ' Anonymous') {
-        showHome();
-        return;
-    }
-	
+export function showDashboard() {
 	// Get CSRF token
 	const csrftoken = getCookie('csrftoken');
 
@@ -98,7 +90,6 @@ export async function showDashboard() {
         });
 	})
     .catch(error => console.error('Error:', error));
-	
 }
 
 /**

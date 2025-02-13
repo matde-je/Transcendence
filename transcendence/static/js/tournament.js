@@ -2,7 +2,6 @@
 
 import { getCookie, checkAuthentication, isPowerOfTwo, nextPowerOfTwo, getRoundName, getUsernameById } from './utils.js';
 import { initializeGame } from './game.js';
-
 // Declare global window.currentRound
 window.currentRound = 0;
 
@@ -15,7 +14,7 @@ export function showTournamentMenu() {
     <h2 class="text-center mb-5 mt-5 pt-5">Tournament Menu</h2>
             <div class="d-flex justify-content-center mb-5 gap-4 p-3">
                 <button type="button" id="createTournamentBtn" class="btn btn-success me-3">Create Tournament</button>
-                <button type="button" id="listOpenTournamentsBtn" class="btn btn-primary">List Open Tournaments</button>
+                <button type="button" id="listOpenTournamentsBtn" class="btn btn-primary me-3">List Open Tournaments</button>
                 <button type="button" id="showResultsBtn" class="btn btn-secondary">Tournament Results</button>
             </div>
             <div id="tournamentContent"></div>
@@ -225,8 +224,8 @@ export async function showTournamentResults() {
  */
 export function showCreateTournamentForm() {
     const formContent = `
-        <h2 class="mb-4 mt-5">Create Tournament</h2>
-        <div class="row justify-content-center mb-4">
+        <h2 class="mb-5 mt-5 pt-5">Create Tournament</h2>
+        <div class="row justify-content-center">
             <div class="col-md-6 col-lg-4">
                 <form id="createTournamentForm">
                     <div class="form-group mb-3 mt-3">
@@ -435,7 +434,7 @@ export async function startMatchmaking(tournamentId)
 				</ul>
 			</p>
             <div class="mb-5 mt-3 pt-2">
-			<button type="button" id="start-matches" class="btn btn-primary">Start Matches</button>
+			<button type="button" id="start-matches" class="btn btn-secondary">Start Matches</button>
 		</div>
         </div>`;
 
@@ -529,10 +528,10 @@ async function executeMatches(matches, tournamentId, round) {
 			checkAuthentication();
 			console.log('Tournament updated successfully:', data);
 			content.innerHTML = `
-				<h3 class="text-center mb-5 mt-5 pt-5">Pong Tournament</h3>
-				<p class="text-center"><br>Congratulations !!!</p>
-				<p class="text-center"><br>Player <b>${window.username1}</b> has won the Tournament !</p>
-				<p class="text-center"><br><br><br>The tournament has finished. Thank you for playing!</p>
+				<h3 class="mb-5 mt-5 pt-5">Pong Tournament</h3>
+				<div class="fs-8 fw-bold mb-3">Congratulations!</div>
+				<div class="fs-6 mb-3">Player <span class="fw-bold">${window.username1}</span> has won the Tournament!</div>
+				<div class="fs-6">Thank you for playing!</p>
 			`;
 			})
 		.catch(error => {
@@ -703,14 +702,12 @@ export async function selectWinnersAndMatchMake(tournamentId, roundNumber) {
 
             // Shows the round and the names of the participants
             content.innerHTML = `
-                <h2>Tournament Match Making</h2>
+                <h2 class="mb-5 mt-5 pt-5">Tournament Match Making</h2>
                 <p>Round: ${getRoundName(roundNumber)}</p>
-                <p>
-                    <ul>
-                        ${matches.map((match, index) => `<li>Match: ${index + 1}<br>${match.player1_username} vs ${match.player2_username}</li><br>`).join('')}
-                    </ul>
-                </p>
-                <button type="button" id="start-round" class="btn btn-primary">Start Round</button>
+                <div class="mb-3 mt-3">
+                    ${matches.map((match, index) => `Match: ${index + 1}<br class="mt-4 mb-4"><b >${match.player1_username}</b> vs <b>${match.player2_username}</b><br>`).join('')}
+                </div>
+                <button type="button" id="start-round" class="btn btn-secondary">Start Round</button>
             `;
 
             document.getElementById('start-round').addEventListener('click', async (e) => {
