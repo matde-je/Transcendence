@@ -50,7 +50,7 @@ export function sendFriendRequest(user_id) {
 	// Handle the response from the server
     .then(response => {
         if (response.ok) {
-            alert('Friend request sent.');
+            console.log('Friendship request sent.');
             showFriends();
         } else {
             response.json().then(data => {
@@ -93,8 +93,9 @@ export function acceptFriendRequest(requestId) {
         }
     })
     .then(data => {
-        alert(data.detail || 'Friend request accepted.');
-        showDashboard();
+        console.log(data.detail || 'Friend request accepted.');
+		showFriends();
+//        showDashboard();
     })
     .catch(error => {
         console.error('Error accepting request:', error);
@@ -118,7 +119,7 @@ export function removeFriend(user_id) {
     })
     .then(response => {
         if (response.ok) {
-            alert('Friendship removed.');
+           console.log('Friendship removed.');
            showFriends();
         } else {
             response.json().then(data => {

@@ -139,8 +139,9 @@ export async function listOpenTournaments() {
  * Add user to the tournament.
  */
 export async function addUserToTournament(tournamentId) {
-    const csrftoken = getCookie('csrftoken');
-    console.log('CSRF Token:', csrftoken);
+
+	const csrftoken = getCookie('csrftoken');
+
     try {
         const response = await fetch(`/tournament/${tournamentId}/join/`, {
             method: 'POST',
@@ -152,7 +153,7 @@ export async function addUserToTournament(tournamentId) {
             body: JSON.stringify({ is_accepted: true })
         });
         if (response.ok) {
-            alert('Successfully added to the tournament!');
+            console.log('Successfully added to the tournament!');
             listOpenTournaments();
         } else {
             const data = await response.json();
@@ -178,7 +179,7 @@ export async function removeUserFromTournament(tournamentId) {
             credentials: 'include',
         });
         if (response.ok) {
-            alert('Successfully removed from the tournament!');
+            console.log('Successfully removed from the tournament!');
             listOpenTournaments();
         } else {
             const data = await response.json();
@@ -259,7 +260,7 @@ export function showCreateTournamentForm() {
         });
 
         if (response.ok) {
-            alert('Tournament created successfully!');
+            console.log('Tournament created successfully!');
             showTournamentMenu();
         } else {
             const data = await response.json();
@@ -269,20 +270,22 @@ export function showCreateTournamentForm() {
 }
 
 async function deleteTournament(tournamentId) {
+
     const csrftoken = getCookie('csrftoken');
+
     if (!confirm('Are you sure you want to delete this tournament?')) {
         return;
     }
     try {
-        const response = await fetch(`/tournament/${tournamentId}/`, {
-            method: 'DELETE',
+        const response = await fetch(`/tournament/${tournamentId}/delete/`, {
+            method: 'POST',
             headers: {
                 'X-CSRFToken': csrftoken
             },
             credentials: 'include',
         });
         if (response.ok) {
-            alert('Tournament deleted successfully!');
+            console.log('Tournament and related users deleted successfully.');
             listOpenTournaments();
         } else {
             const data = await response.json();
@@ -296,11 +299,9 @@ async function deleteTournament(tournamentId) {
 
 async function startTournament(tournamentId) {
 
-	window.isTournament = true;
-	checkAuthentication();
-
 	const csrftoken = getCookie('csrftoken');
-    try {
+
+	try {
         // Get participants
         const participantsResponse = await fetch(`/tournament/${tournamentId}/participants/`, {
             method: 'GET',
@@ -333,6 +334,8 @@ async function startTournament(tournamentId) {
             credentials: 'include',
         });
         if (response.ok) {
+			window.isTournament = true;
+			checkAuthentication();
             startMatchmaking(tournamentId);
         } else {
 			const data = await response.json();

@@ -74,6 +74,27 @@ def leave_tournament(request, tournament_id):
     except Exception as e:
         return Response({'detail': 'Error removing from tournament.', 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def delete_tournament(request, tournament_id):
+    try:
+        tournament = Tournament.objects.get(id=tournament_id)
+        # Check if the user is the creator of the tournament
+        if tournament.creator_id != request.user.id:
+            return Response({'detail': 'Not authorized.'},
+                status=status.HTTP_403_FORBIDDEN)
+        
+        # Delete related TournamentUser records explicitly
+        TournamentUser.objects.filter(tournament=tournament).delete()
+ 
+        # Delete the tournament itself
+        tournament.delete()
+        return Response({'detail': 'Tournament and related users deleted successfully.'},
+            status=status.HTTP_200_OK)
+    except Tournament.DoesNotExist:
+        return Response({'detail': 'Tournament not found.'},
+            status=status.HTTP_404_NOT_FOUND)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def tournament_participants(request, tournament_id):
