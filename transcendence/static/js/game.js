@@ -178,16 +178,17 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("S - START", canvas.width / 2, 350);
 			username2 = "HUMAN PAIR";
 		}
-		if ((gameOver == true || init == 0) && (keys['s'] || keys['S']))
-		{
-			window.cancelAnimationFrame(ani);
-			reset_game();
-			context.clearRect(0, 0, canvas.width, canvas.height);
-			if (window.location.href === "https://localhost:8000/" || window.location.href === "https://localhost:8000/tournament")
-				ani = window.requestAnimationFrame(loop);
-			init = 1;
-			console.log("start game clicked");
-		}
+
+		if (((gameOver == true && window.isTournament == false) || init == 0) && (keys['s'] || keys['S']))
+			{
+				window.cancelAnimationFrame(ani);
+				reset_game();
+				context.clearRect(0, 0, canvas.width, canvas.height);
+				if (window.location.href === "https://localhost:8000/" || window.isTournament == true)
+					ani = window.requestAnimationFrame(loop);
+				init = 1;
+				console.log("start game clicked");
+			}
 
 		if ((gameOver == true || init == 0) && (keys['n'] || keys['N']) && window.isTournament)
 		{

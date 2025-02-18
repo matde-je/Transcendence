@@ -1,7 +1,9 @@
+////////////////////// "GAME.JS" SEM TORNEIO ////////////////////////////////
+
 import { getCookie, checkAuthentication, getAuthenticationStatus } from './utils.js';
 
 "use strict"
-/* 
+
 let canvas;
 let context;
 let score1 = 0;
@@ -15,34 +17,24 @@ let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
 let paddleGravity = 2;
 let multiplayer = 0;
-let username1 = " Anonymous";
-let username2 = "";
+let latestGameState = null;
 const aiRefreshView = 1000;
 
-window.isTournament = false;
-
-export async function initializeGame() {
+export async function initializeGame(isRemotePlay = false) {
+	if (isRemotePlay) {									/////REMOTE///////
+		sendInvite();
+		window.ai = 0;
+	}
 	pause = false;
-	if (window.isTournament)
-	{
-		username1 = window.username1;
-		username2 = window.username2;
-	}
-	else
-	{
-		checkAuthentication().then((username) => {
-			username1 = username;
-		});
-	}
-    canvas = document.getElementById("game");
-    context = canvas.getContext("2d");
-    canvas.width = 700;
-    canvas.height = 500;
+	canvas = document.getElementById("game");
+	context = canvas.getContext("2d");
+	canvas.width = 700;
+	canvas.height = 500;
 	window.canvas = canvas;
-    window.context = context;
-    score1 = 0;
-    score2 = 0;
-    init = 0;
+	window.context = context;
+	score1 = 0;
+	score2 = 0;
+	init = 0;
 	initialBallGravity = 1;
 	maxGravity = initialBallGravity * 2;
 	ballSpeed = 7;
@@ -55,8 +47,8 @@ export async function initializeGame() {
 
 class Element {
 	constructor(options) {
-	this.x = options.x; // Assuming 550 was the original width
-	this.y = options.y; // Assuming 400 was the original height
+	this.x = options.x;
+	this.y = options.y;
 	this.width = options.width;
 	this.height = options.height;
 	this.color = options.color;
@@ -67,7 +59,7 @@ class Element {
 
 const player1 = new Element ( {
 	x: 10,
-    y: 170,
+	y: 170,
 	width: 12,
 	height: 60,
 	color: "#fff",
@@ -76,7 +68,7 @@ const player1 = new Element ( {
 
 window.player2 = new Element ( {
 	x: 530,
-    y: 170, // Center vertically
+	y: 170,
 	width: 12,
 	height: 60,
 	color: "#fff",
@@ -151,7 +143,6 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
 			context.fillText("P - PAUSE", canvas.width / 2, 320);
 			context.fillText("S - START", canvas.width / 2, 350);
-			username2 = "        AI";
 		}
 		if (keys['2'] && init === 0) {
 			context.font = "20px 'Courier New', Courier, monospace";
@@ -161,8 +152,6 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 290);
 			context.fillText("P - PAUSE", canvas.width / 2, 320);
 			context.fillText("S - START", canvas.width / 2, 350);
-			if (!window.isTournament)
-				username2 = "     HUMAN";
 		}
 		if (keys['4'] && init === 0) {
 			multiplayer = 1;
@@ -175,25 +164,21 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("PLAYER 4 - J AND M", canvas.width / 2, 290);
 			context.fillText("P - PAUSE", canvas.width / 2, 320);
 			context.fillText("S - START", canvas.width / 2, 350);
-			username2 = "HUMAN PAIR";
 		}
 		if ((gameOver == true || init == 0) && (keys['s'] || keys['S']))
-		{
-			window.cancelAnimationFrame(ani);
-			reset_game();
-			context.clearRect(0, 0, canvas.width, canvas.height);
-			if (window.location.href === "https://localhost:8000/" || window.location.href === "https://localhost:8000/tournament")
-				ani = window.requestAnimationFrame(loop);
-			init = 1;
-			console.log("start game clicked");
-		}
-
-		if ((gameOver == true || init == 0) && (keys['n'] || keys['N']) && window.isTournament)
-		{
-			console.log("Get ready for next tournament game");
-			let winnerId = (score1 === 10) ? window.player1Id : window.player2Id;
-			window.onGameOver(winnerId);
-		}
+			{
+				if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {			///REMOTE/// PARA INICIAR JOGO
+					gameSocket.send(JSON.stringify({type: 'playerReady'}));
+				} else {
+					window.cancelAnimationFrame(ani);
+					reset_game();
+					context.clearRect(0, 0, canvas.width, canvas.height);
+					if (window.location.href === "https://localhost:8000/" || window.location.href === "https://localhost:8000/tournament")
+						ani = window.requestAnimationFrame(loop);
+					init = 1;
+					console.log("start game clicked");
+				}
+			}
 
 		if (keys['p'] && gameOver == false && init == 1) {
 			pause = !pause;
@@ -209,18 +194,90 @@ window.addEventListener("keydown", (e) => {
 });
 
 window.addEventListener("keyup", (e) => {
-	keys[e.key] = false; //mark the key as released
+	keys[e.key] = false;//mark the key as released
 });
+
+/////////////////////////////////REMOTE PLAYERS//////////////////////////////////////
+
+	///Game State Synchronization, send and receive game state updates:
+
+function handleGameMsg(message) {
+	switch (message.type) {
+		case 'gameStart':
+				startGameRemote(message.data);
+			break;
+		case 'gameState':
+			latestGameState = message.data;
+			updateGameState(message.data);
+			break;
+		case 'playerMove':
+			handleRemotePlayerMove(message.data);
+			break;
+	}
+}
+
+function startGameRemote() { ///////FALTA VERIFICAR/////////
+	reset_game();
+	init = 1;
+	ani = window.requestAnimationFrame(loop);
+}
+
+/*Receives game state data from the server and updates
+the local game state. Used by clients to synchronize
+their game with the state being maintained by the server.*/
+function updateGameState(state) {
+	ball.x = state.ball.x;
+	ball.y = state.ball.y;
+	player2.y = state.player2.y;
+	score1 = state.score1;
+	score2 = state.score2;
+}
+/*Sends the current state to server to be broadcast to other players.
+It's used by the players that is considered the "source of truth" for certain aspects of the game*/
+function sendGameState() {
+	if (socket && socket.readyState === WebSocket.OPEN) {
+		const gameState = {
+			ball: { x: ball.x, y: ball.y },
+			player1: { y: player1.y },
+			player2: { y: player2.y },
+			score1: score1,
+			score2: score2
+		};
+		socket.send(JSON.stringify({ type: 'gameState', data: gameState }));
+	}
+}
+
+sendPlayerMove(1, player1.y)
+
+	///Remote Player Movement:
+
+function handleRemotePlayerMove(data) {
+	// Update the position of the remote player
+	switch(data.player) {
+		case 2:
+			player2.y = data.y;
+			break;
+		case 3:
+			player3.y = data.y;
+			break;
+		case 4:
+			player4.y = data.y;
+			break;
+	}
+}
+
+function isRemotePlayer(playerNumber) {
+	// Implement logic to determine if a player is remote
+	// This could be based on a game configuration or connection status
+}
 
 /////////////////////////////////MOVES ENGINE//////////////////////////////////////
 
 //handle player movement based on pressed keys
 function handleMoves() {
-	if (!gameOver && !pause)
-	{
-		let newY;
-
-		// Player 1 movement
+	let newY;
+	if (!gameOver && !pause) {
+		// Player 1 movement (local player)
 		newY = player1.y;
 		if (keys['q'] && player1.y > 0)
 			newY -= player1.gravity * 2; //up
@@ -228,8 +285,15 @@ function handleMoves() {
 			newY += player1.gravity * 2; //down
 		if (!multiplayer || preventPaddleOverlap({...player1, y: newY}, player3))
 			player1.y = newY;
-
-		// Player 2 movement
+		sendPlayerMove(player1.y); // Send move to server
+			/*socket.send(JSON.stringify({
+					type: 'player_move',
+					y: player1.y
+				}));*/
+	}
+	if (isRemotePlayer(2))
+		handleGameMsg(data);
+	else {
 		newY = player2.y;
 		if (keys['ArrowUp'] && player2.y > 0 && !ai)
 			newY -= player2.gravity * 2; //up
@@ -237,10 +301,13 @@ function handleMoves() {
 			newY += player2.gravity * 2; //down
 		if (!multiplayer || preventPaddleOverlap({...player2, y: newY}, player4) && multiplayer)
 			player2.y = newY;
+	}
 
-		if (multiplayer)
-		{
-			// Player 3 movement
+	if (multiplayer) {
+		// Player 3 movement (could be local or remote)
+		if (isRemotePlayer(3))
+			handleGameMsg(data);
+		else {
 			newY = player3.y;
 			if (keys['f'] && player3.y - player1.height > 0)
 				newY -= player3.gravity * 2; // move up
@@ -248,11 +315,15 @@ function handleMoves() {
 				newY += player3.gravity * 2; // move down, but don't cross Player 2
 			if (preventPaddleOverlap(player1, {...player3, y: newY}))
 				player3.y = newY;
+		}
 
-			// Player 4 movement
+		// Player 4 movement (could be local or remote)
+		if (isRemotePlayer(4))
+			handleGameMsg(data);
+		else {
 			newY = player4.y;
 			if (keys['j'] && player4.y > 0)
-				newY -= player4.gravity * 2; // move up, but don't go out
+				newY -= player4.gravity * 2; // move up
 			if (keys['m'] && player4.y + player4.height < canvas.height)
 				newY += player4.gravity * 2; // move down
 			if (preventPaddleOverlap(player2, {...player4, y: newY}))
@@ -367,16 +438,12 @@ function score_1(){
 	context.font = "50px 'Courier New', Courier, monospace";
 	context.fillStyle = "#fff";
 	context.fillText(`${score1}`, canvas.width * 0.4, canvas.height * 0.125);
-	context.font = "20px 'Courier New', Courier, monospace";
-	context.fillText(`${username1}`, canvas.width * 0.11, canvas.height * 0.975);
 }
 
 function score_2(){
 	context.font = "50px 'Courier New', Courier, monospace";
 	context.fillStyle = "#fff";
 	context.fillText(score2, canvas.width * 0.6, canvas.height * 0.125);
-	context.font = "20px 'Courier New', Courier, monospace";
-	context.fillText(`${username2}`, canvas.width * 0.875, canvas.height * 0.975);
 }
 
 function drawAll(){
@@ -398,142 +465,79 @@ let AiLastUpdateTime = Date.now();
 function loop() {
 	if (init === 0) {
 		reset_game();
-		if (window.isTournament)
-		{
-			const event = new KeyboardEvent('keydown', {
-				key: '2',
-				keyCode: 50,
-				which: 50,
-				code: 'Digit2',
-				bubbles: true,
-				cancelable: true
-			});
-			document.dispatchEvent(event);
-		}
-		else
-		{
-			context.font = '20px \'Courier New\', Courier, monospace';
-			context.textAlign = 'center';
-			context.fillStyle = 'white';
-			context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2,  canvas.height * 0.125);
-		}
+
+		context.font = '20px \'Courier New\', Courier, monospace';
+		context.textAlign = 'center';
+		context.fillStyle = 'white';
+		context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2,  canvas.height * 0.125);
+
 		draw(ball);
 		draw(player1);
 		draw(player2);
-    }
+	}
 	console.log()
-    if (!gameOver && !pause && init === 1) {
+	if (!gameOver && !pause && init === 1) {
 		console.log("loop game");
-		handleMoves();
-        bounceBall();
-        paddleCollision();
+		handleMoves(latestGameState);
+		bounceBall();
+		paddleCollision();
 		if (window.ai) {
 			aiLogic(window.ball, window.canvas);
 		}
-        drawAll();
-        if (score1 === 10 || score2 === 10) {
+		drawAll();
+		sendGameState(); ///////REMOTE/////////
+		if (score1 === 10 || score2 === 10) {
 			let x;
 			if (score1 === 10)
 				x = canvas.width / 4;
 			else
 				x = (canvas.width / 2) + (canvas.width / 4);
 
-			if (window.isTournament)
-				{
-					context.font = '50px \'Courier New\', Courier, monospace';
-					context.textAlign = 'center';
-					context.fillStyle = 'white';
-					context.fillText('WIN', x, canvas.height * 0.375);
-					context.font = '30px \'Courier New\', Courier, monospace';
-					context.fillText('N - PLAY NEXT GAME', x, canvas.height * 0.875);
-				}
-				else
-				{
-					context.font = '50px \'Courier New\', Courier, monospace';
-					context.textAlign = 'center';
-					context.fillStyle = 'white';
-					context.fillText('WIN', x, canvas.height * 0.375);
-					context.font = '30px \'Courier New\', Courier, monospace';
-					context.fillText('S - START NEW GAME', x, canvas.height * 0.875);
-				}
-            gameOver = true;
-            window.cancelAnimationFrame(ani);
-        }
-    }
-
-    if (!gameOver && score1 < 10 && score2 < 10 && init === 1) {
-        ani = window.requestAnimationFrame(loop);
-    } else if (gameOver && getAuthenticationStatus()) {
-        let finalResult;
-        let opponentType;
-
-	    // Determines the opponent type based on the game mode
-		if (window.isTournament)
-		{
-			opponentType = username2;
+			context.font = '50px \'Courier New\', Courier, monospace';
+			context.textAlign = 'center';
+			context.fillStyle = 'white';
+			context.fillText('WIN', x, canvas.height * 0.375);
+			context.font = '30px \'Courier New\', Courier, monospace';
+			context.fillText('S - START NEW GAME', x, canvas.height * 0.875);
+			gameOver = true;
+			window.cancelAnimationFrame(ani);
 		}
-		else
-		{
-			if (ai === 1 && multiplayer === 0) {
-				opponentType = 'AI';
-			} else if (ai === 0 && multiplayer === 0) {
-				opponentType = 'HUMAN';
-			} else if (ai === 0 && multiplayer === 1) {
-				opponentType = 'HUMAN PAIR';
-			}
-		}
+	}
 
-	    // Determines the result based on the score
-	    if (score1 === 10) {
-	        finalResult = 'win';
-	    } else {
-	        finalResult = 'lose';
-	    }
-
-		console.log('Final result:', finalResult);
-		console.log('Opponent type:', opponentType);
-		console.log('Final score:', score1 + '-' + score2);
-		let score = score1 + '-' + score2;
-		console.log('Score:', score);
-
-	    // Register the result in the backend if not in a tournament
-		if (!window.isTournament)
-	    	registerMatchResult(opponentType, finalResult, score);
-    }
+	if (!gameOver && score1 < 10 && score2 < 10 && init === 1)
+		ani = window.requestAnimationFrame(loop);
 }
 
-/**
- * Registers the result of a match by sending a POST request to the server.
- *
- * @param {string} opponent - The name of the opponent.
- * @param {string} result - The result of the match (e.g., 'win', 'lose', 'draw').
- * @param {number} score - The score of the match.
+///////////////////////////////NUNO////////////////////////////////////
 
-function registerMatchResult(opponent, result, score) {
+let gameSocket;
 
-    const csrftoken = getCookie('csrftoken');
+//WebSocket Connection for game communication:
+function connectToGameSocket() {
+	gameSocket = new WebSocket('wss://localhost:8000/ws/game/');
 
-    fetch('/pong/register_pong_history/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken,
-        },
-        body: JSON.stringify({
-            opponent: opponent,
-            result: result,
-			score: score,
-        }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Result successfully recorded:', data);
-    })
-    .catch((error) => {
-        console.error('Error registering result:', error);
-    });
-} 
-*/
+	//sets up an onopen handler for when the WebSocket
+	// connection is successfully established.
+	gameSocket.onopen = function(event) {
+		console.log('Game WebSocket connection established.');
+	};
+	//sets a message handler when message received from server
+	// and an parses message to JSON object to handleGameMessage
+	gameSocket.onmessage = function(event) {
+		const data = JSON.parse(event.data);
+		handleGameMsg(data);
+	};
+	//Handler for closing
+	gameSocket.onclose = function(event) {
+		console.log('Game WebSocket connection closed.');
+	};
+	//handler for error
+	gameSocket.onerror = function(error) {
+		console.error('Game WebSocket error:', error);
+	};
+}
+
+///////////////////////PEDRO//////////////////////////
 
 export function sendInvite(user_id) {
     alert('remote Invite sent to user ' + user_id);
@@ -555,6 +559,7 @@ export function sendInvite(user_id) {
 
     socket.onmessage = function(event) {
         const data = JSON.parse(event.data);
+		//handleGameMsg(data);
         console.log('Message received from server:', data);
         alert(data.message);
     };
