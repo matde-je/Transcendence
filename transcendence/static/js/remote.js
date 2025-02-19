@@ -17,11 +17,10 @@ let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
 let paddleGravity = 2;
 let multiplayer = 0;
-let latestGameState = null;
 const aiRefreshView = 1000;
 
-export async function initializeGame(isRemotePlay = false) {
-	if (isRemotePlay) {									/////REMOTE///////
+export async function initializeGame() {			///<<REMOTE>>///
+	if (isRemotePlay) {					///???? where to change isRemotePlay if there is an remote opponent
 		sendInvite();
 		window.ai = 0;
 	}
@@ -197,80 +196,6 @@ window.addEventListener("keyup", (e) => {
 	keys[e.key] = false;//mark the key as released
 });
 
-/////////////////////////////////REMOTE PLAYERS//////////////////////////////////////
-
-	///Game State Synchronization, send and receive game state updates:
-
-function handleGameMsg(message) {
-	switch (message.type) {
-		case 'gameStart':
-				startGameRemote(message.data);
-			break;
-		case 'gameState':
-			latestGameState = message.data;
-			updateGameState(message.data);
-			break;
-		case 'playerMove':
-			handleRemotePlayerMove(message.data);
-			break;
-	}
-}
-
-function startGameRemote() { ///////FALTA VERIFICAR/////////
-	reset_game();
-	init = 1;
-	ani = window.requestAnimationFrame(loop);
-}
-
-/*Receives game state data from the server and updates
-the local game state. Used by clients to synchronize
-their game with the state being maintained by the server.*/
-function updateGameState(state) {
-	ball.x = state.ball.x;
-	ball.y = state.ball.y;
-	player2.y = state.player2.y;
-	score1 = state.score1;
-	score2 = state.score2;
-}
-/*Sends the current state to server to be broadcast to other players.
-It's used by the players that is considered the "source of truth" for certain aspects of the game*/
-function sendGameState() {
-	if (socket && socket.readyState === WebSocket.OPEN) {
-		const gameState = {
-			ball: { x: ball.x, y: ball.y },
-			player1: { y: player1.y },
-			player2: { y: player2.y },
-			score1: score1,
-			score2: score2
-		};
-		socket.send(JSON.stringify({ type: 'gameState', data: gameState }));
-	}
-}
-
-sendPlayerMove(1, player1.y)
-
-	///Remote Player Movement:
-
-function handleRemotePlayerMove(data) {
-	// Update the position of the remote player
-	switch(data.player) {
-		case 2:
-			player2.y = data.y;
-			break;
-		case 3:
-			player3.y = data.y;
-			break;
-		case 4:
-			player4.y = data.y;
-			break;
-	}
-}
-
-function isRemotePlayer(playerNumber) {
-	// Implement logic to determine if a player is remote
-	// This could be based on a game configuration or connection status
-}
-
 /////////////////////////////////MOVES ENGINE//////////////////////////////////////
 
 //handle player movement based on pressed keys
@@ -285,13 +210,9 @@ function handleMoves() {
 			newY += player1.gravity * 2; //down
 		if (!multiplayer || preventPaddleOverlap({...player1, y: newY}, player3))
 			player1.y = newY;
-		sendPlayerMove(player1.y); // Send move to server
-			/*socket.send(JSON.stringify({
-					type: 'player_move',
-					y: player1.y
-				}));*/
+		sendPlayerMove(player1.y); // Send move to server				///<<REMOTE>>///
 	}
-	if (isRemotePlayer(2))
+	if (isRemotePlayer(2))												///<<REMOTE>>///
 		handleGameMsg(data);
 	else {
 		newY = player2.y;
@@ -305,7 +226,7 @@ function handleMoves() {
 
 	if (multiplayer) {
 		// Player 3 movement (could be local or remote)
-		if (isRemotePlayer(3))
+		if (isRemotePlayer(3))											///<<REMOTE>>///
 			handleGameMsg(data);
 		else {
 			newY = player3.y;
@@ -318,7 +239,7 @@ function handleMoves() {
 		}
 
 		// Player 4 movement (could be local or remote)
-		if (isRemotePlayer(4))
+		if (isRemotePlayer(4))											///<<REMOTE>>///
 			handleGameMsg(data);
 		else {
 			newY = player4.y;
@@ -342,12 +263,12 @@ function preventPaddleOverlap(paddle1, paddle2) {
 
 function handleEdgeCollisions(player) {
 	ball.speed *= -1;
-	if (ball.y + (ball.height / 2) <= player.y + (player.height / 6)) //Thouch upper edge!!
-	ball.gravity = -1 * maxGravity;
-	else if (ball.y + (ball.height / 2) >= player.y + (player.height * 5) / 6) // Thouch lower edge!!
-	ball.gravity = maxGravity;
+	if (ball.y + (ball.height / 2) <= player.y + (player.height / 6)) //Thouch upper edge
+		ball.gravity = -1 * maxGravity;
+	else if (ball.y + (ball.height / 2) >= player.y + (player.height * 5) / 6) // Thouch lower edge
+		ball.gravity = maxGravity;
 	else
-	ball.gravity = Math.sign(ball.gravity) * initialBallGravity; // Thouch center!!
+		ball.gravity = Math.sign(ball.gravity) * initialBallGravity; // Thouch center
 }
 
 function paddleCollision() {
@@ -478,14 +399,14 @@ function loop() {
 	console.log()
 	if (!gameOver && !pause && init === 1) {
 		console.log("loop game");
-		handleMoves(latestGameState);
+		handleMoves();
 		bounceBall();
 		paddleCollision();
 		if (window.ai) {
 			aiLogic(window.ball, window.canvas);
 		}
 		drawAll();
-		sendGameState(); ///////REMOTE/////////
+		sendGameState();										///<<REMOTE>>///
 		if (score1 === 10 || score2 === 10) {
 			let x;
 			if (score1 === 10)
@@ -508,7 +429,86 @@ function loop() {
 		ani = window.requestAnimationFrame(loop);
 }
 
-///////////////////////////////NUNO////////////////////////////////////
+/////////////////////////////////REMOTE FUNCTIONS//////////////////////////////////////
+
+	///Game State Synchronization, send and receive game state updates:
+
+	function handleGameMsg(message) {
+		switch (message.type) {
+			case 'gameStart':
+					startGameRemote(message.data);
+				break;
+			case 'gameState':
+				updateGameState(message.data);
+				break;
+			case 'playerMove':
+				handleRemotePlayerMove(message.data);
+				break;
+		}
+	}
+
+	function startGameRemote() {
+		reset_game();
+		init = 1;
+		ani = window.requestAnimationFrame(loop);
+	}
+
+	/*Receives game state data from the server and updates the local game state.
+	Used by clients to synchronize their game with the state being maintained by the server.*/
+	function updateGameState(state) {
+		ball.x = state.ball.x;
+		ball.y = state.ball.y;
+		player2.y = state.player2.y;
+		player3.y = state.player3.y;
+		player4.y = state.player4.y;
+		score1 = state.score1;
+		score2 = state.score2;
+	}
+	/*Sends the current state to server to be broadcast to other players.
+	It's used by the players that is considered the "source of truth" for certain aspects of the game*/
+	function sendGameState() {
+		if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {
+			const gameState = {
+				ball: { x: ball.x, y: ball.y },
+				player1: { y: player1.y },
+				score1: score1,
+				score2: score2
+			};
+			gameSocket.send(JSON.stringify({ type: 'gameState', data: gameState }));
+		}
+	}
+	/*Player1 sends it's Y position to server as playerMove type*/
+	function sendPlayerMove(playerNumber, yPosition) {
+		if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {
+			gameSocket.send(JSON.stringify({
+				type: 'playerMove',
+				player: playerNumber,
+				y: yPosition
+			}));
+		}
+	}
+
+	function handleRemotePlayerMove(data) {
+		// Update the position of the remote player
+		switch(data.player) {
+			case 2:
+				player2.y = data.y;
+				break;
+			case 3:
+				player3.y = data.y;
+				break;
+			case 4:
+				player4.y = data.y;
+				break;
+		}
+	}
+
+	function isRemotePlayer(playerNumber) {
+		// Implement logic to determine if a player is remote
+		// This could be based on a game configuration or connection status
+	}
+
+///////////////////////////////NUNO TEMP////////////////////////////////////
 
 let gameSocket;
 
