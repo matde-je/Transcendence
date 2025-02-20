@@ -7,7 +7,10 @@ from django.views.decorators.http import require_POST
 from rps.models import MatchHistory, WaitingList
 import json, random
 from django.contrib.auth.models import User
+from django.views.decorators.csrf import ensure_csrf_cookie
+import logging
 
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -26,7 +29,10 @@ def register_match(request):
 
 @login_required
 @require_POST
+@ensure_csrf_cookie
+# @api_view(['POST'])
 def get_waiting_list(request):
+    logger.info("get waiting list")
     users = WaitingList.objects.select_related('user').all()
     user_list = [{'username': user.user.username} for user in users]
     is_in_list = WaitingList.objects.filter(user=request.user).exists()
