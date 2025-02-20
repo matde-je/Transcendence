@@ -104,12 +104,12 @@ CSRF_COOKIE_SECURE = True
 CORS_ALLOWED_ORIGINS = [
     # "http://localhost:8000", 
     'https://localhost:8000', 
-    'wss://localhost:8000', 
+    # 'wss://localhost:8000', 
+    # 'wss://127.0.0.1:8000', 
     "https://127.0.0.1:8000"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-# CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',

@@ -48,6 +48,22 @@ async function handleRouteChange() {
 window.addEventListener('popstate', handleRouteChange);
 document.addEventListener('DOMContentLoaded', handleRouteChange);
 
+// function throttle(func, delay) {
+//     let wait = false;
+//     return (...args) => {
+//         if (wait) return;
+//         func(...args);
+//         wait = true;
+//         setTimeout(() => {
+//             wait = false;
+//         }, delay);
+//     };
+// }
+
+// const throttledRefresh = throttle(refreshFunction, 1000);
+  
+// document.getElementById('refreshButton').addEventListener('click', throttledRefresh);
+
 window.socket = 0;
 
 // Function to initialize and update the navbar
@@ -103,16 +119,16 @@ export function initializeNavbar(authenticated) {
     document.body.appendChild(navBarContainer);
 
     if (authenticated) {
-        window.socket = new WebSocket('wss://localhost:8000/ws/online_status/');
+        window.socket = new WebSocket(`wss://${window.location.hostname}:8000/ws/online_status/`);
         window.socket.onopen = function() {
-            console.log('WebSocket connection established.');
+            // console.log('WebSocket connection established.');
         };
         window.socket.onerror = function(error) {
             console.error('WebSocket error:', error);
         };
         window.socket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            console.log('Parsed data:', data);
+            // console.log('Parsed data:', data);
             if (data.online_friends) {
                 window.onlineFriends = data.online_friends;
                 update_onlinestatus_ui();
@@ -190,10 +206,10 @@ export function initializeNavbar(authenticated) {
                         logout();
                 });
             })
-            .catch((error) => {
-                console.error('Error:', error);
-                alert('Error: ' + error.message);
-            });
+            // .catch((error) => {
+            //     console.error('Error:', error);
+            //     alert('Error: ' + error.message);
+            // });
     } else {
         const loginLink = document.createElement('li'); // list item
         loginLink.className = 'nav-item';
