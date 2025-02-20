@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CORS Test</title>
+</head>
+<body>
+    <button id="testButton">Test CORS</button>
+    <script>
+    document.getElementById('testButton').addEventListener('click', function() {
+        fetch('https://localhost:8000/users/login/', { // Replace with your endpoint
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // IMPORTANT: DO NOT set the Origin header manually here. The browser does it.
+            },
+            mode: 'cors' // Explicitly set the mode to 'cors'
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log('Request succeeded!');
+            } else {
+                console.error('Request failed:', response.status);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+    </script>
+</body>
+</html>
+            {% comment %} body: JSON.stringify({ test: 'data' }), {% endcomment %}

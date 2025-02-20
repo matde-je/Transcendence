@@ -119,12 +119,16 @@ export function showMultiplayer() {
 export async function showWaitingList() {
     try {
         const csrftoken = getCookie('csrftoken');
+        console.log('CSRF Token:', csrftoken);
+        // console.log('CSRF Token:', document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1]);
         const response = await fetch('/rps/get_waiting_list/', {
             method: 'POST',
-            credentials: 'include',
             headers: {
+                'Content-Type': 'application/json',
                 'X-CSRFToken': csrftoken
-            }
+            },
+            credentials: 'include',
+            body: JSON.stringify({})  
         });
 
         if (!response.ok) {
