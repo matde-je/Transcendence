@@ -4,19 +4,24 @@ import { showRegister } from './register.js';
 import { showDashboard, showEditUserForm, showRockPaperScissor, showTournamentResults, showPongResults } from './dashboard.js';
 import { getCookie, checkAuthentication } from './utils.js';
 import { showSinglePlayer, showMultiplayer, showWaitingList } from './rps.js';
-import { update_onlinestatus_ui } from './friendship.js';
+import { update_onlinestatus_ui, showFriends } from './friendship.js';
 import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 
 async function handleRouteChange() {
-    const username = await checkAuthentication();
+    var collapseElementList = [].slice.call(document.querySelectorAll('.navbar-collapse'))
+    var collapseList = collapseElementList.map(function (collapseEl) {
+        return new bootstrap.Collapse(collapseEl, {
+            toggle: false
+        })
+    })
     const path = window.location.pathname;
+    const username = await checkAuthentication();
     if (path === '/login') {
         showLogin();
     } else if (path === '/register') {
         showRegister();
-    } 
-    else if (username === ' Anonymous')
+    } else if (username === ' Anonymous')
         showHome();
     else if (path === '/dashboard') {
         showDashboard();
@@ -28,7 +33,7 @@ async function handleRouteChange() {
         showPongResults();
     } else if (path === '/tournament-results') {
         showTournamentResults();
-    } else if (path === '/show-friends') {
+    } else if (path === '/friends') {
         showFriends();
     } else if (path === '/rock-paper-scissors/singleplayer') {
         showSinglePlayer();
@@ -44,36 +49,29 @@ async function handleRouteChange() {
         showHome();
     }
 }
-
 window.addEventListener('popstate', handleRouteChange);
 document.addEventListener('DOMContentLoaded', handleRouteChange);
 
-// function throttle(func, delay) {
-//     let wait = false;
-//     return (...args) => {
-//         if (wait) return;
-//         func(...args);
-//         wait = true;
-//         setTimeout(() => {
-//             wait = false;
-//         }, delay);
-//     };
-// }
-
-// const throttledRefresh = throttle(refreshFunction, 1000);
-  
-// document.getElementById('refreshButton').addEventListener('click', throttledRefresh);
+export async function fetchWithRetry(url, options, maxRetries = 3) {
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            const response = await fetch(url, options);
+            return await response.json();
+        } catch (error) {
+            if (i === maxRetries - 1) throw error;
+            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
+        }
+    }
+}
 
 window.socket = 0;
 
-// Function to initialize and update the navbar
 export function initializeNavbar(authenticated) {
     // Remove existing navbar if present
     const existingNavbar = document.getElementById('navbar');
     if (existingNavbar) {
         existingNavbar.remove();
     }
-
     // Create navbar container
     const navBarContainer = document.createElement('nav'); // navigation
     navBarContainer.id = 'navbar';
@@ -81,7 +79,6 @@ export function initializeNavbar(authenticated) {
         'navbar navbar-expand-lg navbar-light bg-light fixed-top';
     const container = document.createElement('div'); // grouping
     container.className = 'container-fluid';
-
     // Check if tournament mode is active
     if (window.isTournament === true) {
         /* Create an empty navbar for Tournament mode.
@@ -91,7 +88,6 @@ export function initializeNavbar(authenticated) {
         document.body.appendChild(navBarContainer);
         return;
     }
-
     // Create brand link
     const navbarBrand = document.createElement('a'); // hyperlink
     navbarBrand.className = 'navbar-brand';
@@ -103,15 +99,26 @@ export function initializeNavbar(authenticated) {
         history.pushState({ page: 'home' }, 'Home', '/');
     });
     container.appendChild(navbarBrand);
+    const toggleButton = document.createElement('button');
+    toggleButton.className = 'navbar-toggler';
+    toggleButton.type = 'button';
+    toggleButton.setAttribute('data-bs-toggle', 'collapse');
+    toggleButton.setAttribute('data-bs-target', '#navbarNav');
+    toggleButton.setAttribute('aria-controls', 'navbarNav');
+    toggleButton.setAttribute('aria-expanded', 'false');
+    toggleButton.setAttribute('aria-label', 'Toggle navigation');
+    toggleButton.innerHTML = '<span class="navbar-toggler-icon"></span>';
 
+    container.appendChild(toggleButton);
     // Create collapse container for nav links
     const navbarCollapse = document.createElement('div');
     navbarCollapse.className = 'collapse navbar-collapse';
     navbarCollapse.id = 'navbarNav';
     const navLinksLeft = document.createElement('ul'); // left side links
-    navLinksLeft.className = 'navbar-nav';
+    navLinksLeft.className = 'navbar-nav me-auto mb-2 mb-lg-0';
     const navLinksRight = document.createElement('ul'); // right side links
-    navLinksRight.className = 'navbar-nav ml-auto';
+    navLinksRight.className = 'navbar-nav';
+
     navbarCollapse.appendChild(navLinksLeft);
     navbarCollapse.appendChild(navLinksRight);
     container.appendChild(navbarCollapse);
@@ -120,9 +127,7 @@ export function initializeNavbar(authenticated) {
 
     if (authenticated) {
         window.socket = new WebSocket(`wss://${window.location.hostname}:8000/ws/online_status/`);
-        window.socket.onopen = function() {
-            // console.log('WebSocket connection established.');
-        };
+        window.socket.onopen = function() {};
         window.socket.onerror = function(error) {
             console.error('WebSocket error:', error);
         };
@@ -134,82 +139,80 @@ export function initializeNavbar(authenticated) {
                 update_onlinestatus_ui();
             }
         };
-        window.socket.onclose = function(e) {
-            console.log('WebSocket connection closed.');
-        };
-        fetch('/users/user/', {
+        window.socket.onclose = function(e) {};
+        fetchWithRetry('/users/user/', {
             method: 'GET',
             credentials: 'include',
         })
-            .then((response) => response.json())
-            .then((data) => {
-                const tournamentLink = document.createElement('li');
-                tournamentLink.className = 'nav-item';
-                tournamentLink.innerHTML =
-                    '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
-                navLinksLeft.appendChild(tournamentLink);
-                tournamentLink.querySelector('a').addEventListener('click', 
+        // .then((response) => response.json())
+        .then((data) => {
+            const tournamentLink = document.createElement('li');
+            tournamentLink.className = 'nav-item';
+            tournamentLink.innerHTML =
+                '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
+            navLinksLeft.appendChild(tournamentLink);
+            tournamentLink.querySelector('a').addEventListener('click', 
+                (e) => {
+                    e.preventDefault();
+                    showTournamentMenu();
+                    history.pushState(
+                        { page: 'tournament' },
+                        'Tournament',
+                        '/tournament'
+                    );
+            });
+            const rpsLink = document.createElement('li');
+            rpsLink.className = 'nav-item';
+            rpsLink.innerHTML =
+                '<a class="nav-link" href="/rock-paper-scissors" data-link>Rock Paper Scissors</a>';
+            navLinksLeft.appendChild(rpsLink);
+            rpsLink.querySelector('a').addEventListener('click', (e) => {
+                e.preventDefault();
+                showRPS();
+                history.pushState(
+                    { page: 'rock-paper-scissors' },
+                    'Rock Paper Scissors',
+                    '/rock-paper-scissors'
+                );
+            });
+            const usernameLink = document.createElement('li');
+            usernameLink.className = 'nav-item';
+            usernameLink.innerHTML = `
+                <a class="nav-link" href="/dashboard" data-link>
+                    <img src="${data.avatar}" alt="Avatar" class="rounded-circle"
+                    style="width: 30px; height: 30px; object-fit: cover;">
+                </a>
+            `;
+            const existingAvatar = navLinksRight.querySelector('img');
+            if (!existingAvatar) {
+                navLinksRight.appendChild(usernameLink);
+                usernameLink.querySelector('a').addEventListener('click', 
                     (e) => {
                         e.preventDefault();
-                        showTournamentMenu();
+                        showDashboard();
                         history.pushState(
-                            { page: 'tournament' },
-                            'Tournament',
-                            '/tournament'
+                            { page: 'dashboard' },
+                            'Dashboard',
+                            '/dashboard'
                         );
                 });
-                const rpsLink = document.createElement('li');
-                rpsLink.className = 'nav-item';
-                rpsLink.innerHTML =
-                    '<a class="nav-link" href="/rock-paper-scissors" data-link>Rock Paper Scissors</a>';
-                navLinksLeft.appendChild(rpsLink);
-                rpsLink.querySelector('a').addEventListener('click', (e) => {
+            }
+            const logoutLink = document.createElement('li');
+            logoutLink.className = 'nav-item';
+            logoutLink.innerHTML =
+                '<a class="nav-link" href="#" id="logout" data-link>Logout</a>';
+            navLinksRight.appendChild(logoutLink);
+            logoutLink
+                .querySelector('#logout')
+                .addEventListener('click', (e) => {
                     e.preventDefault();
-                    showRPS();
-                    history.pushState(
-                        { page: 'rock-paper-scissors' },
-                        'Rock Paper Scissors',
-                        '/rock-paper-scissors'
-                    );
-                });
-                const usernameLink = document.createElement('li');
-                usernameLink.className = 'nav-item';
-                usernameLink.innerHTML = `
-                    <a class="nav-link" href="/dashboard" data-link>
-                        <img src="${data.avatar}" alt="Avatar" class="rounded-circle"
-                        style="width: 30px; height: 30px; object-fit: cover;">
-                    </a>
-                `;
-                const existingAvatar = navLinksRight.querySelector('img');
-                if (!existingAvatar) {
-                    navLinksRight.appendChild(usernameLink);
-                    usernameLink.querySelector('a').addEventListener('click', 
-                        (e) => {
-                            e.preventDefault();
-                            showDashboard();
-                            history.pushState(
-                                { page: 'dashboard' },
-                                'Dashboard',
-                                '/dashboard'
-                            );
-                    });
-                }
-                const logoutLink = document.createElement('li');
-                logoutLink.className = 'nav-item';
-                logoutLink.innerHTML =
-                    '<a class="nav-link" href="#" id="logout" data-link>Logout</a>';
-                navLinksRight.appendChild(logoutLink);
-                logoutLink
-                    .querySelector('#logout')
-                    .addEventListener('click', (e) => {
-                        e.preventDefault();
-                        logout();
-                });
-            })
-            // .catch((error) => {
-            //     console.error('Error:', error);
-            //     alert('Error: ' + error.message);
-            // });
+                    logout();
+            });
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('Error: ' + error.message);
+        });
     } else {
         const loginLink = document.createElement('li'); // list item
         loginLink.className = 'nav-item';
@@ -285,11 +288,11 @@ export function showHome() {
  */
 export function showRPS() {
     const rpsContent = `
-            <h2 class="text-center mb-3 mt-5 pt-5"> Rock - Paper - Scissors</h2>
-            <div class="d-flex justify-content-center gap-4 p-3">
-                <button class="btn btn-secondary m-3" id="singlePlayerBtn">Single Player</button>
-                <button class="btn btn-secondary m-3" id="multiplayerBtn">Multiplayer</button>
-                <button class="btn btn-secondary m-3" id="WaitingListBtn">Waiting List</button>
+            <h2 class="text-center mb-5 mt-5 pt-5"> Rock - Paper - Scissors</h2>
+            <div class="d-flex justify-content-center mb-5 gap-4 p-3">
+                <button class="btn btn-secondary me-3" id="singlePlayerBtn">Single Player</button>
+                <button class="btn btn-secondary me-3" id="multiplayerBtn">Multiplayer</button>
+                <button class="btn btn-secondary " id="WaitingListBtn">Waiting List</button>
             </div>
             `;
     // Insert content into the main content area
