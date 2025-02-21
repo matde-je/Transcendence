@@ -422,18 +422,18 @@ function loop() {
 		}
 		draw(player1);
 		draw(player2);
-    }
+	}
 	console.log()
-    if (!gameOver && !pause && init === 1 && (window.location.href === "https://localhost:8000/" || window.isTournament == true)) {
+	if (!gameOver && !pause && init === 1 && (window.location.href === "https://localhost:8000/" || window.isTournament == true)) {
 		console.log("loop game");
 		handleMoves();
-        bounceBall();
-        paddleCollision();
+		bounceBall();
+		paddleCollision();
 		if (window.ai) {
 			aiLogic(window.ball, window.canvas);
 		}
-        drawAll();
-        if (score1 === 10 || score2 === 10) {
+		drawAll();
+		if (score1 === 10 || score2 === 10) {
 			let x;
 			if (score1 === 10)
 				x = canvas.width / 4;
@@ -464,18 +464,18 @@ function loop() {
 					context.font = '30px \'Courier New\', Courier, monospace';
 					context.fillText('S - START NEW GAME', x, canvas.height * 0.875);
 				}
-            gameOver = true;
-            window.cancelAnimationFrame(ani);
-        }
-    }
+			gameOver = true;
+			window.cancelAnimationFrame(ani);
+		}
+	}
 
-    if (!gameOver && score1 < 10 && score2 < 10 && init === 1) {
-        ani = window.requestAnimationFrame(loop);
-    } else if (gameOver && getAuthenticationStatus()) {
-        let finalResult;
-        let opponentType;
+	if (!gameOver && score1 < 10 && score2 < 10 && init === 1) {
+		ani = window.requestAnimationFrame(loop);
+	} else if (gameOver && getAuthenticationStatus()) {
+		let finalResult;
+		let opponentType;
 
-	    // Determines the opponent type based on the game mode
+		// Determines the opponent type based on the game mode
 		if (window.isTournament)
 		{
 			opponentType = username2;
@@ -491,12 +491,12 @@ function loop() {
 			}
 		}
 
-	    // Determines the result based on the score
-	    if (score1 === 10) {
-	        finalResult = 'win';
-	    } else {
-	        finalResult = 'lose';
-	    }
+		// Determines the result based on the score
+		if (score1 === 10) {
+			finalResult = 'win';
+		} else {
+			finalResult = 'lose';
+		}
 
 		console.log('Final result:', finalResult);
 		console.log('Opponent type:', opponentType);
@@ -504,10 +504,10 @@ function loop() {
 		let score = score1 + '-' + score2;
 		console.log('Score:', score);
 
-	    // Register the result in the backend if not in a tournament
+		// Register the result in the backend if not in a tournament
 		if (!window.isTournament)
-	    	registerMatchResult(opponentType, finalResult, score);
-    }
+			registerMatchResult(opponentType, finalResult, score);
+	}
 }
 
 /**
