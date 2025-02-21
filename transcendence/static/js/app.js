@@ -9,6 +9,12 @@ import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 
 async function handleRouteChange() {
+    var collapseElementList = [].slice.call(document.querySelectorAll('.navbar-collapse'))
+    var collapseList = collapseElementList.map(function (collapseEl) {
+        return new bootstrap.Collapse(collapseEl, {
+            toggle: false
+        })
+    })
     const path = window.location.pathname;
     const username = await checkAuthentication();
     if (path === '/login') {
@@ -93,14 +99,26 @@ export function initializeNavbar(authenticated) {
         history.pushState({ page: 'home' }, 'Home', '/');
     });
     container.appendChild(navbarBrand);
+    const toggleButton = document.createElement('button');
+    toggleButton.className = 'navbar-toggler';
+    toggleButton.type = 'button';
+    toggleButton.setAttribute('data-bs-toggle', 'collapse');
+    toggleButton.setAttribute('data-bs-target', '#navbarNav');
+    toggleButton.setAttribute('aria-controls', 'navbarNav');
+    toggleButton.setAttribute('aria-expanded', 'false');
+    toggleButton.setAttribute('aria-label', 'Toggle navigation');
+    toggleButton.innerHTML = '<span class="navbar-toggler-icon"></span>';
+
+    container.appendChild(toggleButton);
     // Create collapse container for nav links
     const navbarCollapse = document.createElement('div');
     navbarCollapse.className = 'collapse navbar-collapse';
     navbarCollapse.id = 'navbarNav';
     const navLinksLeft = document.createElement('ul'); // left side links
-    navLinksLeft.className = 'navbar-nav';
+    navLinksLeft.className = 'navbar-nav me-auto mb-2 mb-lg-0';
     const navLinksRight = document.createElement('ul'); // right side links
-    navLinksRight.className = 'navbar-nav ml-auto';
+    navLinksRight.className = 'navbar-nav';
+
     navbarCollapse.appendChild(navLinksLeft);
     navbarCollapse.appendChild(navLinksRight);
     container.appendChild(navbarCollapse);
@@ -109,8 +127,7 @@ export function initializeNavbar(authenticated) {
 
     if (authenticated) {
         window.socket = new WebSocket(`wss://${window.location.hostname}:8000/ws/online_status/`);
-        window.socket.onopen = function() {
-        };
+        window.socket.onopen = function() {};
         window.socket.onerror = function(error) {
             console.error('WebSocket error:', error);
         };
@@ -122,9 +139,7 @@ export function initializeNavbar(authenticated) {
                 update_onlinestatus_ui();
             }
         };
-        window.socket.onclose = function(e) {
-            console.log('WebSocket connection closed.');
-        };
+        window.socket.onclose = function(e) {};
         fetchWithRetry('/users/user/', {
             method: 'GET',
             credentials: 'include',
@@ -273,11 +288,11 @@ export function showHome() {
  */
 export function showRPS() {
     const rpsContent = `
-            <h2 class="text-center mb-3 mt-5 pt-5"> Rock - Paper - Scissors</h2>
-            <div class="d-flex justify-content-center gap-4 p-3">
-                <button class="btn btn-secondary m-3" id="singlePlayerBtn">Single Player</button>
-                <button class="btn btn-secondary m-3" id="multiplayerBtn">Multiplayer</button>
-                <button class="btn btn-secondary m-3" id="WaitingListBtn">Waiting List</button>
+            <h2 class="text-center mb-5 mt-5 pt-5"> Rock - Paper - Scissors</h2>
+            <div class="d-flex justify-content-center mb-5 gap-4 p-3">
+                <button class="btn btn-secondary me-3" id="singlePlayerBtn">Single Player</button>
+                <button class="btn btn-secondary me-3" id="multiplayerBtn">Multiplayer</button>
+                <button class="btn btn-secondary " id="WaitingListBtn">Waiting List</button>
             </div>
             `;
     // Insert content into the main content area
