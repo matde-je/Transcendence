@@ -14,7 +14,7 @@ let init = 0;
 let initialBallGravity = 1;
 let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
-let paddleGravity = 2;
+let paddleGravity = 3;
 let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
@@ -424,7 +424,7 @@ function loop() {
 		draw(player2);
 	}
 	console.log()
-	if (!gameOver && !pause && init === 1 && (window.location.href === "https://localhost:8000/" || window.isTournament == true)) {
+	if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
 		console.log("loop game");
 		handleMoves();
 		bounceBall();
