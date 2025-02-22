@@ -144,7 +144,7 @@ export function initializeNavbar(authenticated) {
 			avatarImg.style.width = '30px';
 			avatarImg.style.height = '30px';
 			avatarImg.style.objectFit = 'cover';
-			
+
 			// Add the image to the anchor element
 			dashboardAnchor.appendChild(avatarImg);
 			usernameLink.appendChild(dashboardAnchor);
@@ -152,13 +152,13 @@ export function initializeNavbar(authenticated) {
 			const existingAvatar = navLinksRight.querySelector('img');
 			// If the avatar is not already present, add usernameLink to the navbar
 			if (!existingAvatar) {
-				navLinksRight.appendChild(usernameLink); 
+				navLinksRight.appendChild(usernameLink);
 			}
-			
+
 			dashboardAnchor.addEventListener('click', (e) => {
 				e.preventDefault();
 				showDashboard();
-				history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard'); 
+				history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard');
 			});
 
 			const logoutLink = document.createElement('li');
@@ -180,11 +180,11 @@ export function initializeNavbar(authenticated) {
 		.catch((error) => {
 			console.error('Error:', error);
 			alert(`Error: ${error.message}`);
-		}); 
+		});
 	}
 	else {
 		// Cria o link Login
-		const loginLink = document.createElement('li'); //list 
+		const loginLink = document.createElement('li'); //list
 		loginLink.className = 'nav-item';
 		const loginAnchor = document.createElement('a');
 		loginAnchor.className = 'nav-link';
@@ -232,7 +232,8 @@ export function initializeNavbar(authenticated) {
 /**
  * Displays the Home page.
  */
-import { initializeGame } from './game.js';
+//import { initializeGame } from './game.js';
+import { initializeGame } from './remote1Vs1.js'; //Temp
 
 export function showHome() {
     let contentElement = document.getElementById('content');
@@ -241,13 +242,13 @@ export function showHome() {
         contentElement.id = 'content';
         document.body.appendChild(contentElement);  // Append to body or to a specific container
     }
-    else 
+    else
         contentElement.innerHTML = '';
     document.getElementById('gameScript')?.remove();
     document.getElementById('aiScript')?.remove();
     contentElement.innerHTML = `
         <h2 class="text-center text-dark mb-5">Pong Game</h2>
-        <div class="text-center"> 
+        <div class="text-center">
             <div class="d-flex justify-content-center">
                 <canvas id="game" width="550" height="400" style="background-color: #000;"></canvas>
             </div>
@@ -290,7 +291,7 @@ export function showRPS() {
             `;
     // Insert content into the main content area
     document.getElementById('content').innerHTML = rpsContent;
-    
+
     // Add listener for the Single Player button
     document.getElementById('singlePlayerBtn').addEventListener('click', (e) => {
         e.preventDefault();

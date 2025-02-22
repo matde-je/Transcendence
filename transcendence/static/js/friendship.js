@@ -1,5 +1,5 @@
 import { getCookie } from './utils.js';
-import { sendInvite } from './remote.js';
+//import { sendInvite } from './remote.js';
 
 /**
  * Creates a list section with a title and items, and appends it to the given content element.
@@ -181,14 +181,14 @@ export async function showFriends() {
     .then(([users, sentRequests, receivedRequests, friends]) => {
         window.friendItems = friends.map(friend => {
             const listItem = document.createElement('div');
-            listItem.className = 'list-group-item d-flex justify-content-between gap-3'; 
+            listItem.className = 'list-group-item d-flex justify-content-between gap-3';
             // Create a container for the username and status indicator
             const userContainer = document.createElement('div');
             userContainer.className = 'd-flex align-items-center gap-2';
             // Create the online status indicator
             const statusIndicator = document.createElement('span');
             statusIndicator.className = 'status-indicator rounded-circle';
-            statusIndicator.classList.add('bg-secondary'); // Default color: gray 
+            statusIndicator.classList.add('bg-secondary'); // Default color: gray
             // Set size of the status indicator
             statusIndicator.classList.add('me-2', 'd-inline-block', 'p-1'); // p-1 for padding to make it round
             const usernameText = document.createElement('span');
@@ -274,9 +274,9 @@ export async function showFriends() {
         // - The user himself
         // - Superusers
         // - Users who have already sent or received friend requests
-        const filteredUsers = users.filter(user => 
-            user.id !== currentuser_id && 
-            !user.is_superuser && 
+        const filteredUsers = users.filter(user =>
+            user.id !== currentuser_id &&
+            !user.is_superuser &&
             !invaliduser_ids.has(user.id)
         );
         if (filteredUsers.length > 0) {
@@ -296,8 +296,8 @@ export async function showFriends() {
                 return listItem;
             });
             createList(content, 'All Users', userItems);
-        } else 
-            createList(content, 'All Users', []); 
+        } else
+            createList(content, 'All Users', []);
     })
     .catch(error => {
         console.error("Error fetching data:", error);
