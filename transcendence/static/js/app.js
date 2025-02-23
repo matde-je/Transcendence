@@ -260,7 +260,8 @@ export function showHome() {
         `;
         const gameScript = document.createElement('script');
         gameScript.type = 'module';
-        gameScript.src = '/static/js/game.js';
+        //gameScript.src = '/static/js/game.js';
+		gameScript.src = '/static/js/remote1Vs1.js';
         gameScript.id = 'gameScript';
         gameScript.onload = () => {
             initializeGame();

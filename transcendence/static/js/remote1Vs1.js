@@ -16,7 +16,6 @@ let initialBallGravity = 1;
 let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
 let paddleGravity = 2;
-const aiRefreshView = 1000;
 
 export async function initializeGame() {
 
@@ -34,7 +33,6 @@ export async function initializeGame() {
 	maxGravity = initialBallGravity * 2;
 	ballSpeed = 7;
 	window.paddleGravity = paddleGravity;
-	window.aiRefreshView = aiRefreshView;
 	ani = window.requestAnimationFrame(loop);
 }
 
@@ -103,24 +101,21 @@ window.addEventListener("keydown", (e) => {
 	if (window.location.pathname === '/rock-paper-scissors/multiplayer') {
 		return;
 	} else {
-		if (keys['1'] && init === 0) {
-			ai = 1;
+		if ((keys['r'] || keys['R']) && init === 0) {
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
 			context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
+			context.fillText("PLAYER 2 - Remote ", canvas.width / 2, 290);
 			context.fillText("P - PAUSE", canvas.width / 2, 320);
 			context.fillText("S - START", canvas.width / 2, 350);
 		}
-		if (keys['2'] && init === 0) {
-			context.font = "20px 'Courier New', Courier, monospace";
-			context.textAlign = "center";
-			context.fillStyle = "white";
-			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, 260);
-			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 290);
-			context.fillText("P - PAUSE", canvas.width / 2, 320);
-			context.fillText("S - START", canvas.width / 2, 350);
+		if ((keys['s'] || keys['S']) && init === 0) {
+		//if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {		///REMOTE/// PARA INICIAR JOGO
+			//	gameSocket.send(JSON.stringify({type: 'playerReady'}));
+		//} else {
 		}
+
 		if ((gameOver == true || init == 0) && (keys['s'] || keys['S']))
 			{
 				//if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {		///REMOTE/// PARA INICIAR JOGO
@@ -166,8 +161,8 @@ function handleMoves() {
 		if (keys['a'] && player1.y + player1.height < canvas.height)
 			newY += player1.gravity * 2; //down
 		player1.y = newY;
-		sendPlayerMove(player1.y); // Send move to server				///<<REMOTE>>///
-	} else {
+		//sendPlayerMove(player1.y); // Send move to server				///<<REMOTE>>///
+
 		// Player 2 movement (remote player)
 		newY = player2.y;
 		if (keys['ArrowUp'] && player2.y > 0)
@@ -276,15 +271,13 @@ function drawAll(){
 	score_2();
 }
 
-let AiLastUpdateTime = Date.now();
-
 function loop() {
 	if (init === 0) {
 		reset_game();
 		context.font = '20px \'Courier New\', Courier, monospace';
 		context.textAlign = 'center';
 		context.fillStyle = 'white';
-		context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2,  canvas.height * 0.125);
+		context.fillText('WAITING FOR REMOTE PLAYER...\n Press (r) for Ready!', canvas.width / 2,  canvas.height * 0.125);
 		draw(ball);
 		draw(player1);
 		draw(player2);
@@ -297,7 +290,7 @@ function loop() {
 		bounceBall();
 		paddleCollision();
 		drawAll();
-		sendGameState();										///<<REMOTE>>///
+		//sendGameState();										///<<REMOTE>>///
 		if (score1 === 10 || score2 === 10) {
 			let x;
 			if (score1 === 10)
@@ -319,7 +312,7 @@ function loop() {
 	if (!gameOver && score1 < 10 && score2 < 10 && init === 1)
 		ani = window.requestAnimationFrame(loop);
 }
-/*
+
 /////////////////////////////////REMOTE FUNCTIONS//////////////////////////////////////
 
 	///Game State Synchronization, send and receive game state updates:
@@ -395,39 +388,74 @@ function loop() {
 	}
 
 ///////////////////////////////NUNO TEMP////////////////////////////////////
+/*
+const socket = new WebSocket('wss://localhost:8000/ws/game/');
 
-let gameSocket;
+socket.onopen = function (event) {
+    console.log('WebSocket connection established.');
+    alert('WebSocket connection established.');
+};
 
-//WebSocket Connection for game communication:
-function connectToGameSocket() {
-	gameSocket = new WebSocket('wss://localhost:8000/ws/game/');
+// ✅ **Kept sendInvite exactly as you had it**
+export function sendInvite(user_id) {
+    alert('remote Invite sent to user ' + user_id);
 
-	//sets up an onopen handler for when the WebSocket
-	// connection is successfully established.
-	gameSocket.onopen = function(event) {
-		console.log('Game WebSocket connection established.');
-	};
-	//sets a message handler when message received from server
-	// and an parses message to JSON object to handleGameMessage
-	gameSocket.onmessage = function(event) {
-		const data = JSON.parse(event.data);
-		handleGameMsg(data);
-	};
-	//Handler for closing
-	gameSocket.onclose = function(event) {
-		console.log('Game WebSocket connection closed.');
-	};
-	//handler for error
-	gameSocket.onerror = function(error) {
-		console.error('Game WebSocket error:', error);
-	};
+    const message = JSON.stringify({
+        recipient_id: user_id, // ✔️ Keeps the original variable name
+        message: 'You have a new invite! To a game of Pong!',
+    });
+
+    console.log('Sending message:', message);
+    socket.send(message);
 }
+
+// ✅ **New function to send real-time game updates**
+export function sendGameUpdate(gameState) {
+    const message = JSON.stringify({
+        type: 'game_update', // ✔️ Added type to distinguish messages
+        gameState: gameState, // ✔️ Sends paddle positions, ball position, etc.
+    });
+
+    console.log('Sending game update:', message);
+    socket.send(message);
+}
+
+// ✅ **Handles incoming WebSocket messages**
+socket.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+
+    if (data.recipient_id) {  // ✔️ Fix: Checks if it's an invite message
+        console.log('Game invitation received:', data);
+        alert(data.message);
+    } else if (data.type === 'game_update') {  // ✔️ Fix: Checks if it's a game update
+        console.log('Game state received:', data.gameState);
+        handleGameUpdate(data.gameState);
+    }
+};
+
+// ✅ **Handles errors**
+socket.onerror = function (error) {
+    console.error('WebSocket error:', error);
+};
+
+// ✅ **Handles WebSocket closing**
+socket.onclose = function (event) {
+    console.log('WebSocket connection closed.');
+};
+
+// ✅ **Processes received game updates**
+function handleGameUpdate(gameState) {
+    console.log('Updating game with received state:', gameState);
+    // ⚠️ Add logic to update the game state (e.g., move paddles, update ball)
+}
+*/
 
 ///////////////////////PEDRO//////////////////////////
 
 export function sendInvite(user_id) {
     alert('remote Invite sent to user ' + user_id);
 
+	//const gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
     const socket = new WebSocket('wss://localhost:8000/ws/alerts/');
 
     socket.onopen = function(event) {

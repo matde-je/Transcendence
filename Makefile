@@ -43,7 +43,7 @@ create_superuser:
 	@clear
 	docker compose --file docker-compose.yml run backend python manage.py createsuperuser
 
-# Create users
+# Create usersT
 create_users:
 	@clear
 	docker compose --file docker-compose.yml run backend python manage.py create_users
