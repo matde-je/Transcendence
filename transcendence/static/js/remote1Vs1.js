@@ -416,4 +416,3 @@ export function sendInvite(user_id) {
         console.error('WebSocket error:', error);
     };
 }
-*/
