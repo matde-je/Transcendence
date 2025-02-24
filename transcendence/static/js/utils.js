@@ -140,3 +140,48 @@ export function capitalizeFirstLetter(string) {
 }
 
 
+export async function getUserData() {
+    try {
+        const response = await fetch('/users/user/');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const userData = await response.json();
+        return userData;
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+    }
+}
+
+export async function getUserById(userId) {
+    try {
+        const users = await getUserData();
+        console.log('Usuários obtidos:', users);
+        console.log('Procurando pelo userId:', userId);
+        const user = Array.isArray(users) ? users.find(user => user.id === userId) : null;
+        if (!user) {
+            console.log('Usuário não encontrado');
+            return null;
+        }
+        console.log('Usuário encontrado:', user.username);
+        return user;
+    } catch (error) {
+        console.error('Erro ao obter usuário por ID:', error);
+        return null;
+    }
+}
+
+
+export async function fetchUserById(userId) {
+    try {
+        const response = await fetch(`users/user/${userId}`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const userData = await response.json();
+        return userData;
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+        return null;
+    }
+}

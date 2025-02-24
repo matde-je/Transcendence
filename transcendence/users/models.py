@@ -50,3 +50,12 @@ class Friendship(models.Model):
             Friendship.objects.filter(from_user=self.from_user, to_user=self.to_user).delete()
             Friendship.objects.filter(from_user=self.to_user, to_user=self.from_user).delete()
 
+class GameInvite(models.Model):
+    sender = models.ForeignKey(CustomUser, related_name='send_invites', on_delete=models.CASCADE)
+    recipient = models.ForeignKey(CustomUser, related_name='received_invites', on_delete=models.CASCADE)
+    invite_status = models.CharField(max_length=20, default='none')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"GameInvite from {self.sender} to {self.recipient} - invite_status: {self.invite_status}"

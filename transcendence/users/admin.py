@@ -1,6 +1,6 @@
 # users/admin.py
 from django.contrib import admin
-from .models import CustomUser, Friendship
+from .models import CustomUser, Friendship, GameInvite
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
@@ -13,3 +13,9 @@ class FriendshipAdmin(admin.ModelAdmin):
     list_display = ('from_user', 'to_user', 'accepted', 'created_at', 'accepted_at')
     search_fields = ('from_user__username', 'to_user__username')
     list_filter = ('accepted', 'created_at', 'accepted_at')
+
+@admin.register(GameInvite)
+class GameInviteAdmin(admin.ModelAdmin):
+    list_display = ('sender_id', 'sender','recipient_id', 'recipient', 'invite_status', 'created_at', 'updated_at')
+    search_fields = ('sender__username', 'recipient__username')
+    list_filter = ('invite_status', 'created_at', 'updated_at')

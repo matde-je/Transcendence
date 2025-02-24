@@ -222,3 +222,86 @@ def send_alert_to_user(user_id, message):
         }
     )
 
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""" Remote Play"""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+from django.views.decorators.http import require_POST
+import json
+from .models import GameInvite
+
+@login_required
+@require_POST
+def create_invite(request):
+    sender = request.user
+    data = json.loads(request.body)
+    recipient_id = data.get('recipient_id')
+    recipient = CustomUser.objects.get(id=recipient_id)
+
+    invite = GameInvite.objects.create(
+        sender=sender,
+        recipient=recipient,
+        invite_status='pending',
+    )
+    return JsonResponse({
+        'detail': 'Invite created successfully!',
+        'invite_id': invite.id,
+        'sender_id': sender.id,
+        'recipient_id': recipient.id,
+        'invite_status': invite.invite_status,
+    })
+
+@login_required
+def check_user_invites(request, user_id):
+    pending_invites = GameInvite.objects.filter(invite_status='pending').filter(
+        sender=user_id
+    ) | GameInvite.objects.filter(invite_status='pending').filter(
+        recipient=user_id
+    )
+    
+    invites = []
+
+    for invite in pending_invites:
+        invites.append({
+            'invite_id': invite.id,
+            'sender_id': invite.sender.id,
+            'recipient_id': invite.recipient.id,
+            'invite_status': invite.invite_status,
+        })
+
+    return JsonResponse({'invites': invites})
+
+
+@login_required
+@require_POST
+def accept_invite(request, invite_id):
+    try:
+        invite = GameInvite.objects.get(id=invite_id)
+        invite.status = 'accepted'
+        invite.save()
+        return JsonResponse({'detail': 'Invite accepted successfully!'})
+    except GameInvite.DoesNotExist:
+        return JsonResponse({'error': 'Invite not found'}, status=404)
+
+@login_required
+@require_POST
+def reject_invite(request, invite_id):
+    try:
+        invite = GameInvite.objects.get(id=invite_id)
+        invite.status = 'rejected'
+        invite.save()
+        return JsonResponse({'detail': 'Invite rejected successfully!'})
+    except GameInvite.DoesNotExist:
+        return JsonResponse({'error': 'Invite not found'}, status=404)
+
+@login_required
+@require_POST
+def cancel_invite(request, invite_id):
+    try:
+        invite = GameInvite.objects.get(id=invite_id)
+        invite.status = 'cancelled'
+        invite.save()
+        return JsonResponse({'detail': 'Invite cancelled successfully!'})
+    except GameInvite.DoesNotExist:
+        return JsonResponse({'error': 'Invite not found'}, status=404)

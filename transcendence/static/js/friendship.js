@@ -1,5 +1,5 @@
 import { getCookie } from './utils.js';
-//import { sendInvite } from './remote.js';
+import { updateInviteButtons } from './remote.js';
 
 /**
  * Creates a list section with a title and items, and appends it to the given content element.
@@ -149,6 +149,7 @@ export async function update_onlinestatus_ui() {
     }
 }
 
+
 // window.socket;
 export async function showFriends() {
     const content = document.getElementById('content');
@@ -201,15 +202,7 @@ export async function showFriends() {
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'ms-auto d-flex gap-2';
 
-            if (window.onlineFriends.some(f => f.id == friend.id)) {
-                const inviteButton = document.createElement('button');
-                inviteButton.textContent = 'Send invite';
-                inviteButton.className = 'btn btn-sm btn-primary';
-                inviteButton.onclick = function() {
-                    sendInvite(friend.id);
-                };
-                buttonContainer.appendChild(inviteButton);
-            }
+            updateInviteButtons();
 
             const button = document.createElement('button');
             button.textContent = 'Remove Friendship';
@@ -229,7 +222,8 @@ export async function showFriends() {
             const friend_container = document.createElement('div');
             friend_container.id = 'friend-container';
             content.appendChild(friend_container);
-           update_onlinestatus_ui();
+            updateInviteButtons();
+            update_onlinestatus_ui();
         }
         const allRequests = [
             ...receivedRequests.map(request => ({ ...request, type: 'received' })),

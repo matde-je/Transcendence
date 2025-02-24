@@ -1,6 +1,6 @@
 ////////////////////// "GAME.JS" SEM TORNEIO ////////////////////////////////
 
-import { getCookie, checkAuthentication, getAuthenticationStatus } from './utils.js';
+import { getCookie, checkAuthentication, getAuthenticationStatus, getUserData } from './utils.js';
 
 "use strict"
 
@@ -164,20 +164,19 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("P - PAUSE", canvas.width / 2, 320);
 			context.fillText("S - START", canvas.width / 2, 350);
 		}
-		if ((gameOver == true || init == 0) && (keys['s'] || keys['S']))
-			{
-				if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {			///REMOTE/// PARA INICIAR JOGO
-					gameSocket.send(JSON.stringify({type: 'playerReady'}));
-				} else {
-					window.cancelAnimationFrame(ani);
-					reset_game();
-					context.clearRect(0, 0, canvas.width, canvas.height);
-					if (window.location.href === "https://localhost:8000/" || window.location.href === "https://localhost:8000/tournament")
-						ani = window.requestAnimationFrame(loop);
-					init = 1;
-					console.log("start game clicked");
-				}
+		if ((gameOver == true || init == 0) && (keys['s'] || keys['S'])) {
+			if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {			///REMOTE/// PARA INICIAR JOGO
+				gameSocket.send(JSON.stringify({type: 'playerReady'}));
+			} else {
+				window.cancelAnimationFrame(ani);
+				reset_game();
+				context.clearRect(0, 0, canvas.width, canvas.height);
+				if (window.location.href === "https://localhost:8000/" || window.location.href === "https://localhost:8000/tournament")
+					ani = window.requestAnimationFrame(loop);
+				init = 1;
+				console.log("start game clicked");
 			}
+		}
 
 		if (keys['p'] && gameOver == false && init == 1) {
 			pause = !pause;
@@ -539,36 +538,193 @@ function connectToGameSocket() {
 
 ///////////////////////PEDRO//////////////////////////
 
-export function sendInvite(user_id) {
-    alert('remote Invite sent to user ' + user_id);
+export async function sendInvite(recipient_id) {
+	alert('remote Invite sent to user ' + recipient_id);
 
-    const socket = new WebSocket('wss://localhost:8000/ws/alerts/');
+	const loggedInUser = await getUserData();
 
-    socket.onopen = function(event) {
-        console.log('WebSocket connection established.');
-        alert('WebSocket connection established.');
+	const response = await fetch('/users/create_invite/', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': getCookie('csrftoken'),
+		},
+		credentials: 'include',
+		body: JSON.stringify({ recipient_id: recipient_id }),
+	});
 
-        // Enviar mensagem ao servidor WebSocket
-        const message = JSON.stringify({
-            recipient_id: user_id,
-            message: 'You have a new invite! To a game of Pong!',
-        });
-        console.log('Sending message:', message);
-        socket.send(message);
-    };
+	let inviteData
+	if (response.ok) {
+		inviteData = await response.json();
+		console.log('Invite created successfully:', inviteData);
+	} else {
+		const errorData = await response.json();
+		console.error('Failed to create invite, status:', response.status, 'error:', errorData);
 
-    socket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-		//handleGameMsg(data);
-        console.log('Message received from server:', data);
-        alert(data.message);
-    };
+	}
+	const message = JSON.stringify({
+		sender_id: inviteData.sender_id,
+		recipient_id: inviteData.recipient_id,
+		message: 'You have a new invite! To a game of Pong! From user ' + inviteData.sender_id + '!',
+		invite_status: 'pending',
+	});
 
-    socket.onclose = function(event) {
-        console.log('WebSocket connection closed.');
-    };
-
-    socket.onerror = function(error) {
-        console.error('WebSocket error:', error);
-    };
+	console.log('message:', message);
+	updateInviteButtons();
+	window.remoteSocket.send(message);
 }
+
+async function getPendingInvitesForLoggedInUser(loggedInUserId) {
+	return fetch('/users/user/' + loggedInUserId + '/invites/', {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': getCookie('csrftoken')
+		}
+	})
+	.then(response => response.json())
+	.then(data => {
+		const inviteRoles = data.invites.map(invite => {
+			if (invite.sender_id === loggedInUserId) {
+				return 'sender';
+			} else if (invite.recipient_id === loggedInUserId) {
+				return 'recipient';
+			}
+		});
+		return inviteRoles;
+	})
+	.catch(error => {
+		console.error('Error fetching invites:', error);
+	});
+}
+
+
+async function getPendingInviteId(loggedInUserId) {
+    try {
+        const response = await fetch(`/users/user/${loggedInUserId}/invites/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        const data = await response.json();
+        const invite = data.invites.find(invite => 
+            invite.invite_status === 'pending' && (invite.sender_id === loggedInUserId || invite.recipient_id === loggedInUserId)
+        );
+
+        if (invite) {
+            return invite.invite_id;
+        } else {
+            console.log('No pending invites found for the logged in user.');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching invites:', error);
+        return null;
+    }
+}
+
+
+export async function updateInviteButtons() {
+	const allFriendItems = document.querySelectorAll('[data-friend-id]');
+	allFriendItems.forEach(async friendItem => {
+		const friendId = friendItem.getAttribute('data-friend-id');
+		const isOnline = window.onlineFriends.some(f => f.id == friendId);
+		const buttonContainer = friendItem.querySelector('.ms-auto');
+		const loggedInUser = await getUserData();
+		const loggedInUserId = loggedInUser.id;
+		const invite_type = await getPendingInvitesForLoggedInUser(loggedInUserId);
+		const inviteId = await getPendingInviteId(loggedInUserId);
+
+		console.log('isOnline:', isOnline);
+		console.log('invite_type:', invite_type);
+		console.log('inviteId:', inviteId);
+
+		if (isOnline && invite_type.includes('sender')) {
+			removeButtons(buttonContainer);
+			let cancelButton = buttonContainer.querySelector('#cancelButton');
+			if (!cancelButton) {
+				cancelButton = document.createElement('button');
+				cancelButton.textContent = 'Cancel Invite';
+				cancelButton.className = 'btn btn-sm btn-info';
+				cancelButton.id = 'cancelButton';
+				cancelButton.onclick = function() {
+					cancelInvite(inviteId);
+				};
+				buttonContainer.insertBefore(cancelButton, buttonContainer.firstChild);
+			}
+		} else if (isOnline && invite_type.includes('recipient')) {
+			removeButtons(buttonContainer);
+			const rejectButton = document.createElement('button');
+			rejectButton.textContent = 'Reject';
+			rejectButton.className = 'btn btn-sm btn-danger';
+			rejectButton.id = 'rejectButton';
+			rejectButton.onclick = function() {
+				declineInvite(inviteId);
+			};
+			buttonContainer.insertBefore(rejectButton, buttonContainer.firstChild);
+
+			const acceptButton = document.createElement('button');
+			acceptButton.textContent = 'Accept';
+			acceptButton.className = 'btn btn-sm btn-success';
+			acceptButton.id = 'acceptButton';
+			acceptButton.onclick = function() {
+				acceptInvite(inviteId);
+			};
+			buttonContainer.insertBefore(acceptButton, buttonContainer.firstChild);
+		}else  if (isOnline) {
+			removeButtons(buttonContainer);
+			let inviteButton = buttonContainer.querySelector('#inviteButton');
+			if (!inviteButton) {
+				inviteButton = document.createElement('button');
+				inviteButton.textContent = 'Invite to Remote Play';
+				inviteButton.className = 'btn btn-sm btn-primary';
+				inviteButton.id = 'inviteButton';
+				inviteButton.addEventListener('click', () => {
+					sendInvite(friendId);
+				});
+				buttonContainer.insertBefore(inviteButton, buttonContainer.firstChild);
+			}
+		}
+	});
+}
+
+function removeButtons(buttonContainer) {
+	const inviteButton = buttonContainer.querySelector('#inviteButton');
+	if (inviteButton) {
+		inviteButton.remove();
+	}
+	const rejectButton = buttonContainer.querySelector('#rejectButton');
+	if (rejectButton){
+		rejectButton.remove();
+	}
+	const acceptButton = buttonContainer.querySelector('#acceptButton');
+	if (acceptButton){
+		acceptButton.remove();
+	}
+	
+	const cancelButton = buttonContainer.querySelector('#cancelButton');
+	if (cancelButton){
+		cancelButton.remove();
+	}
+}
+
+
+function cancelInvite(inviteId) {
+	alert('remote Invite canceled');
+	console.log('Invite canceled:', inviteId);
+}
+
+function declineInvite(inviteId) {
+	alert('remote Invite declined');
+	console.log('Invite declined:', inviteId);
+
+}
+
+function acceptInvite(inviteId) {
+	alert('remote Invite accepted');
+	console.log('Invite accepted:', inviteId);
+
+}
+

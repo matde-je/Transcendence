@@ -6,6 +6,7 @@ import { showSinglePlayer, showMultiplayer, showWaitingList } from './rps.js';
 import { showTournamentMenu } from './tournament.js';
 import { update_onlinestatus_ui } from './friendship.js';
 import { getCookie, getAuthenticationStatus, checkAuthentication } from './utils.js';
+import { updateInviteButtons } from './remote.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 //	alert("PFV " + getAuthenticationStatus());
@@ -85,15 +86,35 @@ export function initializeNavbar(authenticated) {
 		};
 		window.socket.onmessage = function(e) {
 			const data = JSON.parse(e.data);
-			console.log("Parsed data:", data);
+			//console.log("Parsed data:", data);
 			if (data.online_friends) {
 				window.onlineFriends = data.online_friends;
+				updateInviteButtons();
 				update_onlinestatus_ui();
 			}
 		};
 		window.socket.onclose = function(e) {
 			console.log("WebSocket connection closed.");
 		};
+
+		if (!window.remoteSocket) {
+			window.remoteSocket = new WebSocket('wss://localhost:8000/ws/alerts/');
+			window.remoteSocket.onopen = function() {
+				console.log("Remote WebSocket connection established.");
+			};
+			window.remoteSocket.onmessage = async function (e) {
+				const data = JSON.parse(e.data);
+				alert(data.message);
+				console.log('recipiente_data:', data);
+				
+				console.log('message:', data.message);
+				updateInviteButtons();
+			};
+			window.remoteSocket.onclose = function(e) {
+				console.log("Remote WebSocket connection closed.");
+			};
+		};
+
 		fetch('/users/user/', {
 			method: 'GET',
 			credentials: 'include',
@@ -233,7 +254,7 @@ export function initializeNavbar(authenticated) {
  * Displays the Home page.
  */
 //import { initializeGame } from './game.js';
-import { initializeGame } from './remote1Vs1.js'; //Temp
+/* import { initializeGame } from './remote1Vs1.js'; //Temp */ //PCC
 
 export function showHome() {
     let contentElement = document.getElementById('content');
@@ -264,7 +285,8 @@ export function showHome() {
 		gameScript.src = '/static/js/remote1Vs1.js';
         gameScript.id = 'gameScript';
         gameScript.onload = () => {
-            initializeGame();
+           /*  initializeGame(); *///PCC
+
         };
         document.body.appendChild(gameScript);
     if (!document.getElementById('aiScript')) {

@@ -121,24 +121,39 @@ class AlertConsumer(AsyncWebsocketConsumer):
             print(f"User {self.user.id} disconnected from WebSocket.")
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
-        message = data.get('message')
-        recipient_id = data.get('recipient_id')
-        print(f"Received message: {message} for recipient: {recipient_id}")
+        print(f"Raw message received: {text_data}")
+        text_data_json = json.loads(text_data)
+        recipient_id = text_data_json.get('recipient_id')
+        message = text_data_json.get('message')
+        sender_id = self.user.id
+        invite_status = text_data_json.get('invite_status', None)
 
-        if message and recipient_id:
+        print(f"Parsed message: recipient_id={recipient_id}, message={message}, sender_id={sender_id}, invite_status={invite_status}")
+
+        if recipient_id:
+            recipient_group_name = f'user_{recipient_id}'
             await self.channel_layer.group_send(
-                f"user_{recipient_id}",
+                recipient_group_name,
                 {
-                    'type': 'send_alert',
-                    'message': message
+                    'type': 'chat_message',
+                    'message': message,
+                    'recipient_id': recipient_id,
+                    'sender_id': sender_id,
+                    'invite_status': invite_status,
                 }
             )
-            print(f"Sent message to group user_{recipient_id}")
 
-    async def send_alert(self, event):
+    async def chat_message(self, event):
         message = event['message']
+        recipient_id = event['recipient_id']
+        sender_id = event['sender_id']
+        invite_status = event.get('invite_status', None)
+
+        print(f"Parsed message-chat: recipient_id={recipient_id}, message={message}, sender_id={sender_id}, invite_status={invite_status}")
+
         await self.send(text_data=json.dumps({
-            'message': message
+            'message': message,
+            'recipient_id': recipient_id,
+            'sender_id': sender_id,
+            'invite_status': invite_status,
         }))
-        print(f"Alert sent to user: {message}")
