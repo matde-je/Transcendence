@@ -98,49 +98,36 @@ window.keys = {};
 
 window.addEventListener("keydown", (e) => {
 	keys[e.key] = true; //mark the key as pressed
-	if (window.location.pathname === '/rock-paper-scissors/multiplayer') {
+	if (window.location.pathname === '/rock-paper-scissors/multiplayer')
 		return;
-	} else {
-		if ((keys['r'] || keys['R']) && init === 0) {
+	if ((keys['r'] || keys['R']) && init === 0) {
+		gameSocket.send(JSON.stringify({ type: "playerReady" }));
+		context.font = "20px 'Courier New', Courier, monospace";
+		context.textAlign = "center";
+		context.fillStyle = "white";
+		context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
+		context.fillText("PLAYER 2 - Remote ", canvas.width / 2, 290);
+		context.fillText("P - PAUSE", canvas.width / 2, 320);
+		context.fillText("S - START", canvas.width / 2, 350);
+
+	if ((gameOver || init === 0) && (keys['s'] || keys['S'])) {
+		window.cancelAnimationFrame(ani);
+		reset_game();
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		gameSocket.send(JSON.stringify({ type: "playerReady" }));
+		console.log("start game clicked");
+	}
+
+	if (keys['p'] && gameOver == false && init == 1) {
+		pause = !pause;
+		if (pause == true) {
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
-			context.fillText("PLAYER 2 - Remote ", canvas.width / 2, 290);
-			context.fillText("P - PAUSE", canvas.width / 2, 320);
-			context.fillText("S - START", canvas.width / 2, 350);
+			context.fillText("Paused, press P to continue", canvas.width / 2, canvas.height / 2);
 		}
-		if ((keys['s'] || keys['S']) && init === 0) {
-		//if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {		///REMOTE/// PARA INICIAR JOGO
-			//	gameSocket.send(JSON.stringify({type: 'playerReady'}));
-		//} else {
-		}
-
-		if ((gameOver == true || init == 0) && (keys['s'] || keys['S']))
-			{
-				//if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {		///REMOTE/// PARA INICIAR JOGO
-				//	gameSocket.send(JSON.stringify({type: 'playerReady'}));
-				//} else {
-					window.cancelAnimationFrame(ani);
-					reset_game();
-					context.clearRect(0, 0, canvas.width, canvas.height);
-					if (window.location.href === `https://${window.location.hostname}:8000/`)
-						ani = window.requestAnimationFrame(loop);
-					init = 1;
-					console.log("start game clicked");
-				//}
-			}
-
-		if (keys['p'] && gameOver == false && init == 1) {
-			pause = !pause;
-			if (pause == true) {
-				context.font = "20px 'Courier New', Courier, monospace";
-				context.textAlign = "center";
-				context.fillStyle = "white";
-				context.fillText("Paused, press P to continue", canvas.width / 2, canvas.height / 2);
-			}
-			keys['p'] = false;
-		}
+		keys['p'] = false;
+	}
 	}
 });
 
@@ -161,7 +148,12 @@ function handleMoves() {
 		if (keys['a'] && player1.y + player1.height < canvas.height)
 			newY += player1.gravity * 2; //down
 		player1.y = newY;
-		//sendPlayerMove(player1.y); // Send move to server				///<<REMOTE>>///
+		// Send player1 movement to server
+		gameSocket.send(JSON.stringify({
+			type: "playerMove",
+			player: 1,
+			y: player1.y
+		}));
 
 		// Player 2 movement (remote player)
 		newY = player2.y;
@@ -290,7 +282,7 @@ function loop() {
 		bounceBall();
 		paddleCollision();
 		drawAll();
-		//sendGameState();										///<<REMOTE>>///
+		sendGameState();
 		if (score1 === 10 || score2 === 10) {
 			let x;
 			if (score1 === 10)
@@ -313,143 +305,89 @@ function loop() {
 		ani = window.requestAnimationFrame(loop);
 }
 
-/////////////////////////////////REMOTE FUNCTIONS//////////////////////////////////////
+function sendGameState() {
+	gameSocket.send(JSON.stringify({
+		type: "gameState",
+		player1Y: player1.y,
+		player2Y: player2.y,
+		ballX: ball.x,
+		ballY: ball.y,
+		ballSpeed: ball.speed,
+		ballGravity: ball.gravity,
+		score1: score1,
+		score2: score2
+	}));
+}
 
-	///Game State Synchronization, send and receive game state updates:
+const gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
 
-	function handleGameMsg(message) {
-		switch (message.type) {
-			case 'gameStart':
-					startGameRemote(message.data);
-				break;
-			case 'gameState':
-				updateGameState(message.data);
-				break;
-			case 'playerMove':
-				handleRemotePlayerMove(message.data);
-				break;
-		}
+
+gameSocket.onopen = function () {
+	console.log('WebSocket connection established.');
+	alert('WebSocket connection established.');
+};
+
+// Function to send an invite to another player
+export function sendInvite(user_id) {
+	alert('Remote invite sent to user ' + user_id);
+
+	const message = JSON.stringify({
+		type: 'invite',
+		recipient_id: user_id,
+		message: 'You have a new invite! To a game of Pong!',
+	});
+
+	console.log('Sending message:', message);
+	if (gameSocket.readyState === WebSocket.OPEN) {
+		gameSocket.send(message);
+	} else {
+		console.warn("WebSocket is not open. Current state:", gameSocket.readyState);
 	}
+}
 
-	function startGameRemote() {
-		reset_game();
-		init = 1;
+// Function to send game updates (e.g., player movement)
+export function sendGameUpdate(gameState) {
+	const message = JSON.stringify({
+		type: 'game_update',
+		gameState: gameState, // Object containing paddle positions, ball position, etc.
+	});
+
+	console.log('Sending game update:', message);
+	gameSocket.send(message);
+}
+
+// Handling messages from the WebSocket server
+gameSocket.onmessage = function (event) {
+	const data = JSON.parse(event.data);
+
+	if (data.type === "gameState") {
+		// Sync game state with received data
+		player1.y = data.player1Y;
+		player2.y = data.player2Y;
+		ball.x = data.ballX;
+		ball.y = data.ballY;
+		ball.speed = data.ballSpeed;
+		ball.gravity = data.ballGravity;
+		score1 = data.score1;
+		score2 = data.score2;
+	}
+	if (data.type === "playerReady") {
+		init = 1; // Start game when both players are ready
 		ani = window.requestAnimationFrame(loop);
 	}
+};
 
-	//Receives game state data from the server and updates the local game state.
-	//Used by clients to synchronize their game with the state being maintained by the server.
-	function updateGameState(state) {
-		ball.x = state.ball.x;
-		ball.y = state.ball.y;
-		player2.y = state.player2.y;
-		player3.y = state.player3.y;
-		player4.y = state.player4.y;
-		score1 = state.score1;
-		score2 = state.score2;
-	}
-	//Sends the current state to server to be broadcast to other players.
-	//It's used by the players that is considered the "source of truth" for certain aspects of the game
-	function sendGameState() {
-		if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {
-			const gameState = {
-				ball: { x: ball.x, y: ball.y },
-				player1: { y: player1.y },
-				score1: score1,
-				score2: score2
-			};
-			gameSocket.send(JSON.stringify({ type: 'gameState', data: gameState }));
-		}
-	}
-	//Player1 sends it's Y position to server as playerMove type
-	function sendPlayerMove(playerNumber, yPosition) {
-		if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {
-			gameSocket.send(JSON.stringify({
-				type: 'playerMove',
-				player: playerNumber,
-				y: yPosition
-			}));
-		}
-	}
+// Handle errors
+gameSocket.onerror = function (error) {
+	console.error('WebSocket error:', error);
+};
 
-	function handleRemotePlayerMove(data) {
-		// Update the position of the remote player
-		switch(data.player) {
-			case 2:
-				player2.y = data.y;
-				break;
-			case 3:
-				player3.y = data.y;
-				break;
-			case 4:
-				player4.y = data.y;
-				break;
-		}
-	}
+// Handle socket closing
+gameSocket.onclose = function () {
+	console.log('WebSocket connection closed.');
+};
 
-///////////////////////////////NUNO TEMP////////////////////////////////////
 /*
-const socket = new WebSocket('wss://localhost:8000/ws/game/');
-
-socket.onopen = function (event) {
-    console.log('WebSocket connection established.');
-    alert('WebSocket connection established.');
-};
-
-// ✅ **Kept sendInvite exactly as you had it**
-export function sendInvite(user_id) {
-    alert('remote Invite sent to user ' + user_id);
-
-    const message = JSON.stringify({
-        recipient_id: user_id, // ✔️ Keeps the original variable name
-        message: 'You have a new invite! To a game of Pong!',
-    });
-
-    console.log('Sending message:', message);
-    socket.send(message);
-}
-
-// ✅ **New function to send real-time game updates**
-export function sendGameUpdate(gameState) {
-    const message = JSON.stringify({
-        type: 'game_update', // ✔️ Added type to distinguish messages
-        gameState: gameState, // ✔️ Sends paddle positions, ball position, etc.
-    });
-
-    console.log('Sending game update:', message);
-    socket.send(message);
-}
-
-// ✅ **Handles incoming WebSocket messages**
-socket.onmessage = function (event) {
-    const data = JSON.parse(event.data);
-
-    if (data.recipient_id) {  // ✔️ Fix: Checks if it's an invite message
-        console.log('Game invitation received:', data);
-        alert(data.message);
-    } else if (data.type === 'game_update') {  // ✔️ Fix: Checks if it's a game update
-        console.log('Game state received:', data.gameState);
-        handleGameUpdate(data.gameState);
-    }
-};
-
-// ✅ **Handles errors**
-socket.onerror = function (error) {
-    console.error('WebSocket error:', error);
-};
-
-// ✅ **Handles WebSocket closing**
-socket.onclose = function (event) {
-    console.log('WebSocket connection closed.');
-};
-
-// ✅ **Processes received game updates**
-function handleGameUpdate(gameState) {
-    console.log('Updating game with received state:', gameState);
-    // ⚠️ Add logic to update the game state (e.g., move paddles, update ball)
-}
-*/
-
 ///////////////////////PEDRO//////////////////////////
 
 export function sendInvite(user_id) {
