@@ -16,6 +16,7 @@ let initialBallGravity = 1;
 let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
 let paddleGravity = 2;
+const gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
 
 export async function initializeGame() {
 
@@ -109,12 +110,14 @@ window.addEventListener("keydown", (e) => {
 		context.fillText("PLAYER 2 - Remote ", canvas.width / 2, 290);
 		context.fillText("P - PAUSE", canvas.width / 2, 320);
 		context.fillText("S - START", canvas.width / 2, 350);
+	}
 
 	if ((gameOver || init === 0) && (keys['s'] || keys['S'])) {
 		window.cancelAnimationFrame(ani);
 		reset_game();
 		context.clearRect(0, 0, canvas.width, canvas.height);
-		gameSocket.send(JSON.stringify({ type: "playerReady" }));
+		ani = window.requestAnimationFrame(loop);
+		init = 1;
 		console.log("start game clicked");
 	}
 
@@ -127,7 +130,6 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("Paused, press P to continue", canvas.width / 2, canvas.height / 2);
 		}
 		keys['p'] = false;
-	}
 	}
 });
 
@@ -148,6 +150,7 @@ function handleMoves() {
 		if (keys['a'] && player1.y + player1.height < canvas.height)
 			newY += player1.gravity * 2; //down
 		player1.y = newY;
+
 		// Send player1 movement to server
 		gameSocket.send(JSON.stringify({
 			type: "playerMove",
@@ -155,15 +158,11 @@ function handleMoves() {
 			y: player1.y
 		}));
 
+		// Player 2 (remote player movement comes from WebSocket)			<<<<<FIX!!!!!!!!!!!!!!!!!!!
 		// Player 2 movement (remote player)
-		newY = player2.y;
-		if (keys['ArrowUp'] && player2.y > 0)
-			newY -= player2.gravity * 2;
-		if (keys['ArrowDown'] && player2.y + player2.height < canvas.height)
-			newY += player2.gravity * 2;
-		player2.y = newY;
 	}
 }
+
 /*Invert X ball movement and determine ball effect (gravity) according to point of contact*/
 function handleEdgeCollisions(player) {
 	ball.speed *= -1;
@@ -174,6 +173,7 @@ function handleEdgeCollisions(player) {
 	else
 		ball.gravity = Math.sign(ball.gravity) * initialBallGravity; // Thouch center
 }
+
 /*Hitting paddle or scoring*/
 function paddleCollision() {
 	if (gameOver == true)
@@ -185,13 +185,6 @@ function paddleCollision() {
 		if (ball.y + ball.height >= player2.y && ball.y <= player2.y + player2.height) //<collision
 			handleEdgeCollisions(player2);
 	}
-	/////////////////////////////////////CORRIGIIIIRRR!!!!///////////////////////////////////////////
-	if (ball.x <= player1.x + player1.width && ball.y + ball.height >= player1.y &&
-			ball.y <= player1.y + player1.height && ball.speed < 0) //<collision
-		handleEdgeCollisions(player1);
-		else if (ball.x + ball.width >= player2.x && ball.y + ball.height >= player2.y &&
-			ball.y <= player2.y + player2.height && ball.speed > 0) //<collision
-		handleEdgeCollisions(player2);
 
 	/*Scoring and random initial move*/
 	let randomSign = Math.random() < 0.5 ? -1 : 1;
@@ -207,6 +200,7 @@ function paddleCollision() {
 		ball.gravity = initialBallGravity * randomSign;
 	}
 }
+
 /*Move ball and bounce on top and bottom walls*/
 function bounceBall() {
 	if (gameOver == true)
@@ -275,35 +269,37 @@ function loop() {
 		draw(player2);
 	}
 	console.log()
-	if (!gameOver && !pause && init === 1 && window.location.href
-			=== `https://${window.location.hostname}:8000/`) {
+	if (!gameOver && !pause && init === 1) {
 		console.log("loop game");
 		handleMoves();
 		bounceBall();
 		paddleCollision();
 		drawAll();
 		sendGameState();
+
 		if (score1 === 10 || score2 === 10) {
 			let x;
-			if (score1 === 10)
-				x = canvas.width / 4;
-			else
-				x = (canvas.width / 2) + (canvas.width / 4);
+		if (score1 === 10)
+			x = canvas.width / 4;
+		else
+			x = (canvas.width / 2) + (canvas.width / 4);
 
-			context.font = '50px \'Courier New\', Courier, monospace';
-			context.textAlign = 'center';
-			context.fillStyle = 'white';
-			context.fillText('WIN', x, canvas.height * 0.375);
-			context.font = '30px \'Courier New\', Courier, monospace';
-			context.fillText('S - START NEW GAME', x, canvas.height * 0.875);
-			gameOver = true;
-			window.cancelAnimationFrame(ani);
+		context.font = '50px \'Courier New\', Courier, monospace';
+		context.textAlign = 'center';
+		context.fillStyle = 'white';
+		context.fillText('WIN', x, canvas.height * 0.375);
+		context.font = '30px \'Courier New\', Courier, monospace';
+		context.fillText('S - START NEW GAME', x, canvas.height * 0.875);
+		gameOver = true;
+		window.cancelAnimationFrame(ani);
 		}
 	}
 
 	if (!gameOver && score1 < 10 && score2 < 10 && init === 1)
 		ani = window.requestAnimationFrame(loop);
 }
+
+///////////////////////////////////////NUNO///////////////////////////////////////
 
 function sendGameState() {
 	gameSocket.send(JSON.stringify({
@@ -319,30 +315,21 @@ function sendGameState() {
 	}));
 }
 
-const gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
-
-
-gameSocket.onopen = function () {
+socket.onopen = function (event) {
 	console.log('WebSocket connection established.');
 	alert('WebSocket connection established.');
 };
 
-// Function to send an invite to another player
 export function sendInvite(user_id) {
-	alert('Remote invite sent to user ' + user_id);
+	alert('remote Invite sent to user ' + user_id);
 
 	const message = JSON.stringify({
-		type: 'invite',
 		recipient_id: user_id,
 		message: 'You have a new invite! To a game of Pong!',
 	});
 
 	console.log('Sending message:', message);
-	if (gameSocket.readyState === WebSocket.OPEN) {
-		gameSocket.send(message);
-	} else {
-		console.warn("WebSocket is not open. Current state:", gameSocket.readyState);
-	}
+	socket.send(message);
 }
 
 // Function to send game updates (e.g., player movement)
@@ -371,9 +358,14 @@ gameSocket.onmessage = function (event) {
 		score1 = data.score1;
 		score2 = data.score2;
 	}
+	// Start the game once both players are ready
 	if (data.type === "playerReady") {
 		init = 1; // Start game when both players are ready
 		ani = window.requestAnimationFrame(loop);
+	}
+	// Handle receiving an invite
+	if (data.type === "gameInvite") {
+		console.log('Received invite:', data.message);
 	}
 };
 
@@ -387,7 +379,7 @@ gameSocket.onclose = function () {
 	console.log('WebSocket connection closed.');
 };
 
-/*
+
 ///////////////////////PEDRO//////////////////////////
 
 export function sendInvite(user_id) {

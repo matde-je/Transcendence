@@ -164,20 +164,19 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("P - PAUSE", canvas.width / 2, 320);
 			context.fillText("S - START", canvas.width / 2, 350);
 		}
-		if ((gameOver == true || init == 0) && (keys['s'] || keys['S']))
-			{
-				if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {			///REMOTE/// PARA INICIAR JOGO
-					gameSocket.send(JSON.stringify({type: 'playerReady'}));
-				} else {
-					window.cancelAnimationFrame(ani);
-					reset_game();
-					context.clearRect(0, 0, canvas.width, canvas.height);
-					if (window.location.href === "https://localhost:8000/" || window.location.href === "https://localhost:8000/tournament")
-						ani = window.requestAnimationFrame(loop);
-					init = 1;
-					console.log("start game clicked");
-				}
+		if ((gameOver == true || init == 0) && (keys['s'] || keys['S'])) {
+			if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {			///REMOTE/// PARA INICIAR JOGO
+				gameSocket.send(JSON.stringify({type: 'playerReady'}));
+			} else {
+				window.cancelAnimationFrame(ani);
+				reset_game();
+				context.clearRect(0, 0, canvas.width, canvas.height);
+				if (window.location.href === "https://localhost:8000/" || window.location.href === "https://localhost:8000/tournament")
+					ani = window.requestAnimationFrame(loop);
+				init = 1;
+				console.log("start game clicked");
 			}
+		}
 
 		if (keys['p'] && gameOver == false && init == 1) {
 			pause = !pause;
