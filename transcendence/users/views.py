@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from .serializers import UserSerializer, FriendshipSerializer, UserResultsSerializer
-from .models import CustomUser, Friendship, gameInvite
+from .models import CustomUser, Friendship, GameInvite
 from pong_history.models import MatchPongHistory
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.db import transaction

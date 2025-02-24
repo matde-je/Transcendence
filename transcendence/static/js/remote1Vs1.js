@@ -315,7 +315,7 @@ function sendGameState() {
 	}));
 }
 
-socket.onopen = function (event) {
+gameSocket.onopen = function (event) {
 	console.log('WebSocket connection established.');
 	alert('WebSocket connection established.');
 };

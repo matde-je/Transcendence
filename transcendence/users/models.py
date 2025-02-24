@@ -50,3 +50,11 @@ class Friendship(models.Model):
             Friendship.objects.filter(from_user=self.from_user, to_user=self.to_user).delete()
             Friendship.objects.filter(from_user=self.to_user, to_user=self.from_user).delete()
 
+#NUNO
+class GameInvite(models.Model):  # Ensure correct capitalization
+    sender = models.ForeignKey("CustomUser", on_delete=models.CASCADE, related_name="sent_invites")
+    receiver = models.ForeignKey("CustomUser", on_delete=models.CASCADE, related_name="received_invites")
+    status = models.CharField(max_length=20, choices=[("pending", "Pending"), ("accepted", "Accepted"), ("declined", "Declined")])
+    created_at = models.DateTimeField(auto_now_add=True)
+#NUNO\
+
