@@ -379,7 +379,7 @@ gameSocket.onclose = function () {
 	console.log('WebSocket connection closed.');
 };
 
-
+/*
 ///////////////////////PEDRO//////////////////////////
 
 export function sendInvite(user_id) {

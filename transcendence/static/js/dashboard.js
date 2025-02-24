@@ -9,6 +9,16 @@ window.acceptFriendRequest = acceptFriendRequest;
 window.removeFriend = removeFriend;
 window.showDashboard = showDashboard;
 
+import { sendInvite } from './friendship.js';
+
+export function update() {
+    // Update the dashboard UI with invite status, user information, etc.
+
+    // Call sendInvite when the player clicks to invite a friend
+    const user_id = 123; // replace with dynamic user_id
+    sendInvite(user_id);  // Send invite to user with ID
+}
+
 /**
  * Creates a list section with a title and items, and appends it to the given content element.
  * @param {HTMLElement} content - The parent element to which the list section will be appended.
@@ -22,7 +32,7 @@ window.showDashboard = showDashboard;
 export async function showDashboard() {
 
 	const username = await checkAuthentication();
-	
+
 //	alert("PFV " + getAuthenticationStatus());
 //	initializeNavbar(getAuthenticationStatus());
 	checkAuthentication();
@@ -98,7 +108,7 @@ export async function showDashboard() {
         });
 	})
     .catch(error => console.error('Error:', error));
-	
+
 }
 
 /**
@@ -138,7 +148,7 @@ export function showEditUserForm(userData) {
                 <button type="submit" class="btn btn-success">Save</button>
                 <button type="button" id="cancel-edit" class="btn btn-secondary">Cancel</button>
             </div>
-        </form> 
+        </form>
     `;
     document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -225,7 +235,7 @@ export async function showUserTournamentResults() {
             content.appendChild(statsDiv);
         } else {
             content.innerHTML += '<p>You have not participated in any tournaments.</p>';
-        } 
+        }
     } catch (error) {
         console.error('Error fetching tournament results:', error);
         alert('Error fetching tournament results.');

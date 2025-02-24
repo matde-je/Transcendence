@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from .serializers import UserSerializer, FriendshipSerializer, UserResultsSerializer
-from .models import CustomUser, Friendship
+from .models import CustomUser, Friendship, gameInvite
 from pong_history.models import MatchPongHistory
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.db import transaction
@@ -40,7 +40,7 @@ class FriendshipViewSet(viewsets.ModelViewSet):
         friendship, created = Friendship.objects.get_or_create(from_user=from_user, to_user=to_user)
         if not created:
             return Response({'detail': 'Friend request already sent.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -50,10 +50,10 @@ class FriendshipViewSet(viewsets.ModelViewSet):
             friendship = self.get_object()
             if friendship.to_user != request.user:
                 return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
-            
+
             if friendship.accepted:
                 return Response({'detail': 'Friend request already accepted.'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             friendship.accepted = True
             friendship.accepted_at = timezone.now()
             friendship.save()
@@ -67,7 +67,7 @@ class FriendshipViewSet(viewsets.ModelViewSet):
         friendship = self.get_object()
         if request.user not in [friendship.from_user, friendship.to_user]:
             return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
-        
+
         friendship.remove_friendship()
         return Response({'detail': 'Friendship removed.'}, status=status.HTTP_204_NO_CONTENT)
 
@@ -176,12 +176,12 @@ Returns:
 def create_tournament(request):
     try:
         result = create_tournament_for_user(request.user.id)
-        
+
         if 'error' in result:
             return Response({'detail': result['error']}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({'detail': 'Tournament created successfully!', 'tournament': result}, status=status.HTTP_201_CREATED)
-    
+
     except Exception as e:
         return Response({'detail': 'An error occurred while creating the tournament.', 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -222,3 +222,13 @@ def send_alert_to_user(user_id, message):
         }
     )
 
+#NUNO
+def send_game_invite(request, recipient_id):
+    # Logic to send invite and store it in the database
+    invite = GameInvite.objects.create(
+        sender=request.user,
+        recipient_id=recipient_id,
+        message="You have a new invite for a game of Pong!"
+    )
+    return JsonResponse({"status": "invite sent"})
+#NUNO\

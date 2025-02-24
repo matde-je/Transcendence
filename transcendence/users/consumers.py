@@ -4,12 +4,57 @@ from asgiref.sync import sync_to_async
 import logging
 logger = logging.getLogger(__name__)
 from django.db.models import Q
-from django.apps import apps 
+from django.apps import apps
+
+#NUNO
+class GameConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.room_group_name = "game_group"
+        # Establish WebSocket connection
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        # Disconnect the WebSocket when the game ends or user leaves
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+
+    # Handle receiving messages from WebSocket
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        message_type = text_data_json.get("type")
+
+        if message_type == "sendInvite":
+            recipient_id = text_data_json.get("recipient_id")
+            message = text_data_json.get("message")
+            # Store the invite logic (this could be saving to the database)
+            # Simulating sending the invite here
+            await self.send_invite(recipient_id, message)
+
+        elif message_type == "playerReady":
+            # Handle game start when both players are ready
+            await self.start_game()
+
+    # Send invite logic (simulating sending an invite)
+    async def send_invite(self, recipient_id, message):
+        # Simulating the invite being sent to the recipient
+        # You can store the invite in the database here for tracking
+        await self.send(text_data=json.dumps({
+            "type": "gameInvite",
+            "message": message,
+            "recipient_id": recipient_id,
+        }))
+
+    async def start_game(self):
+        # Notify both players that the game is starting
+        await self.send(text_data=json.dumps({
+            "type": "playerReady",
+        }))
+#NUNO\
 
 class OnlineUsersConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         from django.contrib.auth.models import User
-        user = self.scope["user"] #Django's authentication system 
+        user = self.scope["user"] #Django's authentication system
         if user.is_authenticated:
             await self.set_online(user)
             await self.channel_layer.group_add("online_friends", self.channel_name)
@@ -69,7 +114,7 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
         user.is_online = True #custom field
         logger.info(f"User {user.username} is now online")
         user.save()
-    
+
     @sync_to_async
     def set_offline(self, user):
         user.is_online = False #custom field
@@ -81,7 +126,7 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
         Friendship = apps.get_model('users', 'Friendship')
         friendships = Friendship.objects.filter(
             Q(from_user=user, accepted=True) | Q(to_user=user, accepted=True)
-            )  
+            )
         friends = []
         for friendship in friendships:
             if friendship.from_user == user:

@@ -1,6 +1,32 @@
 import { getCookie } from './utils.js';
 //import { sendInvite } from './remote.js';
 
+//NUNO
+// Function to send an invite to the server when a user wants to invite another player
+export function sendInvite(user_id) {
+    const gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
+
+    gameSocket.onopen = function () {
+        const message = JSON.stringify({
+            type: 'sendInvite',
+            recipient_id: user_id,
+            message: 'You have a new invite for a game of Pong!',
+        });
+
+        console.log('Sending invite:', message);
+        gameSocket.send(message);
+    };
+
+    gameSocket.onerror = function (error) {
+        console.error('WebSocket error:', error);
+    };
+
+    gameSocket.onclose = function () {
+        console.log('WebSocket connection closed.');
+    };
+}
+//NUNO\
+
 /**
  * Creates a list section with a title and items, and appends it to the given content element.
  *
