@@ -188,7 +188,7 @@ window.addEventListener("keydown", (e) => {
 			if (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)
 				ani = window.requestAnimationFrame(loop);
 			init = 1;
-			console.log("start game clicked");
+			// console.log("start game clicked");
 		}
 
 		if (gameOver === true && (keys['n'] || keys['N']) && window.isTournament === true)

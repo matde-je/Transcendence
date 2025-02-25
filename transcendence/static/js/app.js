@@ -9,12 +9,6 @@ import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 
 async function handleRouteChange() {
-    var collapseElementList = [].slice.call(document.querySelectorAll('.navbar-collapse'))
-    var collapseList = collapseElementList.map(function (collapseEl) {
-        return new bootstrap.Collapse(collapseEl, {
-            toggle: false
-        })
-    })
     const path = window.location.pathname;
     const username = await checkAuthentication();
     if (path === '/login') {

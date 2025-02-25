@@ -7,7 +7,7 @@
     <button id="testButton">Test CORS</button>
     <script>
     document.getElementById('testButton').addEventListener('click', function() {
-        fetch('https://localhost:8000/users/login/', { // Replace with your endpoint
+        fetch('https://localhost:8000/users/login/', { 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -27,4 +27,3 @@
     </script>
 </body>
 </html>
-            {% comment %} body: JSON.stringify({ test: 'data' }), {% endcomment %}
