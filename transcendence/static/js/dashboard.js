@@ -22,7 +22,7 @@ window.showDashboard = showDashboard;
 export async function showDashboard() {
 
 	const username = await checkAuthentication();
-	
+
 //	alert("PFV " + getAuthenticationStatus());
 //	initializeNavbar(getAuthenticationStatus());
 	checkAuthentication();
@@ -98,7 +98,7 @@ export async function showDashboard() {
         });
 	})
     .catch(error => console.error('Error:', error));
-	
+
 }
 
 /**
@@ -138,7 +138,7 @@ export function showEditUserForm(userData) {
                 <button type="submit" class="btn btn-success">Save</button>
                 <button type="button" id="cancel-edit" class="btn btn-secondary">Cancel</button>
             </div>
-        </form> 
+        </form>
     `;
     document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -225,7 +225,7 @@ export async function showUserTournamentResults() {
             content.appendChild(statsDiv);
         } else {
             content.innerHTML += '<p>You have not participated in any tournaments.</p>';
-        } 
+        }
     } catch (error) {
         console.error('Error fetching tournament results:', error);
         alert('Error fetching tournament results.');

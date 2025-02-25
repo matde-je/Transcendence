@@ -20,10 +20,6 @@ let multiplayer = 0;
 const aiRefreshView = 1000;
 
 export async function initializeGame() {			///<<REMOTE>>///
-	if (isRemotePlay) {					///???? where to change isRemotePlay if there is an remote opponent
-		sendInvite();
-		window.ai = 0;
-	}
 	pause = false;
 	canvas = document.getElementById("game");
 	context = canvas.getContext("2d");
@@ -428,114 +424,6 @@ function loop() {
 		ani = window.requestAnimationFrame(loop);
 }
 
-/////////////////////////////////REMOTE FUNCTIONS//////////////////////////////////////
-
-	///Game State Synchronization, send and receive game state updates:
-
-	function handleGameMsg(message) {
-		switch (message.type) {
-			case 'gameStart':
-					startGameRemote(message.data);
-				break;
-			case 'gameState':
-				updateGameState(message.data);
-				break;
-			case 'playerMove':
-				handleRemotePlayerMove(message.data);
-				break;
-		}
-	}
-
-	function startGameRemote() {
-		reset_game();
-		init = 1;
-		ani = window.requestAnimationFrame(loop);
-	}
-
-	/*Receives game state data from the server and updates the local game state.
-	Used by clients to synchronize their game with the state being maintained by the server.*/
-	function updateGameState(state) {
-		ball.x = state.ball.x;
-		ball.y = state.ball.y;
-		player2.y = state.player2.y;
-		player3.y = state.player3.y;
-		player4.y = state.player4.y;
-		score1 = state.score1;
-		score2 = state.score2;
-	}
-	/*Sends the current state to server to be broadcast to other players.
-	It's used by the players that is considered the "source of truth" for certain aspects of the game*/
-	function sendGameState() {
-		if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {
-			const gameState = {
-				ball: { x: ball.x, y: ball.y },
-				player1: { y: player1.y },
-				score1: score1,
-				score2: score2
-			};
-			gameSocket.send(JSON.stringify({ type: 'gameState', data: gameState }));
-		}
-	}
-	/*Player1 sends it's Y position to server as playerMove type*/
-	function sendPlayerMove(playerNumber, yPosition) {
-		if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {
-			gameSocket.send(JSON.stringify({
-				type: 'playerMove',
-				player: playerNumber,
-				y: yPosition
-			}));
-		}
-	}
-
-	function handleRemotePlayerMove(data) {
-		// Update the position of the remote player
-		switch(data.player) {
-			case 2:
-				player2.y = data.y;
-				break;
-			case 3:
-				player3.y = data.y;
-				break;
-			case 4:
-				player4.y = data.y;
-				break;
-		}
-	}
-
-	function isRemotePlayer(playerNumber) {
-		// Implement logic to determine if a player is remote
-		// This could be based on a game configuration or connection status
-	}
-
-///////////////////////////////NUNO TEMP////////////////////////////////////
-
-let gameSocket;
-
-//WebSocket Connection for game communication:
-function connectToGameSocket() {
-	gameSocket = new WebSocket('wss://localhost:8000/ws/game/');
-
-	//sets up an onopen handler for when the WebSocket
-	// connection is successfully established.
-	gameSocket.onopen = function(event) {
-		console.log('Game WebSocket connection established.');
-	};
-	//sets a message handler when message received from server
-	// and an parses message to JSON object to handleGameMessage
-	gameSocket.onmessage = function(event) {
-		const data = JSON.parse(event.data);
-		handleGameMsg(data);
-	};
-	//Handler for closing
-	gameSocket.onclose = function(event) {
-		console.log('Game WebSocket connection closed.');
-	};
-	//handler for error
-	gameSocket.onerror = function(error) {
-		console.error('Game WebSocket error:', error);
-	};
-}
-
 ///////////////////////PEDRO//////////////////////////
 
 export async function sendInvite(recipient_id) {
@@ -609,7 +497,7 @@ async function getPendingInviteId(loggedInUserId) {
             }
         });
         const data = await response.json();
-        const invite = data.invites.find(invite => 
+        const invite = data.invites.find(invite =>
             invite.invite_status === 'pending' && (invite.sender_id === loggedInUserId || invite.recipient_id === loggedInUserId)
         );
 
@@ -703,7 +591,7 @@ function removeButtons(buttonContainer) {
 	if (acceptButton){
 		acceptButton.remove();
 	}
-	
+
 	const cancelButton = buttonContainer.querySelector('#cancelButton');
 	if (cancelButton){
 		cancelButton.remove();

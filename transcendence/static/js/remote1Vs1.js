@@ -16,6 +16,7 @@ let initialBallGravity = 1;
 let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
 let paddleGravity = 2;
+let remoteReady = 0;
 const gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
 
 export async function initializeGame() {
@@ -102,7 +103,8 @@ window.addEventListener("keydown", (e) => {
 	if (window.location.pathname === '/rock-paper-scissors/multiplayer')
 		return;
 	if ((keys['r'] || keys['R']) && init === 0) {
-		gameSocket.send(JSON.stringify({ type: "playerReady" }));
+		remoteReady = 1;
+		gameSocket.send(JSON.stringify({ message: "playerReady" }));		//<<REMOTE, REVIEW
 		context.font = "20px 'Courier New', Courier, monospace";
 		context.textAlign = "center";
 		context.fillStyle = "white";
@@ -134,7 +136,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 window.addEventListener("keyup", (e) => {
-	keys[e.key] = false;//mark the key as released
+	keys[e.key] = false; //mark the key as released
 });
 
 /////////////////////////////////MOVES ENGINE//////////////////////////////////////
@@ -153,7 +155,7 @@ function handleMoves() {
 
 		// Send player1 movement to server
 		gameSocket.send(JSON.stringify({
-			type: "playerMove",
+			message: "playerMove",
 			player: 1,
 			y: player1.y
 		}));
@@ -301,71 +303,82 @@ function loop() {
 
 ///////////////////////////////////////NUNO///////////////////////////////////////
 
+function startCountdown() {
+	startCountdown();
+	reset_game();
+	init = 1;
+	ani = window.requestAnimationFrame(loop);
+}
+
+/*Sends the current state to server to be broadcast to other players.
+It's used by the players that is considered the "source of truth" for certain aspects of the game*/
 function sendGameState() {
-	gameSocket.send(JSON.stringify({
-		type: "gameState",
-		player1Y: player1.y,
-		player2Y: player2.y,
-		ballX: ball.x,
-		ballY: ball.y,
-		ballSpeed: ball.speed,
-		ballGravity: ball.gravity,
-		score1: score1,
-		score2: score2
-	}));
+	if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {
+		const gameState = {
+			ball: { x: ball.x, y: ball.y },
+			player1: { y: player1.y },
+			score1: score1,
+			score2: score2
+		};
+		gameSocket.send(JSON.stringify({ type: 'gameState', data: gameState }));
+	}
+}
+
+/*Player1 sends it's Y position to server as playerMove type*/
+function sendPlayerMove(playerNumber, yPosition) {
+	if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {
+		gameSocket.send(JSON.stringify({
+			type: 'playerMove',
+			player: playerNumber,
+			y: yPosition
+		}));
+	}
+}
+
+/*Receives game state data from the server and updates the local game state.
+Used by clients to synchronize their game with the state being maintained by the server.*/
+function updateGameState(data) {
+	// Sync game state with received data
+	player1.y = data.player1Y;
+	player2.y = data.player2Y;
+	ball.x = data.ballX;
+	ball.y = data.ballY;
+	ball.speed = data.ballSpeed;
+	ball.gravity = data.ballGravity;
+	score1 = data.score1;
+	score2 = data.score2;
 }
 
 socket.onopen = function (event) {
 	console.log('WebSocket connection established.');
 	alert('WebSocket connection established.');
 };
-
-export function sendInvite(user_id) {
-	alert('remote Invite sent to user ' + user_id);
-
-	const message = JSON.stringify({
-		recipient_id: user_id,
-		message: 'You have a new invite! To a game of Pong!',
-	});
-
-	console.log('Sending message:', message);
-	socket.send(message);
-}
-
-// Function to send game updates (e.g., player movement)
-export function sendGameUpdate(gameState) {
-	const message = JSON.stringify({
-		type: 'game_update',
-		gameState: gameState, // Object containing paddle positions, ball position, etc.
-	});
-
-	console.log('Sending game update:', message);
-	gameSocket.send(message);
-}
-
 // Handling messages from the WebSocket server
-gameSocket.onmessage = function (event) {
-	const data = JSON.parse(event.data);
+gameSocket.onmessage = function (message) {
+	switch (message.type) {
+		case 'playerReady':
+			// Start the game once both players are ready
+			if (data.message === "playerReady" && remoteReady) {
+				const message = JSON.stringify({
+					message: 'countdown',
+					gameState: gameState,
+				});
+			gameSocket.send(message);
+			startCountdown();
+			}
+		break;
 
-	if (data.type === "gameState") {
-		// Sync game state with received data
-		player1.y = data.player1Y;
-		player2.y = data.player2Y;
-		ball.x = data.ballX;
-		ball.y = data.ballY;
-		ball.speed = data.ballSpeed;
-		ball.gravity = data.ballGravity;
-		score1 = data.score1;
-		score2 = data.score2;
-	}
-	// Start the game once both players are ready
-	if (data.type === "playerReady") {
-		init = 1; // Start game when both players are ready
-		ani = window.requestAnimationFrame(loop);
-	}
-	// Handle receiving an invite
-	if (data.type === "gameInvite") {
-		console.log('Received invite:', data.message);
+		case 'gameStart':
+			startGameRemote(message.data);
+		break;
+
+		case 'gameState':
+			updateGameState(message.data);
+		break;
+
+		case 'playerMove':
+			handleRemotePlayerMove(message.data);
+		break;
 	}
 };
 
@@ -380,39 +393,198 @@ gameSocket.onclose = function () {
 };
 
 
+
+
 ///////////////////////PEDRO//////////////////////////
 
-export function sendInvite(user_id) {
-    alert('remote Invite sent to user ' + user_id);
+export async function sendInvite(recipient_id) {
+	alert('remote Invite sent to user ' + recipient_id);
 
-	//const gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
-    const socket = new WebSocket('wss://localhost:8000/ws/alerts/');
+	const loggedInUser = await getUserData();
 
-    socket.onopen = function(event) {
-        console.log('WebSocket connection established.');
-        alert('WebSocket connection established.');
+	const response = await fetch('/users/create_invite/', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': getCookie('csrftoken'),
+		},
+		credentials: 'include',
+		body: JSON.stringify({ recipient_id: recipient_id }),
+	});
 
-        // Enviar mensagem ao servidor WebSocket
-        const message = JSON.stringify({
-            recipient_id: user_id,
-            message: 'You have a new invite! To a game of Pong!',
-        });
-        console.log('Sending message:', message);
-        socket.send(message);
-    };
+	let inviteData
+	if (response.ok) {
+		inviteData = await response.json();
+		console.log('Invite created successfully:', inviteData);
+	} else {
+		const errorData = await response.json();
+		console.error('Failed to create invite, status:', response.status, 'error:', errorData);
 
-    socket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-		//handleGameMsg(data);
-        console.log('Message received from server:', data);
-        alert(data.message);
-    };
+	}
+	const message = JSON.stringify({
+		sender_id: inviteData.sender_id,
+		recipient_id: inviteData.recipient_id,
+		message: 'You have a new invite! To a game of Pong! From user ' + inviteData.sender_id + '!',
+		invite_status: 'pending',
+	});
 
-    socket.onclose = function(event) {
-        console.log('WebSocket connection closed.');
-    };
-
-    socket.onerror = function(error) {
-        console.error('WebSocket error:', error);
-    };
+	console.log('message:', message);
+	updateInviteButtons();
+	window.remoteSocket.send(message);
 }
+
+async function getPendingInvitesForLoggedInUser(loggedInUserId) {
+	return fetch('/users/user/' + loggedInUserId + '/invites/', {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': getCookie('csrftoken')
+		}
+	})
+	.then(response => response.json())
+	.then(data => {
+		const inviteRoles = data.invites.map(invite => {
+			if (invite.sender_id === loggedInUserId) {
+				return 'sender';
+			} else if (invite.recipient_id === loggedInUserId) {
+				return 'recipient';
+			}
+		});
+		return inviteRoles;
+	})
+	.catch(error => {
+		console.error('Error fetching invites:', error);
+	});
+}
+
+
+async function getPendingInviteId(loggedInUserId) {
+	try {
+		const response = await fetch(`/users/user/${loggedInUserId}/invites/`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			}
+		});
+		const data = await response.json();
+		const invite = data.invites.find(invite =>
+			invite.invite_status === 'pending' && (invite.sender_id === loggedInUserId || invite.recipient_id === loggedInUserId)
+		);
+
+		if (invite) {
+			return invite.invite_id;
+		} else {
+			console.log('No pending invites found for the logged in user.');
+			return null;
+		}
+	} catch (error) {
+		console.error('Error fetching invites:', error);
+		return null;
+	}
+}
+
+
+export async function updateInviteButtons() {
+	const allFriendItems = document.querySelectorAll('[data-friend-id]');
+	allFriendItems.forEach(async friendItem => {
+		const friendId = friendItem.getAttribute('data-friend-id');
+		const isOnline = window.onlineFriends.some(f => f.id == friendId);
+		const buttonContainer = friendItem.querySelector('.ms-auto');
+		const loggedInUser = await getUserData();
+		const loggedInUserId = loggedInUser.id;
+		const invite_type = await getPendingInvitesForLoggedInUser(loggedInUserId);
+		const inviteId = await getPendingInviteId(loggedInUserId);
+
+		console.log('isOnline:', isOnline);
+		console.log('invite_type:', invite_type);
+		console.log('inviteId:', inviteId);
+
+		if (isOnline && invite_type.includes('sender')) {
+			removeButtons(buttonContainer);
+			let cancelButton = buttonContainer.querySelector('#cancelButton');
+			if (!cancelButton) {
+				cancelButton = document.createElement('button');
+				cancelButton.textContent = 'Cancel Invite';
+				cancelButton.className = 'btn btn-sm btn-info';
+				cancelButton.id = 'cancelButton';
+				cancelButton.onclick = function() {
+					cancelInvite(inviteId);
+				};
+				buttonContainer.insertBefore(cancelButton, buttonContainer.firstChild);
+			}
+		} else if (isOnline && invite_type.includes('recipient')) {
+			removeButtons(buttonContainer);
+			const rejectButton = document.createElement('button');
+			rejectButton.textContent = 'Reject';
+			rejectButton.className = 'btn btn-sm btn-danger';
+			rejectButton.id = 'rejectButton';
+			rejectButton.onclick = function() {
+				declineInvite(inviteId);
+			};
+			buttonContainer.insertBefore(rejectButton, buttonContainer.firstChild);
+
+			const acceptButton = document.createElement('button');
+			acceptButton.textContent = 'Accept';
+			acceptButton.className = 'btn btn-sm btn-success';
+			acceptButton.id = 'acceptButton';
+			acceptButton.onclick = function() {
+				acceptInvite(inviteId);
+			};
+			buttonContainer.insertBefore(acceptButton, buttonContainer.firstChild);
+		}else  if (isOnline) {
+			removeButtons(buttonContainer);
+			let inviteButton = buttonContainer.querySelector('#inviteButton');
+			if (!inviteButton) {
+				inviteButton = document.createElement('button');
+				inviteButton.textContent = 'Invite to Remote Play';
+				inviteButton.className = 'btn btn-sm btn-primary';
+				inviteButton.id = 'inviteButton';
+				inviteButton.addEventListener('click', () => {
+					sendInvite(friendId);
+				});
+				buttonContainer.insertBefore(inviteButton, buttonContainer.firstChild);
+			}
+		}
+	});
+}
+
+function removeButtons(buttonContainer) {
+	const inviteButton = buttonContainer.querySelector('#inviteButton');
+	if (inviteButton) {
+		inviteButton.remove();
+	}
+	const rejectButton = buttonContainer.querySelector('#rejectButton');
+	if (rejectButton){
+		rejectButton.remove();
+	}
+	const acceptButton = buttonContainer.querySelector('#acceptButton');
+	if (acceptButton){
+		acceptButton.remove();
+	}
+
+	const cancelButton = buttonContainer.querySelector('#cancelButton');
+	if (cancelButton){
+		cancelButton.remove();
+	}
+}
+
+
+function cancelInvite(inviteId) {
+	alert('remote Invite canceled');
+	console.log('Invite canceled:', inviteId);
+}
+
+function declineInvite(inviteId) {
+	alert('remote Invite declined');
+	console.log('Invite declined:', inviteId);
+
+}
+
+function acceptInvite(inviteId) {
+	alert('remote Invite accepted');
+	console.log('Invite accepted:', inviteId);
+
+}
+
+
