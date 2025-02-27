@@ -14,7 +14,7 @@ export function showRegister() {
 	// Dynamically insert the registration form into the element with the ID 'content'
     document.getElementById('content').innerHTML = `
         <h3 class="text-center mb-4">Registration</h3>
-        <div class="row justify-content-center text-left">
+        <div class="row justify-content-center">
             <div class="col-md-6 col-lg-4">
                 <form id="registerForm" enctype="multipart/form-data">
                     <div class="form-group mb-4">
@@ -41,9 +41,7 @@ export function showRegister() {
                         <label for="avatar" class="form-label">Avatar:</label>
                         <input type="file" id="avatar" name="avatar" class="form-control">
                     </div>
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-secondary">Register</button>
-                    </div>
+                    <button type="submit" class="btn btn-secondary">Register</button>
                 </form>
             </div>
         </div>

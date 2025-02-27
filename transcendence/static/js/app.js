@@ -58,7 +58,7 @@ export async function fetchWithRetry(url, options, maxRetries = 3) {
     }
 }
 
-window.socket = 0;
+window.socket = null;
 
 export function initializeNavbar(authenticated) {
     // Remove existing navbar if present
@@ -120,11 +120,15 @@ export function initializeNavbar(authenticated) {
     document.body.appendChild(navBarContainer);
 
     if (authenticated) {
-        window.socket = new WebSocket(`wss://${window.location.hostname}:8000/ws/online_status/`);
-        window.socket.onopen = function() {};
-        window.socket.onerror = function(error) {
-            console.error('WebSocket error:', error);
-        };
+        if (!window.socket) {
+            window.socket = new WebSocket(`wss://${window.location.hostname}:8000/ws/online_status/`);
+            window.socket.onopen = function() {};
+            window.socket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+            window.socket.onclose = function(e) {};
+
+        }
         window.socket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             // console.log('Parsed data:', data);
@@ -133,7 +137,6 @@ export function initializeNavbar(authenticated) {
                 update_onlinestatus_ui();
             }
         };
-        window.socket.onclose = function(e) {};
         fetchWithRetry('/users/user/', {
             method: 'GET',
             credentials: 'include',
@@ -143,7 +146,7 @@ export function initializeNavbar(authenticated) {
             const tournamentLink = document.createElement('li');
             tournamentLink.className = 'nav-item';
             tournamentLink.innerHTML =
-                '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
+            '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
             navLinksLeft.appendChild(tournamentLink);
             tournamentLink.querySelector('a').addEventListener('click', 
                 (e) => {
@@ -175,9 +178,9 @@ export function initializeNavbar(authenticated) {
                 <a class="nav-link" href="/dashboard" data-link>
                     <img src="${data.avatar}" alt="Avatar" class="rounded-circle"
                     style="width: 30px; height: 30px; object-fit: cover;">
-                </a>
-            `;
-            const existingAvatar = navLinksRight.querySelector('img');
+                    </a>
+                    `;
+                    const existingAvatar = navLinksRight.querySelector('img');
             if (!existingAvatar) {
                 navLinksRight.appendChild(usernameLink);
                 usernameLink.querySelector('a').addEventListener('click', 
@@ -346,6 +349,7 @@ function logout() {
         .then((data) => {
             if (window.socket)
                 window.socket.close();
+            window.socket = null;
             showHome();
             history.pushState({ page: 'home' }, 'Home', '/');
             checkAuthentication();
