@@ -183,10 +183,11 @@ window.addEventListener("keydown", (e) => {
 		if (((gameOver == true && window.isTournament == false) || init == 0) && (keys['s'] || keys['S']))
 		{
 			window.cancelAnimationFrame(ani);
-			reset_game();
-			context.clearRect(0, 0, canvas.width, canvas.height);
-			if (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)
+			if (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true) {
+				reset_game();
+				context.clearRect(0, 0, canvas.width, canvas.height);
 				ani = window.requestAnimationFrame(loop);
+			}
 			init = 1;
 			// console.log("start game clicked");
 		}
@@ -399,7 +400,7 @@ function drawAll(){
 let AiLastUpdateTime = Date.now();
 
 function loop() {
-	if (init === 0) {
+	if (init === 0 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
 		reset_game();
 		if (window.isTournament)
 		{
