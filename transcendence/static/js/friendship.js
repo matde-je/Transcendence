@@ -1,5 +1,5 @@
 import { getCookie } from './utils.js';
-import { updateInviteButtons } from './remote.js';
+import { updateInviteButtons } from './remote1Vs1.js';
 
 /**
  * Creates a list section with a title and items, and appends it to the given content element.

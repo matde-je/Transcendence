@@ -4,12 +4,12 @@ from asgiref.sync import sync_to_async
 import logging
 logger = logging.getLogger(__name__)
 from django.db.models import Q
-from django.apps import apps 
+from django.apps import apps
 
 class OnlineUsersConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         from django.contrib.auth.models import User
-        user = self.scope["user"] #Django's authentication system 
+        user = self.scope["user"] #Django's authentication system
         if user.is_authenticated:
             await self.set_online(user)
             await self.channel_layer.group_add("online_friends", self.channel_name)
@@ -69,7 +69,7 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
         user.is_online = True #custom field
         logger.info(f"User {user.username} is now online")
         user.save()
-    
+
     @sync_to_async
     def set_offline(self, user):
         user.is_online = False #custom field
@@ -81,7 +81,7 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
         Friendship = apps.get_model('users', 'Friendship')
         friendships = Friendship.objects.filter(
             Q(from_user=user, accepted=True) | Q(to_user=user, accepted=True)
-            )  
+            )
         friends = []
         for friendship in friendships:
             if friendship.from_user == user:
@@ -157,3 +157,102 @@ class AlertConsumer(AsyncWebsocketConsumer):
             'sender_id': sender_id,
             'invite_status': invite_status,
         }))
+
+    async def accept_invite(self, event):
+        sender = event['sender']
+        receiver = event['receiver']
+
+        # Send a WebSocket message to both players
+        await self.channel_layer.group_send(
+            f"user_{sender}",
+            {
+                "type": "start_game",
+                "message": "start_remote_1vs1"
+            }
+        )
+
+        await self.channel_layer.group_send(
+            f"user_{receiver}",
+            {
+                "type": "start_game",
+                "message": "start_remote_1vs1"
+            }
+        )
+
+    async def start_game(self, event):
+        message = event["message"]
+
+        await self.send(text_data=json.dumps({
+            "action": "start_game",
+            "message": message
+        }))
+
+class GameConsumer(AsyncWebsocketConsumer):
+    players_ready = {}  # Track players who pressed "S"
+
+    async def connect(self):
+        """Handle WebSocket connection."""
+        self.user = self.scope["user"]
+
+        if not self.user.is_authenticated:
+            await self.close()
+            return
+
+        # Global game group for all players
+        self.room_group_name = "global_game"
+
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
+        print(f"{self.user.username} connected to WebSocket.")
+
+    async def disconnect(self, close_code):
+        """Handle WebSocket disconnection."""
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        if self.user.username in self.players_ready:
+            del self.players_ready[self.user.username]
+        print(f"{self.user.username} disconnected.")
+
+    async def receive(self, text_data):
+        """Handle messages from clients."""
+        data = json.loads(text_data)
+        message_type = data.get("type")
+
+        if message_type == "playerReady":
+            self.players_ready[self.user.username] = True
+            print(f"Player {self.user.username} is ready.")
+
+            # Start game when **exactly** 2 players are ready
+            if len(self.players_ready) == 2:
+                print("Two players are ready! Starting the game...")
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {"type": "start_game"},
+                )
+
+        elif message_type == "playerMove":
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "update_player_position",
+                    "player": data["player"],
+                    "y": data["y"],
+                },
+            )
+
+        elif message_type == "gameState":
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {"type": "update_game_state", "data": data},
+            )
+
+    async def start_game(self, event):
+        """Send game start message to both players."""
+        await self.send(text_data=json.dumps({"action": "start_game", "message": "start_remote_1vs1"}))
+
+    async def update_player_position(self, event):
+        """Send updated player position."""
+        await self.send(text_data=json.dumps({"message": "playerMove", "player": event["player"], "y": event["y"]}))
+
+    async def update_game_state(self, event):
+        """Send updated game state to both players."""
+        await self.send(text_data=json.dumps(event["data"]))

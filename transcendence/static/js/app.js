@@ -6,7 +6,7 @@ import { showSinglePlayer, showMultiplayer, showWaitingList } from './rps.js';
 import { showTournamentMenu } from './tournament.js';
 import { update_onlinestatus_ui } from './friendship.js';
 import { getCookie, getAuthenticationStatus, checkAuthentication } from './utils.js';
-import { updateInviteButtons } from './remote.js';
+import { updateInviteButtons } from './remote1Vs1.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 //	alert("PFV " + getAuthenticationStatus());
@@ -106,7 +106,7 @@ export function initializeNavbar(authenticated) {
 				const data = JSON.parse(e.data);
 				alert(data.message);
 				console.log('recipiente_data:', data);
-				
+
 				console.log('message:', data.message);
 				updateInviteButtons();
 			};

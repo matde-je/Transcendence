@@ -615,4 +615,3 @@ function acceptInvite(inviteId) {
 	console.log('Invite accepted:', inviteId);
 
 }
-
