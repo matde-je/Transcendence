@@ -1,7 +1,7 @@
 # Starts and build all containers defined in docker-compose.yml
 run:
 	@clear
-	docker compose --file docker-compose.yml up --build
+	docker-compose --file docker-compose.yml up --build
 
 # Stop all containers defined in docker-compose.yml
 stop:
@@ -16,27 +16,11 @@ down:
 # Stop and remove all containers, network, images and volumes defined in docker-compose.yml
 clean:
 	@clear
-	docker compose --file docker-compose.yml down --rmi all --volumes --remove-orphans
+	docker-compose --file docker-compose.yml down --rmi all --volumes --remove-orphans
 
 # Remove all containers, images and volumes not used
 fclean: clean
 	docker system prune --all --volumes --force
-
-# Create a virtual environment
-venv:
-#	virtualenv .venv
-	@clear
-	python3 -m venv .venv
-
-# Activate the virtual environment (needs to run this command in a terminal)
-activate:
-	@clear
-	@echo "To activate the virtual environment, run:"
-	@echo "source .venv/bin/activate"
-
-# Install dependencies inside the virtual environment
-install:
-	.venv/bin/activate && pip install -r ./srcs/requirements.txt
 
 # Create a superuser in Django
 create_superuser:
@@ -46,7 +30,7 @@ create_superuser:
 # Create usersT
 create_users:
 	@clear
-	docker compose --file docker-compose.yml run backend python manage.py create_users
+	docker-compose --file docker-compose.yml run backend python manage.py create_users
 
 # Enroll all users in all open tournaments
 enroll-users:
@@ -106,7 +90,7 @@ logs:
 generate-certs:
 	@clear
 	@echo "Generating SSL certificates..."
-	@openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/C=PT/ST=Lisboa/L=Lisboa/O=42/OU=42/CN=matde-je.42.fr"
+	@openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/C=PT/ST=Lisboa/L=Lisboa/O=42/OU=42/CN=localhost"
 	@echo "Certificates generated and saved..."
 
 # Copy the certificates to the app directory

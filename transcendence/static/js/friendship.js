@@ -1,3 +1,4 @@
+import { fetchWithRetry } from './app.js';
 import { getCookie } from './utils.js';
 import { updateInviteButtons } from './remote1Vs1.js';
 
@@ -51,8 +52,8 @@ export function sendFriendRequest(user_id) {
 	// Handle the response from the server
     .then(response => {
         if (response.ok) {
-            alert('Friend request sent.');
-            showDashboard();
+            console.log('Friendship request sent.');
+            showFriends();
         } else {
             response.json().then(data => {
                 alert('Error sending request: ' + data.detail);
@@ -94,8 +95,9 @@ export function acceptFriendRequest(requestId) {
         }
     })
     .then(data => {
-        alert(data.detail || 'Friend request accepted.');
-        showDashboard();
+        console.log(data.detail || 'Friend request accepted.');
+		showFriends();
+//        showDashboard();
     })
     .catch(error => {
         console.error('Error accepting request:', error);
@@ -119,7 +121,7 @@ export function removeFriend(user_id) {
     })
     .then(response => {
         if (response.ok) {
-            alert('Friendship removed.');
+           console.log('Friendship removed.');
            showFriends();
         } else {
             response.json().then(data => {
@@ -132,6 +134,7 @@ export function removeFriend(user_id) {
         alert('Error removing friendship.');
     });
 }
+
 
 window.friendItems = [];
 
@@ -155,29 +158,29 @@ export async function showFriends() {
     const content = document.getElementById('content');
     content.innerHTML = '';
     // Fetch current user data
-    const userResponse = await fetch('/users/user/', {
+    const currentUser = await fetchWithRetry('/users/user/', {
         method: 'GET',
         credentials: 'include',
     });
-    const currentUser = await userResponse.json();
+    // const currentUser = await userResponse.json();
     // Uses Promise.all to fetch users, sent friend requests, and friends simultaneously
     Promise.all([
-        fetch('/users/users/', {
+        fetchWithRetry('/users/users/', {
             method: 'GET',
             credentials: 'include',
-        }).then(response => response.json()),
-        fetch('/users/friend_requests/sent/', {
+        }),
+        fetchWithRetry('/users/friend_requests/sent/', {
             method: 'GET',
             credentials: 'include',
-        }).then(response => response.json()),
-        fetch('/users/friend_requests/received/', {
+        }),
+        fetchWithRetry('/users/friend_requests/received/', {
             method: 'GET',
             credentials: 'include',
-        }).then(response => response.json()),
-        fetch('/users/friends/', {
+        }),
+        fetchWithRetry('/users/friends/', {
             method: 'GET',
             credentials: 'include',
-        }).then(response => response.json())
+        })
     ])
     .then(([users, sentRequests, receivedRequests, friends]) => {
         window.friendItems = friends.map(friend => {

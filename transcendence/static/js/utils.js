@@ -1,6 +1,6 @@
 // static/js/utils.js
 
-import { initializeNavbar } from './app.js';
+import { initializeNavbar, fetchWithRetry } from './app.js';
 
 let isAuthenticated = false;
 
@@ -38,16 +38,15 @@ export function getCookie(name) {
 // Function to check authentication and update navbar
 export async function checkAuthentication() {
     try {
-        const response = await fetch('/users/check-auth/', {
+        const data = await fetchWithRetry('/users/check-auth/', {
             method: 'GET',
             credentials: 'include',
         });
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
+        // if (!data.ok) {
+        //     throw new Error(`HTTP error! status: ${data.status}`);
+        // }
+        // const data = await response.json();
 		localStorage.setItem('username', data.username);
         isAuthenticated = data.is_authenticated || false;
 

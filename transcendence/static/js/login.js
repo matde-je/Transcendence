@@ -1,10 +1,7 @@
 // static/js/login.js
 
 import { showDashboard } from './dashboard.js';
-
 import { getCookie, checkAuthentication } from './utils.js';
-// import { initializeNavbar } from './app.js';
-
 
 /**
  * Displays the login form and handles the login process.
@@ -20,7 +17,7 @@ export function showLogin() {
 	// Dynamically insert the login form into the element with the ID 'content'
     document.getElementById('content').innerHTML = `
         <h3 class="text-center pt-5 mb-4">Log in</h3>
-        <div class="row justify-content-center text-left">
+        <div class="row justify-content-center">
             <div class="col-md-6 col-lg-4">
                 <form id="login-form">
                     <div class="form-group mb-4">
@@ -57,30 +54,9 @@ export function showLogin() {
         });
 		// Handle the response from the server
         if (response.ok) {
-            // window.socket = new WebSocket('wss://localhost:8000/ws/online_status/');
-            // window.socket.onopen = function() {
-            //     console.log("WebSocket connection established.");
-            // };
-            // window.socket.onerror = function(error) {
-            //     console.error("WebSocket error:", error);
-            // };
-            // window.socket.onmessage = function(e) {
-            //     const data = JSON.parse(e.data);
-            //     console.log("Parsed data:", data);
-            //     if (data.online_friends) {
-            //         window.onlineFriends = data.online_friends;
-            //         update_onlinestatus_ui();
-            //     }
-            // };
-            // window.socket.onclose = function(e) {
-            //     console.log("WebSocket connection closed.");
-            // };
             const data = await response.json();
             showDashboard();
             history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard');
-
-//			alert("PFV " + getAuthenticationStatus());
-//			initializeNavbar(getAuthenticationStatus());
             checkAuthentication();
         } else {
             const data = await response.json();

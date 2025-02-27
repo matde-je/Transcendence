@@ -19,14 +19,13 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
                     "type": "send_online_friends",
                 }
             )
-            # await self.notify_friends(user)
         else:
             await self.close()
 
     async def disconnect(self, close_code): #standard parameter provided by Django Channels
         user = self.scope["user"]
         if user.is_authenticated:
-            logger.info(f"Disconnecting user: {user.username}")
+            # logger.info(f"Disconnecting user: {user.username}")
             await self.set_offline(user)
             await self.channel_layer.group_discard("online_friends", self.channel_name)
             await self.channel_layer.group_send(
@@ -34,46 +33,27 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
                     "type": "send_online_friends",
                 }
             )
-            # await self.notify_friends(user)
 
     async def send_online_friends(self, event):
         user = self.scope["user"]
         if not user.is_authenticated:
             return
         online_friends = await self.get_online_friends(user)
-        logger.info(f"Sending online friends list: {online_friends}")
+        # logger.info(f"Sending online friends list: {online_friends}")
         await self.send(text_data=json.dumps({
-            # "online_friends": event["online_friends"]
             "online_friends": online_friends
         }))
-
-    async def receive(self, text_data):
-        """Handle messages from the WebSocket."""
-        user = self.scope["user"]
-        # if not user.is_authenticated:
-        #     return
-        data = json.loads(text_data)
-        # If the user sends a logout event
-        if data.get("type") == "logout":
-            logger.info(f"User {user.username} is logging out via WebSocket")
-            await self.set_offline(user)  # Set user as offline
-            await self.channel_layer.group_discard("online_friends", self.channel_name)
-            await self.channel_layer.group_send(
-                "online_friends", {
-                    "type": "send_online_friends",
-                }
-            )
 
     @sync_to_async #run synchronous functions inside asynchronous code (web socket)
     def set_online(self, user):
         user.is_online = True #custom field
-        logger.info(f"User {user.username} is now online")
+        # logger.info(f"User {user.username} is now online")
         user.save()
 
     @sync_to_async
     def set_offline(self, user):
         user.is_online = False #custom field
-        logger.info(f"User {user.username} is now offline")
+        # logger.info(f"User {user.username} is now offline")
         user.save()
 
     @sync_to_async
@@ -81,7 +61,7 @@ class OnlineUsersConsumer(AsyncWebsocketConsumer):
         Friendship = apps.get_model('users', 'Friendship')
         friendships = Friendship.objects.filter(
             Q(from_user=user, accepted=True) | Q(to_user=user, accepted=True)
-            )
+        )  
         friends = []
         for friendship in friendships:
             if friendship.from_user == user:

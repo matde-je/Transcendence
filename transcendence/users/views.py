@@ -76,7 +76,7 @@ class FriendshipViewSet(viewsets.ModelViewSet):
 def register_user(request):
     form = CustomUserCreationForm(request.POST, request.FILES)
     if form.is_valid():
-        user = form.save()
+        user = form.save()  #hashing
         login(request, user)
         return JsonResponse({'message': 'User registered successfully!'})
     else:
@@ -87,7 +87,7 @@ def register_user(request):
 def login_user(request):
     username = request.data.get('username')
     password = request.data.get('password')
-    user = authenticate(request, username=username, password=password)
+    user = authenticate(request, username=username, password=password) #prevents sql injection and is hashing
     if user is not None:
         login(request, user)
         return JsonResponse({'message': 'Login successful!', 'redirect_url': '/dashboard'})

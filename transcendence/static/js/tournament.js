@@ -1,7 +1,9 @@
 // static/js/tournament.js
 
-import { getCookie, isPowerOfTwo, nextPowerOfTwo, getRoundName, getUsernameById } from './utils.js';
-//import { initializeGame } from './game.js';
+import { getCookie, checkAuthentication, isPowerOfTwo, nextPowerOfTwo, getRoundName, getUsernameById } from './utils.js';
+import { initializeGame } from './game.js';
+// Declare global window.currentRound
+window.currentRound = 0;
 
 /**
  * Shows Tournament Menu
@@ -9,15 +11,13 @@ import { getCookie, isPowerOfTwo, nextPowerOfTwo, getRoundName, getUsernameById 
 export function showTournamentMenu() {
     const content = document.getElementById('content');
     content.innerHTML = `
-        <div class="container-fluid d-flex flex-column pt-5 mb-5 mt-5 ">
-            <h2 class="text-center mb-3 mt-5 pt-5">Tournament menu</h2>
+    <h2 class="text-center mb-5 mt-5 pt-5">Tournament Menu</h2>
             <div class="d-flex justify-content-center mb-5 gap-4 p-3">
                 <button type="button" id="createTournamentBtn" class="btn btn-success me-3">Create Tournament</button>
-                <button type="button" id="listOpenTournamentsBtn" class="btn btn-primary">List Open Tournaments</button>
+                <button type="button" id="listOpenTournamentsBtn" class="btn btn-primary me-3">List Open Tournaments</button>
                 <button type="button" id="showResultsBtn" class="btn btn-secondary">Tournament Results</button>
             </div>
             <div id="tournamentContent"></div>
-        </div>
     `;
 
     document.getElementById('createTournamentBtn').addEventListener('click', (e) => {
@@ -139,7 +139,9 @@ export async function listOpenTournaments() {
  * Add user to the tournament.
  */
 export async function addUserToTournament(tournamentId) {
-    const csrftoken = getCookie('csrftoken');
+
+	const csrftoken = getCookie('csrftoken');
+
     try {
         const response = await fetch(`/tournament/${tournamentId}/join/`, {
             method: 'POST',
@@ -151,7 +153,7 @@ export async function addUserToTournament(tournamentId) {
             body: JSON.stringify({ is_accepted: true })
         });
         if (response.ok) {
-            alert('Successfully added to the tournament!');
+            console.log('Successfully added to the tournament!');
             listOpenTournaments();
         } else {
             const data = await response.json();
@@ -177,7 +179,7 @@ export async function removeUserFromTournament(tournamentId) {
             credentials: 'include',
         });
         if (response.ok) {
-            alert('Successfully removed from the tournament!');
+            console.log('Successfully removed from the tournament!');
             listOpenTournaments();
         } else {
             const data = await response.json();
@@ -200,11 +202,11 @@ export async function showTournamentResults() {
         });
         const data = await response.json();
         const tournamentContent = document.getElementById('tournamentContent');
-        tournamentContent.innerHTML = '<h3 class="text-center mb-3">Tournament Results</h3>';
+        tournamentContent.innerHTML = '<h4 class="text-center mb-3">Tournament Results</h4>';
         if (data.length > 0) {
-            const list = document.createElement('ul');
+            const list = document.createElement('div');
             data.forEach(tournament => {
-                const listItem = document.createElement('li');
+                const listItem = document.createElement('div');
                 listItem.textContent = `${tournament.name} - Winner ${tournament.winner_username}`;
                 list.appendChild(listItem);
             });
@@ -223,23 +225,21 @@ export async function showTournamentResults() {
  */
 export function showCreateTournamentForm() {
     const formContent = `
-        <div class="container" >
-        <h1 class="text-center mb-5 mt-5 pt-5">Create Tournament</h1>
-        <div class="row justify-content-center mb-4">
+        <h2 class="mb-5 mt-5 pt-5">Create Tournament</h2>
+        <div class="row justify-content-center">
             <div class="col-md-6 col-lg-4">
                 <form id="createTournamentForm">
-                    <div class="form-group mb-3">
-                        <label for="tournamentName" class="form-label">Tournament Name:</label>
-                        <input type="text" id="tournamentName" name="tournamentName" class="form-control" placeholder="Enter tournament name" required>
+                    <div class="form-group mb-3 mt-3">
+                        <label for="tournamentName" class="form-label fs-5">Name:</label>
+                        <input type="text" id="tournamentName" name="tournamentName" class="form-control text-center" placeholder="Enter tournament name" required>
                     </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-secondary">Create Tournament</button>
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-secondary">Create</button>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
-    `;
+        `;
     document.getElementById('content').innerHTML = formContent;
 
     // Add form submission event
@@ -260,7 +260,7 @@ export function showCreateTournamentForm() {
         });
 
         if (response.ok) {
-            alert('Tournament created successfully!');
+            console.log('Tournament created successfully!');
             showTournamentMenu();
         } else {
             const data = await response.json();
@@ -270,20 +270,22 @@ export function showCreateTournamentForm() {
 }
 
 async function deleteTournament(tournamentId) {
+
     const csrftoken = getCookie('csrftoken');
+
     if (!confirm('Are you sure you want to delete this tournament?')) {
         return;
     }
     try {
-        const response = await fetch(`/tournament/${tournamentId}/`, {
-            method: 'DELETE',
+        const response = await fetch(`/tournament/${tournamentId}/delete/`, {
+            method: 'POST',
             headers: {
                 'X-CSRFToken': csrftoken
             },
             credentials: 'include',
         });
         if (response.ok) {
-            alert('Tournament deleted successfully!');
+            console.log('Tournament and related users deleted successfully.');
             listOpenTournaments();
         } else {
             const data = await response.json();
@@ -296,8 +298,10 @@ async function deleteTournament(tournamentId) {
 }
 
 async function startTournament(tournamentId) {
+
 	const csrftoken = getCookie('csrftoken');
-    try {
+
+	try {
         // Get participants
         const participantsResponse = await fetch(`/tournament/${tournamentId}/participants/`, {
             method: 'GET',
@@ -330,14 +334,18 @@ async function startTournament(tournamentId) {
             credentials: 'include',
         });
         if (response.ok) {
+			window.isTournament = true;
+			checkAuthentication();
             startMatchmaking(tournamentId);
         } else {
-            const data = await response.json();
-            alert('Error starting tournament: ' + JSON.stringify(data));
-        }
+			const data = await response.json();
+			alert(data.detail || 'Error starting tournament.');
+			listOpenTournaments();
+		}
     } catch (error) {
         console.error('Error starting tournament:', error);
         alert('Error starting tournament.');
+		listOpenTournaments();
     }
 }
 
@@ -375,7 +383,7 @@ export async function startMatchmaking(tournamentId)
 
         // Assign pairs of players
         const matches = [];
-        let currentRound = numberOfRounds;
+        window.currentRound = numberOfRounds;
         for (let i = 0; i < participants.length; i += 2) {
             const player1 = participants[i].user_id;
             const player2 = participants[i + 1].user_id;
@@ -386,7 +394,7 @@ export async function startMatchmaking(tournamentId)
                 player2: player2,
 				player1_username: player1_username,
 				player2_username: player2_username,
-                round: currentRound,
+                round: window.currentRound,
                 tournament: tournamentId,
                 started_at: new Date().toISOString(),
                 completed: false,
@@ -429,13 +437,14 @@ export async function startMatchmaking(tournamentId)
 				</ul>
 			</p>
             <div class="mb-5 mt-3 pt-2">
-			<button type="button" id="start-matches" class="btn btn-primary">Start Matches</button>
+			<button type="button" id="start-matches" class="btn btn-secondary">Start Matches</button>
 		</div>
         </div>`;
 
 		document.getElementById('start-matches').addEventListener('click', async (e) => {
 			e.preventDefault();
-			await executeMatches(matches, tournamentId, currentRound);
+			window.isTournament = true;
+			await executeMatches(matches, tournamentId, window.currentRound);
 		});
 
     } catch (error) {
@@ -449,10 +458,10 @@ export async function startMatchmaking(tournamentId)
  *
  * @param {Array} matches - An array of match objects to be played.
  * @param {number} tournamentId - The ID of the tournament.
- * @param {number} currentRound - The current round number of the tournament.
+ * @param {number} round - The current round number of the tournament.
  * @returns {Promise<void>} A promise that resolves when all matches have been executed.
  */
-async function executeMatches(matches, tournamentId, currentRound) {
+async function executeMatches(matches, tournamentId, round) {
 	let winnerId;
     for (const match of matches) {
 
@@ -469,6 +478,7 @@ async function executeMatches(matches, tournamentId, currentRound) {
         });
 
         if (!matchResponse.ok) {
+			console.log('Error when fetching match data.');
             alert('Error when fetching match data.');
             continue;
         }
@@ -482,20 +492,19 @@ async function executeMatches(matches, tournamentId, currentRound) {
         }
 
 		// Start the Pong match
-        winnerId = await startPongMatch(match.player1, match.player2);
+        winnerId = await startPongMatch(match.player1, match.player2, round);
 
 		// Update the match result in the backend
         await updateMatch(tournamentId, match.id, winnerId);
 
         // Shows the winner of the match
         const winnerUsername = winnerId === match.player1 ? match.player1_username : match.player2_username;
-		console.log('PFV - Vencedor da Partida:', winnerUsername);
+		console.log('Match Winner: ', winnerUsername);
     }
 
-    alert(`Round ${getRoundName(currentRound)} finished.`);
+	console.log(`Round ${getRoundName(round)} finished.`);
 
-	if(currentRound === 1) {
-		alert('The tournament has ended.');
+	if(round === 1) {
 
 		const csrftoken = getCookie('csrftoken');
 
@@ -518,10 +527,14 @@ async function executeMatches(matches, tournamentId, currentRound) {
 			return response.json();
 		})
 		.then(data => {
+			window.isTournament = false;
+			checkAuthentication();
 			console.log('Tournament updated successfully:', data);
 			content.innerHTML = `
-				<h3 class="text-center mb-3 mt-5 pt-5">Welcome to Pong Tournament</h3>
-				<p class="text-center">The tournament has concluded. Thank you for playing!</p>
+				<h3 class="mb-5 mt-5 pt-5">Pong Tournament</h3>
+				<div class="fs-8 fw-bold mb-3">Congratulations!</div>
+				<div class="fs-6 mb-3">Player <span class="fw-bold">${window.username1}</span> has won the Tournament!</div>
+				<div class="fs-6">Thank you for playing!</p>
 			`;
 			})
 		.catch(error => {
@@ -530,13 +543,13 @@ async function executeMatches(matches, tournamentId, currentRound) {
 	}
 	else
 	{
-		const nextRound = currentRound - 1;
-		alert(`Next Round: ${getRoundName(nextRound)}`);
-		selectWinnersAndMatchmake(tournamentId, nextRound);
+		const nextRound = round - 1;
+//		alert(`Next Round: ${getRoundName(nextRound)}`);
+		selectWinnersAndMatchMake(tournamentId, nextRound);
 	}
 }
 
-export async function startPongMatch(idPlayer1, idPlayer2) {
+export async function startPongMatch(idPlayer1, idPlayer2, round) {
     let contentElement = document.getElementById('content');
     if (!contentElement) {
         contentElement = document.createElement('div');
@@ -546,7 +559,6 @@ export async function startPongMatch(idPlayer1, idPlayer2) {
         contentElement.innerHTML = '';
     }
 
-	window.isTournament = true;
 	// Set the usernames in the global object
 	window.username1 = await getUsernameById(idPlayer1);
 	window.username2 = await getUsernameById(idPlayer2);
@@ -554,6 +566,9 @@ export async function startPongMatch(idPlayer1, idPlayer2) {
 	// Set the player IDs in the global object
 	window.player1Id = idPlayer1;
     window.player2Id = idPlayer2;
+
+	// Set the current round in the global object
+	window.currentRound = round;
 
 	// Remove previous scripts, if they exist
     document.getElementById('gameScript')?.remove();
@@ -580,7 +595,6 @@ export async function startPongMatch(idPlayer1, idPlayer2) {
         window.onGameOver = (winnerId) => {
             // Clean up the global callback
             delete window.onGameOver;
-			console.log('PFV - a chamar resolve winnerID:', winnerId);
             resolve(winnerId);
         };
 
@@ -605,9 +619,9 @@ export async function startPongMatch(idPlayer1, idPlayer2) {
  * @throws {Error} Throws an error if the update request fails.
  */
 async function updateMatch(tournamentId, matchId, winnerId) {
-    console.log('PFV - updateMatch(tournamentId):', tournamentId);
-    console.log('PFV - updateMatch(matchId):', matchId);
-    console.log('PFV - updateMatch(winnerId):', winnerId);
+    console.log('updateMatch with tournamentId: ', tournamentId);
+    console.log('updateMatch with matchId: ', matchId);
+    console.log('updateMatch with winnerId: ', winnerId);
 
     const csrftoken = getCookie('csrftoken');
 
@@ -664,7 +678,7 @@ async function updateMatch(tournamentId, matchId, winnerId) {
  * @param {number} tournamentId - ID do torneio.
  * @param {number} roundNumber - Número do round.
  */
-export async function selectWinnersAndMatchmake(tournamentId, roundNumber) {
+export async function selectWinnersAndMatchMake(tournamentId, roundNumber) {
 	let lastRound = roundNumber + 1;
 
     const csrftoken = getCookie('csrftoken');
@@ -682,23 +696,21 @@ export async function selectWinnersAndMatchmake(tournamentId, roundNumber) {
 
         if (response.ok) {
             const data = await response.json();
-            alert('Matchmaking carried out successfully!');
-
             const matches = data.matches;
-            roundNumber = data.round;
 
-			console.log('PFV - Matches:', matches);
+            roundNumber = data.round;
+			
+            console.log('Matchmaking carried out successfully!');
+			console.log('Matches:', matches);
 
             // Shows the round and the names of the participants
             content.innerHTML = `
-                <h2>Tournament Match Making</h2>
+                <h2 class="mb-5 mt-5 pt-5">Tournament Match Making</h2>
                 <p>Round: ${getRoundName(roundNumber)}</p>
-                <p>
-                    <ul>
-                        ${matches.map((match, index) => `<li>Match: ${index + 1}<br>${match.player1_username} vs ${match.player2_username}</li><br>`).join('')}
-                    </ul>
-                </p>
-                <button type="button" id="start-round" class="btn btn-primary">Start Round</button>
+                <div class="mb-3 mt-3">
+                    ${matches.map((match, index) => `Match: ${index + 1}<br class="mt-4 mb-4"><b >${match.player1_username}</b> vs <b>${match.player2_username}</b><br>`).join('')}
+                </div>
+                <button type="button" id="start-round" class="btn btn-secondary">Start Round</button>
             `;
 
             document.getElementById('start-round').addEventListener('click', async (e) => {

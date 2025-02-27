@@ -14,7 +14,7 @@ let init = 0;
 let initialBallGravity = 1;
 let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
-let paddleGravity = 2;
+let paddleGravity = 3;
 let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
@@ -144,14 +144,14 @@ window.addEventListener("keydown", (e) => {
 	if (window.location.pathname === '/rock-paper-scissors/multiplayer'){
 		return;
 	}else{
-		if (keys['1'] && init === 0) {
+		if (keys['1'] && init === 0 && window.isTournament === false) {
 			ai = 1;
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
 			context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
-			context.fillText("P - PAUSE", canvas.width / 2, 320);
-			context.fillText("S - START", canvas.width / 2, 350);
+			context.fillText("P - PAUSE", canvas.width / 2, 410);
+			context.fillText("S - START", canvas.width / 2, 440);
 			username2 = "        AI";
 		}
 		if (keys['2'] && init === 0) {
@@ -160,22 +160,23 @@ window.addEventListener("keydown", (e) => {
 			context.fillStyle = "white";
 			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, 260);
 			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 290);
-			context.fillText("P - PAUSE", canvas.width / 2, 320);
-			context.fillText("S - START", canvas.width / 2, 350);
+			context.fillText("P - PAUSE", canvas.width / 2, 410);
+			context.fillText("S - START", canvas.width / 2, 440);
 			if (!window.isTournament)
 				username2 = "     HUMAN";
 		}
-		if (keys['4'] && init === 0) {
+
+		if (keys['4'] && init === 0 && window.isTournament === false) {
 			multiplayer = 1;
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("PLAYER 1 - ARROW KEYS", canvas.width / 2, 200);
-			context.fillText("PLAYER 2 - Q AND A", canvas.width / 2, 230);
-			context.fillText("PLAYER 3 - F AND V", canvas.width / 2, 260);
-			context.fillText("PLAYER 4 - J AND M", canvas.width / 2, 290);
-			context.fillText("P - PAUSE", canvas.width / 2, 320);
-			context.fillText("S - START", canvas.width / 2, 350);
+			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, 200);
+			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 230);
+			context.fillText("PLAYER 3 - F AND V   ", canvas.width / 2, 260);
+			context.fillText("PLAYER 4 - J AND M   ", canvas.width / 2, 290);
+			context.fillText("P - PAUSE", canvas.width / 2, 410);
+			context.fillText("S - START", canvas.width / 2, 440);
 			username2 = "HUMAN PAIR";
 		}
 
@@ -197,13 +198,13 @@ window.addEventListener("keydown", (e) => {
 			window.onGameOver(winnerId);
 		}
 
-		if (keys['p'] && gameOver == false && init == 1) {
+		if (keys['p'] || keys['P'] && gameOver == false && init == 1) {
 			pause = !pause;
 			if (pause == true) {
 				context.font = "20px 'Courier New', Courier, monospace";
 				context.textAlign = "center";
 				context.fillStyle = "white";
-				context.fillText("Paused, press P to continue", canvas.width / 2, canvas.height / 2);
+				context.fillText("Paused, press P to continue", canvas.width / 4, canvas.height * 0.9);
 			}
 			keys['p'] = false;
 		}
@@ -224,9 +225,9 @@ function handleMoves() {
 
 		// Player 1 movement
 		newY = player1.y;
-		if (keys['q'] && player1.y > 0)
+		if (keys['q'] || keys['Q'] && player1.y > 0)
 			newY -= player1.gravity * 2; //up
-		if (keys['a'] && player1.y + player1.height < canvas.height)
+		if (keys['a'] || keys['A'] && player1.y + player1.height < canvas.height)
 			newY += player1.gravity * 2; //down
 		if (!multiplayer || preventPaddleOverlap({...player1, y: newY}, player3))
 			player1.y = newY;
@@ -244,18 +245,18 @@ function handleMoves() {
 		{
 			// Player 3 movement
 			newY = player3.y;
-			if (keys['f'] && player3.y - player1.height > 0)
+			if (keys['f'] || keys['F'] && player3.y - player1.height > 0)
 				newY -= player3.gravity * 2; // move up
-			if (keys['v'] && player3.y + player3.height < canvas.height)
+			if (keys['v'] || keys['V'] && player3.y + player3.height < canvas.height)
 				newY += player3.gravity * 2; // move down, but don't cross Player 2
 			if (preventPaddleOverlap(player1, {...player3, y: newY}))
 				player3.y = newY;
 
 			// Player 4 movement
 			newY = player4.y;
-			if (keys['j'] && player4.y > 0)
+			if (keys['j'] || keys['J'] && player4.y > 0)
 				newY -= player4.gravity * 2; // move up, but don't go out
-			if (keys['m'] && player4.y + player4.height < canvas.height)
+			if (keys['m'] || keys['M'] && player4.y + player4.height < canvas.height)
 				newY += player4.gravity * 2; // move down
 			if (preventPaddleOverlap(player2, {...player4, y: newY}))
 				player4.y = newY;
@@ -398,7 +399,7 @@ function drawAll(){
 let AiLastUpdateTime = Date.now();
 
 function loop() {
-	if (init === 0) {
+	if (init === 0 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
 		reset_game();
 		if (window.isTournament)
 		{
@@ -419,12 +420,11 @@ function loop() {
 			context.fillStyle = 'white';
 			context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2,  canvas.height * 0.125);
 		}
-		draw(ball);
 		draw(player1);
 		draw(player2);
     }
 	console.log()
-    if (!gameOver && !pause && init === 1) {
+    if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
 		console.log("loop game");
 		handleMoves();
         bounceBall();
@@ -446,7 +446,13 @@ function loop() {
 					context.textAlign = 'center';
 					context.fillStyle = 'white';
 					context.fillText('WIN', x, canvas.height * 0.375);
-					context.font = '30px \'Courier New\', Courier, monospace';
+					context.font = '20px \'Courier New\', Courier, monospace';
+					if (window.currentRound === 1)
+					{
+						context.fillText('TOURNAMENT FINISHED', x, canvas.height * 0.750);
+						context.fillText('PRESS N TO CONTINUE', x, canvas.height * 0.850);
+					}
+					else
 					context.fillText('N - PLAY NEXT GAME', x, canvas.height * 0.875);
 				}
 				else

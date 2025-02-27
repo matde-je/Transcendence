@@ -2,7 +2,7 @@
 
 import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { playMultiplayerGame } from './rps-multiplayer.js';
-import { showRPS } from './app.js';
+import { showRPS} from './app.js';
 import { getCookie, checkAuthentication } from './utils.js';
 
 
@@ -119,12 +119,16 @@ export function showMultiplayer() {
 export async function showWaitingList() {
     try {
         const csrftoken = getCookie('csrftoken');
+        console.log('CSRF Token:', csrftoken);
+        // console.log('CSRF Token:', document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1]);
         const response = await fetch('/rps/get_waiting_list/', {
             method: 'POST',
-            credentials: 'include',
             headers: {
+                'Content-Type': 'application/json',
                 'X-CSRFToken': csrftoken
-            }
+            },
+            credentials: 'include',
+            body: JSON.stringify({})  
         });
 
         if (!response.ok) {
@@ -135,7 +139,7 @@ export async function showWaitingList() {
         const waitinglist = data.users;
         const content = document.getElementById('content');
          content.innerHTML = `
-            <h2>Waiting List</h2>
+            <h2 class="mb-4 mt-5">Waiting List</h2>
             <div id="waitingListContainer"></div>
         `;
 
@@ -144,8 +148,8 @@ export async function showWaitingList() {
         if(waiting_list_count > 1)
             {
                 content.innerHTML += `
-                    <div class="d-flex justify-content-between mt-5">
-                        <button class="btn btn-primary" id="matchMakingBtn">MatchMaking</button>
+                    <div class="text-center mb-4">
+                        <button class="btn btn-success" id="matchMakingBtn">MatchMaking</button>
                     </div>
                 `;
             }
@@ -155,14 +159,14 @@ export async function showWaitingList() {
             waitinglist.forEach(element => {
                 const div = document.createElement('div');
                 div.innerHTML = `
-                <div class="container mb-5 mt-5 pt-5 col-md-4 text-start">
-                    <h5 class="text-start">${element.username}</h5>
+                <div class="container mb-5 mt-5">
+                    <h5 class="text-center">${element.username}</h5>
                 </div>
             `;
                 waitingListContainer.appendChild(div);
             });
         } else {
-            waitingListContainer.innerHTML = '<p>No users in the waiting list.</p>';
+            waitingListContainer.innerHTML = '<p class="mb-4">No users in the waiting list.</p>';
         }
 
         const isUserInWaitingList = data.is_in_waiting_list;
@@ -170,16 +174,12 @@ export async function showWaitingList() {
 
         if (isUserInWaitingList) {
             content.innerHTML += `
-                <div class="d-flex justify-content-between mt-5">
-                    <button class="btn btn-danger" id="removeToWaitingListBtn">Remove from Waiting List</button>
-                </div>
+                <button class="btn btn-danger" id="removeToWaitingListBtn">Remove from Waiting List</button>
             `;
         } else {
             content.innerHTML += `
-                <div class="d-flex justify-content-between mt-5">
-                    <button class="btn btn-primary" id="addToWaitingListBtn">Add to Waiting List</button>
-                </div>
-            `;
+                <button class="btn btn-secondary" id="addToWaitingListBtn">Add to Waiting List</button>
+                `;
         }
 
         if (!isUserInWaitingList) {
