@@ -18,6 +18,7 @@ let paddleGravity = 3;
 let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
+window.lastLeftHitTime = 0;
 const aiRefreshView = 1000;
 
 window.isTournament = false;
@@ -332,6 +333,7 @@ function bounceBall() {
 		window.previousBallDirection = 1;
 		ballTurnedRight = true;
 		window.lastLeftHitTime = Date.now();
+		console.log("game.js: lastLeftHitTime", window.lastLeftHitTime);
 
 	} else if (ball.speed < 0 && window.previousBallDirection == 1) {
 		window.previousBallDirection = -1;

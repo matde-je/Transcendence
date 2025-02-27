@@ -2,6 +2,9 @@
 
 'use strict';
 
+window.lastPredictionUpdateTime = 0;
+window.lastPredictionY = 0;
+
 function addPredictionError(predictedY, player2, canvas) {
 	const paddleCenter = player2.y + player2.height / 2;
 	const maxOffset = player2.height / 2; // Max deviation within paddle height
@@ -45,12 +48,18 @@ function predictBallYPos(ball, canvas, player2) {
 function aiLogic(ball, canvas) {
 
 	const currentTime = Date.now();
-	//console.log("Time since last hit:", currentTime - window.lastLeftHitTime);
-
+	console.log("aioppon.js: lastLeftHitTime", window.lastLeftHitTime);
 
 	if (ball.speed > 0) {
-		if (window.ballTurnedRight && (currentTime - window.lastLeftHitTime <= window.aiRefreshView))
+		if (window.ballTurnedRight && (window.lastLeftHitTime - currentTime <= window.aiRefreshView))
 			return;
+
+		// Check if at least 1 second has passed since last prediction
+		if (!window.lastPredictionUpdateTime || (window.lastPredictionUpdateTime - currentTime > 1000))
+				window.lastPredictionY = addPredictionError(predictBallYPos(ball, canvas, player2), player2, canvas);
+			window.lastPredictionUpdateTime = currentTime;
+		console.log("aioppon.js: lastPredictionUpdateTime:", window.lastPredictionUpdateTime);
+		console.log("aioppon.js: lastPredictionY:", window.lastPredictionY);
 
 		const targetY = addPredictionError(predictBallYPos(ball, canvas, player2), player2, canvas);
 		//console.log("targetY", targetY);
