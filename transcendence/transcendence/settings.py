@@ -36,10 +36,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent browser content sniffing
 
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Include subdomains in HSTS
 
-SESSION_COOKIE_SECURE = True  # Enforce secure cookies
-CSRF_COOKIE_SECURE = True  # Enforce secure CSRF cookies
-
-SECURE_SSL_REDIRECT = False
+SECURE_SSL_REDIRECT = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -90,7 +87,6 @@ LOGGING = {
     },
 }
 
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -102,13 +98,34 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+SESSION_COOKIE_SECURE = True 
+CSRF_COOKIE_SECURE = True
 
 CORS_ALLOWED_ORIGINS = [
+    # "http://localhost:8000", 
     'https://localhost:8000', 
-    'wss://localhost:8000', 
+    # 'wss://localhost:8000', 
+    # 'wss://127.0.0.1:8000', 
+    "https://127.0.0.1:8000"
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://localhost:8000",
+    "https://127.0.0.1:8000"
+]
+# CSRF_COOKIE_DOMAIN = 'localhost'
+# CSRF_COOKIE_DOMAIN = None
+# CSRF_USE_SESSIONS = True
+# CSRF_COOKIE_HTTPONLY = True
 
 ROOT_URLCONF = 'transcendence.urls'
 
@@ -228,16 +245,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.CustomUser'
-
-CORS_ALLOWED_ORIGINS = [
-    "https://localhost:8000",
-]
-
-CORS_ALLOW_CREDENTIALS = True
-
-CSRF_TRUSTED_ORIGINS = [
-     "https://localhost:8000",
-]
 
 LOGGING = {
     'version': 1,

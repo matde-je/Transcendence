@@ -185,10 +185,10 @@ window.addEventListener("keydown", (e) => {
 			window.cancelAnimationFrame(ani);
 			reset_game();
 			context.clearRect(0, 0, canvas.width, canvas.height);
-			if (window.location.href === "https://localhost:8000/" || window.isTournament == true)
+			if (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)
 				ani = window.requestAnimationFrame(loop);
 			init = 1;
-			console.log("start game clicked");
+			// console.log("start game clicked");
 		}
 
 		if (gameOver === true && (keys['n'] || keys['N']) && window.isTournament === true)
@@ -198,13 +198,13 @@ window.addEventListener("keydown", (e) => {
 			window.onGameOver(winnerId);
 		}
 
-		if (keys['p'] && gameOver == false && init == 1) {
+		if (keys['p'] || keys['P'] && gameOver == false && init == 1) {
 			pause = !pause;
 			if (pause == true) {
 				context.font = "20px 'Courier New', Courier, monospace";
 				context.textAlign = "center";
 				context.fillStyle = "white";
-				context.fillText("Paused, press P to continue", canvas.width / 2, canvas.height / 2);
+				context.fillText("Paused, press P to continue", canvas.width / 4, canvas.height * 0.9);
 			}
 			keys['p'] = false;
 		}
@@ -225,9 +225,9 @@ function handleMoves() {
 
 		// Player 1 movement
 		newY = player1.y;
-		if (keys['q'] && player1.y > 0)
+		if (keys['q'] || keys['Q'] && player1.y > 0)
 			newY -= player1.gravity * 2; //up
-		if (keys['a'] && player1.y + player1.height < canvas.height)
+		if (keys['a'] || keys['A'] && player1.y + player1.height < canvas.height)
 			newY += player1.gravity * 2; //down
 		if (!multiplayer || preventPaddleOverlap({...player1, y: newY}, player3))
 			player1.y = newY;
@@ -245,18 +245,18 @@ function handleMoves() {
 		{
 			// Player 3 movement
 			newY = player3.y;
-			if (keys['f'] && player3.y - player1.height > 0)
+			if (keys['f'] || keys['F'] && player3.y - player1.height > 0)
 				newY -= player3.gravity * 2; // move up
-			if (keys['v'] && player3.y + player3.height < canvas.height)
+			if (keys['v'] || keys['V'] && player3.y + player3.height < canvas.height)
 				newY += player3.gravity * 2; // move down, but don't cross Player 2
 			if (preventPaddleOverlap(player1, {...player3, y: newY}))
 				player3.y = newY;
 
 			// Player 4 movement
 			newY = player4.y;
-			if (keys['j'] && player4.y > 0)
+			if (keys['j'] || keys['J'] && player4.y > 0)
 				newY -= player4.gravity * 2; // move up, but don't go out
-			if (keys['m'] && player4.y + player4.height < canvas.height)
+			if (keys['m'] || keys['M'] && player4.y + player4.height < canvas.height)
 				newY += player4.gravity * 2; // move down
 			if (preventPaddleOverlap(player2, {...player4, y: newY}))
 				player4.y = newY;
@@ -424,7 +424,7 @@ function loop() {
 		draw(player2);
 	}
 	console.log()
-	if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
+    if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
 		console.log("loop game");
 		handleMoves();
 		bounceBall();
