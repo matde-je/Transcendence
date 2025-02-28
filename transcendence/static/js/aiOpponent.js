@@ -2,10 +2,10 @@
 
 'use strict';
 
-let lastPredictionUpdateTime = 0;
-let lastPredictionY = 0;
+let lastPredicUpdateTime = 0;
+let lastPredicY = 0;
 
-function addPredictionError(predictedY, player2, canvas) {
+function addPredicError(predictedY, player2, canvas) {
 	const paddleCenter = player2.y + player2.height / 2;
 	const maxOffset = player2.height / 2; // Max deviation within paddle height
 
@@ -13,7 +13,7 @@ function addPredictionError(predictedY, player2, canvas) {
 	const randomFactor = Math.random(); // Value between 0 and 1
 
 	if (randomFactor < 0.01) {
-		// 1% chance: completely wrong prediction (outside the paddle)
+		// 1% chance: completely wrong predic (outside the paddle)
 		return Math.random() * canvas.height;
 	} else if (randomFactor < 0.2) {
 		// 19% chance: high deviation (closer to edges)
@@ -24,7 +24,7 @@ function addPredictionError(predictedY, player2, canvas) {
 	}
 }
 
-function predictBallYPos(ball, canvas, player2) {
+function predBallYPos(ball, canvas, player2) {
 	let predictedY = ball.y;
 	let ballX = ball.x;
 	let tempGravity = ball.gravity;
@@ -45,24 +45,25 @@ function predictBallYPos(ball, canvas, player2) {
 	return predictedY;
 }
 
-function aiLogic(ball, canvas, aiRefreshView) {
+function aiLogic(ball, canvas, aiRefreshView, inicialTime) {
 
 	const currentTime = Date.now();
-	console.log("aioppon.js: lastLeftHitTime", window.lastLeftHitTime);
-	console.log("aioppon.js: currentTime", currentTime);
-	console.log("aioppon.js: LLHT - curr", window.lastLeftHitTime - currentTime);
+		//console.log("aioppon.js: lastLeftHitTime", window.lastLeftHitTime);
+		//console.log("aioppon.js: currentTime", currentTime);
+		//console.log("aioppon.js: LLHT - curr", currentTime - window.lastLeftHitTime);
+
 	if (ball.speed > 0) {
-		if (window.ballTurnedRight && (window.lastLeftHitTime - currentTime <= aiRefreshView))
+		if (window.ballTurnedRight && (currentTime - window.lastLeftHitTime <= aiRefreshView))
 			return;
-		// Check if at least 1 second has passed since last prediction
-		if (!window.lastPredictionUpdateTime || (window.lastPredictionUpdateTime - currentTime > aiRefreshView)) {
-				window.lastPredictionY = addPredictionError(predictBallYPos(ball, canvas, player2), player2, canvas);
-				window.lastPredictionUpdateTime = currentTime;
-				console.log("aioppon.js: lastPredictionUpdateTime:", window.lastPredictionUpdateTime);
-				console.log("aioppon.js: lastPredictionY:", window.lastPredictionY);
+		// Check if at least 1 second has passed since last predic
+		if (!window.lastPredicUpdateTime || (currentTime - window.lastPredicUpdateTime <= aiRefreshView)) {
+				window.lastPredicY = addPredicError(predBallYPos(ball, canvas, player2), player2, canvas);
+				window.lastPredicUpdateTime = currentTime;
+					console.log("aioppon.js: lastPredicUpdateTime:", window.lastPredicUpdateTime);
+					//console.log("aioppon.js: lastPredicY:", window.lastPredicY);
 		}
 
-		const targetY = addPredictionError(predictBallYPos(ball, canvas, player2), player2, canvas);
+		const targetY = addPredicError(predBallYPos(ball, canvas, player2), player2, canvas);
 		let newY = player2.y;
 
 		// Se distancia do centro da paddle ate a previsao targetY for maior que a
@@ -75,11 +76,11 @@ function aiLogic(ball, canvas, aiRefreshView) {
 		if (Math.abs(aiPaddleCenterPos - targetY) > deadZone) {
 			const direction = targetY < aiPaddleCenterPos ? -1 : 1;
 			newY += direction * player2.gravity;
-			console.log("AI moving Y, newY");
+				//console.log("AI moving Y, newY");
 		}
 		// Move and Ensure paddle stays within canvas bounds if ball moving towards AI
 		if (ball.speed > 0) {
-			console.log("AI moving Y, newY");
+				//console.log("AI moving Y, newY");
 			window.player2.y = Math.max(Math.min(newY, canvas.height - player2.height), 0); }
 
 		// Reset ballTurnedRight after AI has processed it

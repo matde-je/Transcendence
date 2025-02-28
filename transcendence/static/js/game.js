@@ -13,12 +13,13 @@ let pause = false;
 let init = 0;
 let initialBallGravity = 1;
 let maxGravity = initialBallGravity * 2;
-let ballSpeed = 7;
-let paddleGravity = 3;
+let ballSpeed = 5;
+let paddleGravity = 4;
 let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
 let previousBallDirection = 0;
+
 let lastLeftHitTime = 0;
 const aiRefreshView = 1000;
 window.lastLeftHitTime = 0;
@@ -218,47 +219,45 @@ window.addEventListener("keyup", (e) => {
 
 //handle player movement based on pressed keys
 function handleMoves() {
-	if (!gameOver && !pause)
-	{
+	if (!gameOver && !pause) {
 		let newY;
 
 		// Player 1 movement
 		newY = player1.y;
-		if (keys['q'] || keys['Q'] && player1.y > 0)
-			newY -= player1.gravity * 2; //up
-		if (keys['a'] || keys['A'] && player1.y + player1.height < canvas.height)
-			newY += player1.gravity * 2; //down
+		if ((keys['q'] || keys['Q']) && player1.y > 0)
+			newY -= player1.gravity; //up
+		if ((keys['a'] || keys['A']) && player1.y + player1.height < canvas.height)
+			newY += player1.gravity; //down
 		if (!multiplayer || preventPaddleOverlap({...player1, y: newY}, player3))
-			player1.y = newY;
+			player1.y = Math.max(0, Math.min(newY, canvas.height - player1.height)); // Ensure within bounds
 
 		// Player 2 movement
 		newY = player2.y;
 		if (keys['ArrowUp'] && player2.y > 0 && !ai)
-			newY -= player2.gravity * 2; //up
+			newY -= player2.gravity; //up
 		if (keys['ArrowDown'] && player2.y + player2.height < canvas.height && !ai)
-			newY += player2.gravity * 2; //down
+			newY += player2.gravity; //down
 		if (!multiplayer || preventPaddleOverlap({...player2, y: newY}, player4) && multiplayer)
-			player2.y = newY;
+			player2.y = Math.max(0, Math.min(newY, canvas.height - player2.height)); // Ensure within bounds
 
-		if (multiplayer)
-		{
+		if (multiplayer) {
 			// Player 3 movement
 			newY = player3.y;
-			if (keys['f'] || keys['F'] && player3.y - player1.height > 0)
-				newY -= player3.gravity * 2; // move up
-			if (keys['v'] || keys['V'] && player3.y + player3.height < canvas.height)
-				newY += player3.gravity * 2; // move down, but don't cross Player 2
+			if ((keys['f'] || keys['F']) && player3.y - player1.height > 0)
+				newY -= player3.gravity; // move up
+			if ((keys['v'] || keys['V']) && player3.y + player3.height < canvas.height)
+				newY += player3.gravity; // move down, but don't cross Player 2
 			if (preventPaddleOverlap(player1, {...player3, y: newY}))
-				player3.y = newY;
+				player3.y = Math.max(0, Math.min(newY, canvas.height - player3.height)); // Ensure within bounds
 
 			// Player 4 movement
 			newY = player4.y;
 			if (keys['j'] || keys['J'] && player4.y > 0)
-				newY -= player4.gravity * 2; // move up, but don't go out
+				newY -= player4.gravity; // move up, but don't go out
 			if (keys['m'] || keys['M'] && player4.y + player4.height < canvas.height)
-				newY += player4.gravity * 2; // move down
+				newY += player4.gravity; // move down
 			if (preventPaddleOverlap(player2, {...player4, y: newY}))
-				player4.y = newY;
+				player4.y = Math.max(0, Math.min(newY, canvas.height - player4.height)); // Ensure within bounds
 		}
 	}
 }
@@ -298,15 +297,8 @@ function paddleCollision() {
 		else if (multiplayer && ball.y + ball.height >= player4.y && ball.y <= player4.y + player4.height)
 			handleEdgeCollisions(player4);
 	}
-	if (ball.x <= player1.x + player1.width && ball.y + ball.height >= player1.y &&
-			ball.y <= player1.y + player1.height && ball.speed < 0) // There is collision!!
-		handleEdgeCollisions(player1);
-		else if (ball.x + ball.width >= player2.x && ball.y + ball.height >= player2.y &&
-			ball.y <= player2.y + player2.height && ball.speed > 0) // There is collision!!
-		handleEdgeCollisions(player2);
 
 	//point scored
-
 	if (ball.x + ball.width < 0) {
 		score2 += 1;
 		ballToCenterAndMove()
