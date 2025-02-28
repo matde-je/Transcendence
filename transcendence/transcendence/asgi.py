@@ -14,7 +14,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'transcendence.settings')
-z
+import users.routing
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),

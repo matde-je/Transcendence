@@ -7,6 +7,7 @@ import { showSinglePlayer, showMultiplayer, showWaitingList } from './rps.js';
 import { update_onlinestatus_ui, showFriends } from './friendship.js';
 import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
+import { updateInviteButtons } from './remote1Vs1.js'
 
 async function handleRouteChange() {
     const path = window.location.pathname;
@@ -137,6 +138,24 @@ export function initializeNavbar(authenticated) {
                 update_onlinestatus_ui();
             }
         };
+		if (!window.remoteSocket) {
+			window.remoteSocket = new WebSocket('wss://localhost:8000/ws/alerts/');
+			window.remoteSocket.onopen = function() {
+				console.log("Remote WebSocket connection established.");
+			};
+			window.remoteSocket.onmessage = async function (e) {
+				const data = JSON.parse(e.data);
+				alert(data.message);
+				console.log('recipiente_data:', data);
+				
+				console.log('message:', data.message);
+				updateInviteButtons();
+			};
+			window.remoteSocket.onclose = function(e) {
+				console.log("Remote WebSocket connection closed.");
+			};
+		};
+
         fetchWithRetry('/users/user/', {
             method: 'GET',
             credentials: 'include',

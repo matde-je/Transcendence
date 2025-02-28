@@ -278,7 +278,7 @@ def check_user_invites(request, user_id):
 def accept_invite(request, invite_id):
     try:
         invite = GameInvite.objects.get(id=invite_id)
-        invite.status = 'accepted'
+        invite.invite_status = 'accepted'
         invite.save()
         return JsonResponse({'detail': 'Invite accepted successfully!'})
     except GameInvite.DoesNotExist:
@@ -289,7 +289,7 @@ def accept_invite(request, invite_id):
 def reject_invite(request, invite_id):
     try:
         invite = GameInvite.objects.get(id=invite_id)
-        invite.status = 'rejected'
+        invite.invite_status = 'rejected'
         invite.save()
         return JsonResponse({'detail': 'Invite rejected successfully!'})
     except GameInvite.DoesNotExist:
@@ -300,8 +300,26 @@ def reject_invite(request, invite_id):
 def cancel_invite(request, invite_id):
     try:
         invite = GameInvite.objects.get(id=invite_id)
-        invite.status = 'cancelled'
+        print(f"Invite found: {invite}")
+        invite.invite_status = 'cancelled'
         invite.save()
+        print(f"Invite {invite_id} status changed to cancelled")
         return JsonResponse({'detail': 'Invite cancelled successfully!'})
+    except GameInvite.DoesNotExist:
+        print(f"Invite {invite_id} not found")
+        return JsonResponse({'error': 'Invite not found'}, status=404)
+    
+    
+@login_required
+def get_invite_details(request, invite_id):
+    try:
+        invite = GameInvite.objects.get(id=invite_id)
+        invite_details = {
+            'invite_id': invite.id,
+            'sender_id': invite.sender.id,
+            'recipient_id': invite.recipient.id,
+            'invite_status': invite.invite_status,
+        }
+        return JsonResponse({'invite': invite_details})
     except GameInvite.DoesNotExist:
         return JsonResponse({'error': 'Invite not found'}, status=404)

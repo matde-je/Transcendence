@@ -1,6 +1,6 @@
 //////////////////////remote1Vs1.js////////////////////////////////
 
-import { getCookie, checkAuthentication, getAuthenticationStatus, getUserData } from './utils.js';
+import { getCookie, checkAuthentication, getAuthenticationStatus, getUserData, getUsernameById } from './utils.js';
 
 "use strict"
 
@@ -347,10 +347,10 @@ gameSocket.onclose = function () {
 };
 
 
-	//////////////////PEDRO/////////////////////
+///////////////////////PEDRO//////////////////////////
 
 export async function sendInvite(recipient_id) {
-	alert('remote Invite sent to user ' + recipient_id);
+	alert('Your remote game invite has been sent to ' + await getUsernameById(recipient_id));
 
 	const loggedInUser = await getUserData();
 
@@ -376,7 +376,7 @@ export async function sendInvite(recipient_id) {
 	const message = JSON.stringify({
 		sender_id: inviteData.sender_id,
 		recipient_id: inviteData.recipient_id,
-		message: 'You have a new invite! To a game of Pong! From user ' + inviteData.sender_id + '!',
+		message: `You have received a new game invite from ${await getUsernameById(inviteData.sender_id)}! Join the Pong game now!`,
 		invite_status: 'pending',
 	});
 
@@ -409,31 +409,34 @@ async function getPendingInvitesForLoggedInUser(loggedInUserId) {
 	});
 }
 
-async function getPendingInviteId(loggedInUserId) {
-	try {
-		const response = await fetch(`/users/user/${loggedInUserId}/invites/`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': getCookie('csrftoken')
-			}
-		});
-		const data = await response.json();
-		const invite = data.invites.find(invite =>
-			invite.invite_status === 'pending' && (invite.sender_id === loggedInUserId || invite.recipient_id === loggedInUserId)
-		);
 
-		if (invite) {
-			return invite.invite_id;
-		} else {
-			console.log('No pending invites found for the logged in user.');
-			return null;
-		}
-	} catch (error) {
-		console.error('Error fetching invites:', error);
-		return null;
-	}
+async function getPendingInviteId(loggedInUserId) {
+    try {
+        const response = await fetch(`/users/user/${loggedInUserId}/invites/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        const data = await response.json();
+        const invite = data.invites.find(invite => 
+            invite.invite_status === 'pending' && (invite.sender_id === loggedInUserId || invite.recipient_id === loggedInUserId)
+        );
+
+        if (invite) {
+            return invite.invite_id;
+        } else {
+            console.log('No pending invites found for the logged in user.');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching invites:', error);
+        return null;
+    }
 }
+
+
 
 export async function updateInviteButtons() {
 	const allFriendItems = document.querySelectorAll('[data-friend-id]');
@@ -444,13 +447,29 @@ export async function updateInviteButtons() {
 		const loggedInUser = await getUserData();
 		const loggedInUserId = loggedInUser.id;
 		const invite_type = await getPendingInvitesForLoggedInUser(loggedInUserId);
+		const invite_type_friend = await getPendingInviteId(loggedInUserId);
+		const invite_type_friend2 = await getPendingInviteId(friendId);
+
 		const inviteId = await getPendingInviteId(loggedInUserId);
+		const friendIdNumber = parseInt(friendId, 10);
 
+		const inviteDetails = await getInviteDetails(inviteId);
+		console.log('***********************');
+		
 		console.log('isOnline:', isOnline);
-		console.log('invite_type:', invite_type);
-		console.log('inviteId:', inviteId);
-
-		if (isOnline && invite_type.includes('sender')) {
+		console.log('inviteDetails:', inviteDetails);
+		console.log('ivite_type:', invite_type.includes('sender'));
+		console.log('loggedInUserId:', loggedInUserId);
+		console.log('friendId:', friendId);
+		if(inviteId){
+			const inviteDetails = await getInviteDetails(inviteId);
+			console.log('inviteDetailsSender_id:', inviteDetails.invite.sender_id);
+			console.log('inviteDetailsRecipient_id:', inviteDetails.invite.recipient_id);
+		}
+		
+	
+	if (inviteDetails && isOnline && invite_type.includes('sender') && inviteDetails.invite.sender_id === loggedInUserId  && inviteDetails.invite.recipient_id === friendIdNumber) {
+		console.log('***********2***********');			
 			removeButtons(buttonContainer);
 			let cancelButton = buttonContainer.querySelector('#cancelButton');
 			if (!cancelButton) {
@@ -463,14 +482,23 @@ export async function updateInviteButtons() {
 				};
 				buttonContainer.insertBefore(cancelButton, buttonContainer.firstChild);
 			}
-		} else if (isOnline && invite_type.includes('recipient')) {
+		} else if (inviteDetails && isOnline && invite_type.includes('recipient') && inviteDetails.invite.recipient_id === loggedInUserId && inviteDetails.invite.sender_id === friendIdNumber) {
+			console.log('***********3***********');
+			console.log('isOnline:', isOnline);
+			console.log('invite_type:', invite_type);
+			console.log('intiveDetails:', inviteDetails);
+			console.log('inviteDetailsInvite_status:', inviteDetails.invite.invite_status);
+			console.log('loggedInUserId:', loggedInUserId);
+			console.log('friendId:', friendId);
+			console.log('inviteDetailsSender_id:', inviteDetails.invite.sender_id);
+			console.log('inviteDetailsRecipient_id:', inviteDetails.invite.recipient_id);
 			removeButtons(buttonContainer);
 			const rejectButton = document.createElement('button');
 			rejectButton.textContent = 'Reject';
 			rejectButton.className = 'btn btn-sm btn-danger';
 			rejectButton.id = 'rejectButton';
 			rejectButton.onclick = function() {
-				declineInvite(inviteId);
+				declineInvite(inviteId)
 			};
 			buttonContainer.insertBefore(rejectButton, buttonContainer.firstChild);
 
@@ -479,10 +507,23 @@ export async function updateInviteButtons() {
 			acceptButton.className = 'btn btn-sm btn-success';
 			acceptButton.id = 'acceptButton';
 			acceptButton.onclick = function() {
-				acceptInvite(inviteId);
+				acceptInvite(inviteId)
 			};
 			buttonContainer.insertBefore(acceptButton, buttonContainer.firstChild);
-		}else  if (isOnline) {
+		}else if(isOnline && !inviteDetails && inviteId){
+			console.log('***********4***********');
+			console.log('isOnline:', isOnline);
+			console.log('inviteId:', !inviteId);
+			console.log('inviteDetails:', !inviteDetails);
+			console.log('invite_type_friend:', invite_type_friend);
+			console.log('invite_type_friend2:', !invite_type_friend2);
+
+			removeButtons(buttonContainer);
+		} else if (isOnline) {
+			console.log('***********1***********');
+			console.log('isOnline:', isOnline);
+			console.log('inviteId:', !inviteId);
+			console.log('inviteDetails:', !inviteDetails);
 			removeButtons(buttonContainer);
 			let inviteButton = buttonContainer.querySelector('#inviteButton');
 			if (!inviteButton) {
@@ -512,26 +553,157 @@ function removeButtons(buttonContainer) {
 	if (acceptButton){
 		acceptButton.remove();
 	}
-
 	const cancelButton = buttonContainer.querySelector('#cancelButton');
 	if (cancelButton){
 		cancelButton.remove();
 	}
 }
 
-function cancelInvite(inviteId) {
-	alert('remote Invite canceled');
-	console.log('Invite canceled:', inviteId);
+
+async function cancelInvite(inviteId) {
+    try {
+        const response = await fetch(`/users/invite/${inviteId}/cancel/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            alert('Invite canceled');
+            console.log('Invite canceled:', inviteId);
+
+            // Fetch invite details after canceling
+            const inviteDetails = await getInviteDetails(inviteId);
+            if (inviteDetails) {
+                console.log('Invite details after cancellation:', inviteDetails);
+				const message = JSON.stringify({
+					sender_id: inviteDetails.invite.sender_id,
+					recipient_id: inviteDetails.invite.recipient_id,
+					message: 'The ' + await getUsernameById(inviteDetails.invite.sender_id) + ' canceled the invitation!',
+				});
+				window.remoteSocket.send(message);
+				updateInviteButtons();
+            } else {
+                console.log('No invite details after cancellation');
+            }
+        } else {
+            const data = await response.json();
+            console.error('Failed to cancel invite:', data);
+            alert('Failed to cancel invite');
+        }
+    } catch (error) {
+        console.error('Error canceling invite:', error);
+        alert('Error canceling invite');
+    }
 }
 
-function declineInvite(inviteId) {
-	alert('remote Invite declined');
-	console.log('Invite declined:', inviteId);
+async function declineInvite(inviteId) {
+	try {
+        const response = await fetch(`/users/invite/${inviteId}/reject/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            alert('Invite rejected');
+            console.log('Invite rejected:', inviteId);
+
+
+            const inviteDetails = await getInviteDetails(inviteId);
+            if (inviteDetails) {
+                console.log('Invite details after rejected:', inviteDetails);
+				const message = JSON.stringify({
+					sender_id: inviteDetails.invite.recipient_id,
+					recipient_id: inviteDetails.invite.sender_id,
+					message: 'The ' + await getUsernameById(inviteDetails.invite.recipient_id) + ' rejected the invitation!',
+				});
+				window.remoteSocket.send(message);
+				updateInviteButtons();
+            } else {
+                console.log('No invite details after rejected');
+            }
+        } else {
+            const data = await response.json();
+            console.error('Failed to rejected invite:', data);
+            alert('Failed to rejected invite');
+        }
+    } catch (error) {
+        console.error('Error rejecting invite:', error);
+        alert('Error rejecting invite');
+    }
+
 }
 
-function acceptInvite(inviteId) {
-	alert('remote Invite accepted');
-	console.log('Invite accepted:', inviteId);
+async function acceptInvite(inviteId) {
+	try {
+        const response = await fetch(`/users/invite/${inviteId}/accept/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            alert('Invite accept');
+            console.log('Invite accept:', inviteId);
+
+
+            const inviteDetails = await getInviteDetails(inviteId);
+            if (inviteDetails) {
+                console.log('Invite details after accept:', inviteDetails);
+				const message = JSON.stringify({
+					sender_id: inviteDetails.invite.recipient_id,
+					recipient_id: inviteDetails.invite.sender_id,
+					message: 'The ' + await getUsernameById(inviteDetails.invite.recipient_id) + ' accept the invitation!',
+				});
+				window.remoteSocket.send(message);
+				updateInviteButtons();
+            } else {
+                console.log('No invite details after accept');
+            }
+        } else {
+            const data = await response.json();
+            console.error('Failed to accept invite:', data);
+            alert('Failed to accept invite');
+        }
+    } catch (error) {
+        console.error('Error accepting invite:', error);
+        alert('Error accepting invite');
+    }
+
+
+}
+
+async function getInviteDetails(inviteId) {
+	try {
+		const response = await fetch(`/users/invite/${inviteId}/details/`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			}
+		});
+		if (response.ok) {
+			const inviteDetails = await response.json();
+			console.log('Invite details:', inviteDetails);
+			return inviteDetails;
+		} else {
+			console.error('Failed to fetch invite details, status:', response.status);
+			return null;
+		}
+	} catch (error) {
+		console.log('Error fetching invite details');
+		return null;
+	}
 }
 
 

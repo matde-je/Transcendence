@@ -155,17 +155,17 @@ export async function getUserData() {
 export async function getUserById(userId) {
     try {
         const users = await getUserData();
-        console.log('Usuários obtidos:', users);
-        console.log('Procurando pelo userId:', userId);
+        console.log('Users obtained:', users);
+        console.log('Searching for userId:', userId);
         const user = Array.isArray(users) ? users.find(user => user.id === userId) : null;
         if (!user) {
-            console.log('Usuário não encontrado');
+            console.log('User not found');
             return null;
         }
-        console.log('Usuário encontrado:', user.username);
+        console.log('User found:', user.username);
         return user;
     } catch (error) {
-        console.error('Erro ao obter usuário por ID:', error);
+        console.error('Error getting user by ID:', error);
         return null;
     }
 }
