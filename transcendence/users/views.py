@@ -323,3 +323,25 @@ def get_invite_details(request, invite_id):
         return JsonResponse({'invite': invite_details})
     except GameInvite.DoesNotExist:
         return JsonResponse({'error': 'Invite not found'}, status=404)
+    
+@login_required
+def get_accepted_invite(request, user_id):
+    try:
+        invite = GameInvite.objects.get(
+            invite_status='accepted',
+            sender_id=user_id
+        ) or GameInvite.objects.get(
+            invite_status='accepted',
+            recipient_id=user_id
+        )
+        
+        invite_details = {
+            'invite_id': invite.id,
+            'sender_id': invite.sender.id,
+            'recipient_id': invite.recipient.id,
+            'invite_status': invite.invite_status,
+        }
+        
+        return JsonResponse({'invite': invite_details})
+    except GameInvite.DoesNotExist:
+        return JsonResponse({'error': 'Accepted invite not found'}, status=404)

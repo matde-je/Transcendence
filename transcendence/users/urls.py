@@ -22,7 +22,8 @@ from .views import (
     accept_invite,
     reject_invite,
     cancel_invite,
-    get_invite_details
+    get_invite_details,
+    get_accepted_invite
 )
 
 router = DefaultRouter()
@@ -49,5 +50,6 @@ urlpatterns = [
     path('invite/<int:invite_id>/reject/', reject_invite, name='reject_invite'),
     path('invite/<int:invite_id>/cancel/', cancel_invite, name='cancel_invite'),
     path('invite/<int:invite_id>/details/', get_invite_details, name='get_invite_details'),
-
+    path('invite/<int:user_id>/user_accept/', get_accepted_invite, name='get_accepted_invite'),
 ]
+

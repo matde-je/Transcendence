@@ -147,7 +147,10 @@ export function initializeNavbar(authenticated) {
 				const data = JSON.parse(e.data);
 				alert(data.message);
 				console.log('recipiente_data:', data);
-				
+                console.log('invite_status:', data.invite_status);
+                if(data.invite_status === 'accepted') {
+                    showHome();
+                }
 				console.log('message:', data.message);
 				updateInviteButtons();
 			};
@@ -257,7 +260,7 @@ export function initializeNavbar(authenticated) {
  * Displays the Home page.
  */
 //import { initializeGame } from './game.js';
-/* import { initializeGame } from './remote1Vs1.js'; //Temp */ //PCC
+import { initializeGame } from './remote1Vs1.js';
 
 export function showHome() {
 	window.isTournament = false;
@@ -289,7 +292,7 @@ export function showHome() {
 		gameScript.src = '/static/js/remote1Vs1.js';
         gameScript.id = 'gameScript';
         gameScript.onload = () => {
-           /*  initializeGame(); *///PCC
+            initializeGame();
 
         };
         document.body.appendChild(gameScript);

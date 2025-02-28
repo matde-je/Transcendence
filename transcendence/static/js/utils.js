@@ -282,3 +282,27 @@ export async function getInviteDetails(inviteId) {
 		return null;
 	}
 }
+
+export async function getAcceptedInvite(user_id)
+{
+    try {
+    const response = await fetch(`/users/invite/${user_id}/user_accept/`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    });
+    if (response.ok) {
+        const inviteDetails = await response.json();
+        console.log('Invite details:', inviteDetails);
+        return inviteDetails;
+    } else {
+        console.error('Failed to fetch invite details, status:', response.status);
+        return null;
+    }
+    } catch (error) {
+        console.log('Error fetching invite details');
+        return null;
+    }
+}

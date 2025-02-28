@@ -1,7 +1,8 @@
 //////////////////////remote1Vs1.js////////////////////////////////
 
 import { getCookie, checkAuthentication, getAuthenticationStatus, getUserData, getUsernameById } from './utils.js';
-import { getPendingInvitesForLoggedInUser, getPendingInviteId, getInviteDetails, removeButtons } from './utils.js';
+import { getPendingInvitesForLoggedInUser, getPendingInviteId, getInviteDetails, removeButtons, getAcceptedInvite } from './utils.js';
+import { showHome } from './app.js';
 "use strict"
 
 let canvas;
@@ -98,11 +99,12 @@ function reset_game() {
 
 window.keys = {};
 
-window.addEventListener("keydown", (e) => {
+window.addEventListener("keydown", async (e) => {
 	keys[e.key] = true; //mark the key as pressed
 
 	if (window.location.pathname === '/rock-paper-scissors/multiplayer')
 		return;
+
 
 	if ((keys['r'] || keys['R']) && init === 0) {
 		console.log("Player pressed 'R' - Sending ready status to server");
@@ -110,15 +112,18 @@ window.addEventListener("keydown", (e) => {
 		context.font = "20px 'Courier New', Courier, monospace";
 		context.textAlign = "center";
 		context.fillStyle = "white";
-		context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
-		context.fillText("PLAYER 2 - Remote ", canvas.width / 2, 290);
+		if(player1 === loggedInUserId)
+			context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
+		else if(player2 === loggedInUserId)
+			context.fillText("PLAYER 2 - UP AND DOWN", canvas.width / 2, 290);
+		//context.fillText("PLAYER 2 - Remote ", canvas.width / 2, 290);
 		context.fillText("P - PAUSE", canvas.width / 2, 320);
 		context.fillText("S - START", canvas.width / 2, 350);
 	}
 
 	if ((gameOver || init === 0) && (keys['s'] || keys['S'])) {
 		console.log("Player pressed 'S'");
-		gameSocket.send(JSON.stringify({ message: "playerReady" }));		//<<REMOTE, REVIEW
+		gameSocket.send(JSON.stringify({ message: "playerReady" }));
 		window.cancelAnimationFrame(ani);
 		context.clearRect(0, 0, canvas.width, canvas.height);
 		startCountdown(() => {
@@ -313,7 +318,7 @@ function updateGameState(data) {
 
 gameSocket.onopen = function (event) {
 	console.log('✅ WebSocket connection established.');
-	alert('WebSocket connection established.');
+	//alert('WebSocket connection established.');
 };
 
 // Handling messages from the WebSocket server
@@ -413,11 +418,12 @@ export async function updateInviteButtons() {
 			const inviteDetails = await getInviteDetails(inviteId);
 			console.log('inviteDetailsSender_id:', inviteDetails.invite.sender_id);
 			console.log('inviteDetailsRecipient_id:', inviteDetails.invite.recipient_id);
+			console.log('inviteDetailsInvite_status:', inviteDetails.invite.invite_status);
 		}
 		
 	
 	if (inviteDetails && isOnline && invite_type.includes('sender') && inviteDetails.invite.sender_id === loggedInUserId  && inviteDetails.invite.recipient_id === friendIdNumber) {
-		console.log('***********2***********');			
+		console.log('***********2***********');
 			removeButtons(buttonContainer);
 			let cancelButton = buttonContainer.querySelector('#cancelButton');
 			if (!cancelButton) {
@@ -430,61 +436,61 @@ export async function updateInviteButtons() {
 				};
 				buttonContainer.insertBefore(cancelButton, buttonContainer.firstChild);
 			}
-		} else if (inviteDetails && isOnline && invite_type.includes('recipient') && inviteDetails.invite.recipient_id === loggedInUserId && inviteDetails.invite.sender_id === friendIdNumber) {
-			console.log('***********3***********');
-			console.log('isOnline:', isOnline);
-			console.log('invite_type:', invite_type);
-			console.log('intiveDetails:', inviteDetails);
-			console.log('inviteDetailsInvite_status:', inviteDetails.invite.invite_status);
-			console.log('loggedInUserId:', loggedInUserId);
-			console.log('friendId:', friendId);
-			console.log('inviteDetailsSender_id:', inviteDetails.invite.sender_id);
-			console.log('inviteDetailsRecipient_id:', inviteDetails.invite.recipient_id);
-			removeButtons(buttonContainer);
-			const rejectButton = document.createElement('button');
-			rejectButton.textContent = 'Reject';
-			rejectButton.className = 'btn btn-sm btn-danger';
-			rejectButton.id = 'rejectButton';
-			rejectButton.onclick = function() {
-				declineInvite(inviteId)
-			};
-			buttonContainer.insertBefore(rejectButton, buttonContainer.firstChild);
+	} else if (inviteDetails && isOnline && invite_type.includes('recipient') && inviteDetails.invite.recipient_id === loggedInUserId && inviteDetails.invite.sender_id === friendIdNumber) {
+		console.log('***********3***********');
+/* 			console.log('isOnline:', isOnline);
+		console.log('invite_type:', invite_type);
+		console.log('intiveDetails:', inviteDetails);
+		console.log('inviteDetailsInvite_status:', inviteDetails.invite.invite_status);
+		console.log('loggedInUserId:', loggedInUserId);
+		console.log('friendId:', friendId);
+		console.log('inviteDetailsSender_id:', inviteDetails.invite.sender_id);
+		console.log('inviteDetailsRecipient_id:', inviteDetails.invite.recipient_id); */
+		removeButtons(buttonContainer);
+		const rejectButton = document.createElement('button');
+		rejectButton.textContent = 'Reject';
+		rejectButton.className = 'btn btn-sm btn-danger';
+		rejectButton.id = 'rejectButton';
+		rejectButton.onclick = function() {
+			declineInvite(inviteId)
+		};
+		buttonContainer.insertBefore(rejectButton, buttonContainer.firstChild);
 
-			const acceptButton = document.createElement('button');
-			acceptButton.textContent = 'Accept';
-			acceptButton.className = 'btn btn-sm btn-success';
-			acceptButton.id = 'acceptButton';
-			acceptButton.onclick = function() {
-				acceptInvite(inviteId)
-			};
-			buttonContainer.insertBefore(acceptButton, buttonContainer.firstChild);
-		}else if(isOnline && !inviteDetails && inviteId){
-			console.log('***********4***********');
-			console.log('isOnline:', isOnline);
-			console.log('inviteId:', !inviteId);
-			console.log('inviteDetails:', !inviteDetails);
-			console.log('invite_type_friend:', invite_type_friend);
-			console.log('invite_type_friend2:', !invite_type_friend2);
+		const acceptButton = document.createElement('button');
+		acceptButton.textContent = 'Accept';
+		acceptButton.className = 'btn btn-sm btn-success';
+		acceptButton.id = 'acceptButton';
+		acceptButton.onclick = function() {
+			acceptInvite(inviteId)
+		};
+		buttonContainer.insertBefore(acceptButton, buttonContainer.firstChild);
+	}else if(isOnline && !inviteDetails && inviteId){
+		console.log('***********4***********');
+/* 			console.log('isOnline:', isOnline);
+		console.log('inviteId:', !inviteId);
+		console.log('inviteDetails:', !inviteDetails);
+		console.log('invite_type_friend:', invite_type_friend);
+		console.log('invite_type_friend2:', !invite_type_friend2); */
 
-			removeButtons(buttonContainer);
-		} else if (isOnline) {
-			console.log('***********1***********');
-			console.log('isOnline:', isOnline);
-			console.log('inviteId:', !inviteId);
-			console.log('inviteDetails:', !inviteDetails);
-			removeButtons(buttonContainer);
-			let inviteButton = buttonContainer.querySelector('#inviteButton');
-			if (!inviteButton) {
-				inviteButton = document.createElement('button');
-				inviteButton.textContent = 'Invite to Remote Play';
-				inviteButton.className = 'btn btn-sm btn-primary';
-				inviteButton.id = 'inviteButton';
-				inviteButton.addEventListener('click', () => {
-					sendInvite(friendId);
-				});
-				buttonContainer.insertBefore(inviteButton, buttonContainer.firstChild);
-			}
+		removeButtons(buttonContainer);
+	} else if (isOnline) {
+		console.log('***********1***********');
+/* 			console.log('isOnline:', isOnline);
+		console.log('inviteId:', !inviteId);
+		console.log('inviteDetails:', !inviteDetails); */
+		removeButtons(buttonContainer);
+		let inviteButton = buttonContainer.querySelector('#inviteButton');
+		if (!inviteButton) {
+			inviteButton = document.createElement('button');
+			inviteButton.textContent = 'Invite to Remote Play';
+			inviteButton.className = 'btn btn-sm btn-primary';
+			inviteButton.id = 'inviteButton';
+			inviteButton.addEventListener('click', () => {
+				sendInvite(friendId);
+			});
+			buttonContainer.insertBefore(inviteButton, buttonContainer.firstChild);
 		}
+	}
 	});
 }
 
@@ -592,9 +598,11 @@ async function acceptInvite(inviteId) {
 					sender_id: inviteDetails.invite.recipient_id,
 					recipient_id: inviteDetails.invite.sender_id,
 					message: 'The ' + await getUsernameById(inviteDetails.invite.recipient_id) + ' accept the invitation!',
+					invite_status: 'accepted',
 				});
 				window.remoteSocket.send(message);
 				updateInviteButtons();
+				showHome()
             } else {
                 console.log('No invite details after accept');
             }
