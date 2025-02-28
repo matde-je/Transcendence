@@ -45,14 +45,17 @@ function predictBallYPos(ball, canvas, player2) {
 	return predictedY;
 }
 
-function aiLogic(ball, canvas) {
+function aiLogic(ball, canvas, aiRefreshView) {
 
 	const currentTime = Date.now();
 	console.log("aioppon.js: lastLeftHitTime", window.lastLeftHitTime);
-	if (ball.speed > 0 && window.ballTurnedRight && (window.lastLeftHitTime - currentTime <= window.aiRefreshView)) {
-
+	console.log("aioppon.js: currentTime", currentTime);
+	console.log("aioppon.js: LLHT - curr", window.lastLeftHitTime - currentTime);
+	if (ball.speed > 0) {
+		if (window.ballTurnedRight && (window.lastLeftHitTime - currentTime <= aiRefreshView))
+			return;
 		// Check if at least 1 second has passed since last prediction
-		if (!window.lastPredictionUpdateTime || (window.lastPredictionUpdateTime - currentTime > 1000)) {
+		if (!window.lastPredictionUpdateTime || (window.lastPredictionUpdateTime - currentTime > aiRefreshView)) {
 				window.lastPredictionY = addPredictionError(predictBallYPos(ball, canvas, player2), player2, canvas);
 				window.lastPredictionUpdateTime = currentTime;
 				console.log("aioppon.js: lastPredictionUpdateTime:", window.lastPredictionUpdateTime);

@@ -18,10 +18,11 @@ let paddleGravity = 3;
 let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
+let previousBallDirection = 0;
 let lastLeftHitTime = 0;
-window.previousBallDirection = 0;
+const aiRefreshView = 1000;
+window.lastLeftHitTime = 0;
 window.ballTurnedRight = 0;
-window.aiRefreshView = 1000;
 
 window.isTournament = false;
 
@@ -332,8 +333,8 @@ function bounceBall() {
 		return ;
 	ball.x += ball.speed;
 	ball.y += ball.gravity;
-	console.log("ball.speed:", ball.speed);
-	console.log("window.previousBallDirection:", window.previousBallDirection);
+	//console.log("ball.speed:", ball.speed);
+	//console.log("window.previousBallDirection:", window.previousBallDirection);
 	// Update previousBallDirection and reset ballTurnedRight if necessary
 	if (ball.speed > 0 && window.previousBallDirection == -1) {
 		window.previousBallDirection = 1;
@@ -438,7 +439,7 @@ function loop() {
 		bounceBall();
 		paddleCollision();
 		if (window.ai) {
-			aiLogic(window.ball, window.canvas);
+			aiLogic(window.ball, window.canvas, aiRefreshView);
 		}
 		drawAll();
 		if (score1 === 10 || score2 === 10) {
