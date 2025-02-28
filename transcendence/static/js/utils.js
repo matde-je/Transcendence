@@ -184,3 +184,101 @@ export async function fetchUserById(userId) {
         return null;
     }
 }
+
+
+export async function getPendingInvitesForLoggedInUser(loggedInUserId) {
+    return fetch('/users/user/' + loggedInUserId + '/invites/', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const inviteRoles = data.invites.map(invite => {
+            if (invite.sender_id === loggedInUserId) {
+                return 'sender';
+            } else if (invite.recipient_id === loggedInUserId) {
+                return 'recipient';
+            }
+        });
+        return inviteRoles;
+    })
+    .catch(error => {
+        console.error('Error fetching invites:', error);
+    });
+}
+
+
+export async function getPendingInviteId(loggedInUserId) {
+    try {
+        const response = await fetch(`/users/user/${loggedInUserId}/invites/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        const data = await response.json();
+        const invite = data.invites.find(invite => 
+            invite.invite_status === 'pending' && (invite.sender_id === loggedInUserId || invite.recipient_id === loggedInUserId)
+        );
+
+        if (invite) {
+            return invite.invite_id;
+        } else {
+            console.log('No pending invites found for the logged in user.');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching invites:', error);
+        return null;
+    }
+}
+
+export function removeButtons(buttonContainer) {
+	const inviteButton = buttonContainer.querySelector('#inviteButton');
+	if (inviteButton) {
+		inviteButton.remove();
+	}
+	const rejectButton = buttonContainer.querySelector('#rejectButton');
+	if (rejectButton){
+		rejectButton.remove();
+	}
+	const acceptButton = buttonContainer.querySelector('#acceptButton');
+	if (acceptButton){
+		acceptButton.remove();
+	}
+	const cancelButton = buttonContainer.querySelector('#cancelButton');
+	if (cancelButton){
+		cancelButton.remove();
+	}
+}
+
+export async function getInviteDetails(inviteId) {
+	try {
+        if(!inviteId) {
+            console.log('No invite ID provided');
+            return null;
+        }
+		const response = await fetch(`/users/invite/${inviteId}/details/`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			}
+		});
+		if (response.ok) {
+			const inviteDetails = await response.json();
+			console.log('Invite details:', inviteDetails);
+			return inviteDetails;
+		} else {
+			console.error('Failed to fetch invite details, status:', response.status);
+			return null;
+		}
+	} catch (error) {
+		console.log('Error fetching invite details');
+		return null;
+	}
+}
