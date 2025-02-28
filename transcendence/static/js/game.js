@@ -18,8 +18,10 @@ let paddleGravity = 3;
 let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
-window.lastLeftHitTime = 0;
-const aiRefreshView = 1000;
+let lastLeftHitTime = 0;
+window.previousBallDirection = 0;
+window.ballTurnedRight = 0;
+window.aiRefreshView = 1000;
 
 window.isTournament = false;
 
@@ -36,22 +38,22 @@ export async function initializeGame() {
 			username1 = username;
 		});
 	}
-    canvas = document.getElementById("game");
-    context = canvas.getContext("2d");
-    canvas.width = 700;
-    canvas.height = 500;
+	canvas = document.getElementById("game");
+	context = canvas.getContext("2d");
+	canvas.width = 700;
+	canvas.height = 500;
 	window.canvas = canvas;
-    window.context = context;
-    score1 = 0;
-    score2 = 0;
-    init = 0;
+	window.context = context;
+	score1 = 0;
+	score2 = 0;
+	init = 0;
 	initialBallGravity = 1;
 	maxGravity = initialBallGravity * 2;
 	ballSpeed = 7;
 	multiplayer = 0;
 	window.ai = 0;
+	window.lastLeftHitTime = lastLeftHitTime;
 	window.paddleGravity = paddleGravity;
-	window.aiRefreshView = aiRefreshView;
 	ani = window.requestAnimationFrame(loop);
 }
 
@@ -115,7 +117,7 @@ window.ball = new Element ( {
 
 
 function reset_game() {
-	pause = false;
+	pause = gameOver = false;
 	score1 = score2 = 0;
 	player1.x = 10 * (window.canvas.width / 550);
 	player1.y = 170 * (window.canvas.height / 400);
@@ -128,12 +130,7 @@ function reset_game() {
 		player4.x = 530 * (window.canvas.width / 550);
 		player4.y = 230 * (window.canvas.height / 400);
 	}
-
-	ball.x = canvas.width / 2 - ball.width / 2;
-	ball.y = canvas.height / 2 - ball.width / 2;
-	ball.speed = ballSpeed;
-	ball.gravity = initialBallGravity;
-	gameOver = false;
+	ballToCenterAndMove();
 }
 
 //////////////////////////////KEYBOARD, EVENTLISTENER///////////////////////////////////
@@ -308,30 +305,39 @@ function paddleCollision() {
 		handleEdgeCollisions(player2);
 
 	//point scored
-	let randomSign = Math.random() < 0.5 ? -1 : 1;
+
 	if (ball.x + ball.width < 0) {
 		score2 += 1;
-		ball.x = canvas.width / 2 - ball.width / 2;
-		ball.y = canvas.height / 2 - ball.height / 2;
-		ball.gravity = initialBallGravity * randomSign;
+		ballToCenterAndMove()
+
 	} else if (ball.x > canvas.width) {
 		score1 += 1;
-		ball.x = canvas.width / 2 - ball.width / 2;
-		ball.y = canvas.height / 2 - ball.height / 2;
-		ball.gravity = initialBallGravity * randomSign;
+		ballToCenterAndMove()
 	}
 }
 
+// Put ball back in center and start to more 50/50 to left or right, up or down.
+function ballToCenterAndMove() {
+	ball.x = canvas.width / 2 - ball.width / 2;
+	ball.y = canvas.height / 2 - ball.width / 2;
+	let randomSign = Math.random() < 0.5 ? -1 : 1;
+	ball.gravity = initialBallGravity * randomSign;
+	ball.speed = ball.speed * randomSign;
+	window.previousBallDirection = randomSign;
+}
+
 function bounceBall() {
+	//console.log("bounceBall() foi chamada");
 	if (gameOver == true)
 		return ;
 	ball.x += ball.speed;
 	ball.y += ball.gravity;
-
+	console.log("ball.speed:", ball.speed);
+	console.log("window.previousBallDirection:", window.previousBallDirection);
 	// Update previousBallDirection and reset ballTurnedRight if necessary
 	if (ball.speed > 0 && window.previousBallDirection == -1) {
 		window.previousBallDirection = 1;
-		ballTurnedRight = true;
+		window.ballTurnedRight = true;
 		window.lastLeftHitTime = Date.now();
 		console.log("game.js: lastLeftHitTime", window.lastLeftHitTime);
 
@@ -426,8 +432,8 @@ function loop() {
 		draw(player2);
 	}
 	console.log()
-    if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
-		console.log("loop game");
+	if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
+		//console.log("loop game");
 		handleMoves();
 		bounceBall();
 		paddleCollision();

@@ -2,8 +2,8 @@
 
 'use strict';
 
-window.lastPredictionUpdateTime = 0;
-window.lastPredictionY = 0;
+let lastPredictionUpdateTime = 0;
+let lastPredictionY = 0;
 
 function addPredictionError(predictedY, player2, canvas) {
 	const paddleCenter = player2.y + player2.height / 2;
@@ -49,42 +49,39 @@ function aiLogic(ball, canvas) {
 
 	const currentTime = Date.now();
 	console.log("aioppon.js: lastLeftHitTime", window.lastLeftHitTime);
-
-	if (ball.speed > 0) {
-		if (window.ballTurnedRight && (window.lastLeftHitTime - currentTime <= window.aiRefreshView))
-			return;
+	if (ball.speed > 0 && window.ballTurnedRight && (window.lastLeftHitTime - currentTime <= window.aiRefreshView)) {
 
 		// Check if at least 1 second has passed since last prediction
-		if (!window.lastPredictionUpdateTime || (window.lastPredictionUpdateTime - currentTime > 1000))
+		if (!window.lastPredictionUpdateTime || (window.lastPredictionUpdateTime - currentTime > 1000)) {
 				window.lastPredictionY = addPredictionError(predictBallYPos(ball, canvas, player2), player2, canvas);
-			window.lastPredictionUpdateTime = currentTime;
-		console.log("aioppon.js: lastPredictionUpdateTime:", window.lastPredictionUpdateTime);
-		console.log("aioppon.js: lastPredictionY:", window.lastPredictionY);
+				window.lastPredictionUpdateTime = currentTime;
+				console.log("aioppon.js: lastPredictionUpdateTime:", window.lastPredictionUpdateTime);
+				console.log("aioppon.js: lastPredictionY:", window.lastPredictionY);
+		}
 
 		const targetY = addPredictionError(predictBallYPos(ball, canvas, player2), player2, canvas);
-		//console.log("targetY", targetY);
 		let newY = player2.y;
 
-		//Se distancia do centro da paddle ate a previsao targetY for maior que a
-		//distancia percorrida em 1seg, que é a velocidade gravity, mover na direcao da bola
+		// Se distancia do centro da paddle ate a previsao targetY for maior que a
+		// distancia percorrida em 1seg, que é a velocidade gravity, mover na direcao da bola
 		const aiPaddleCenterPos = newY + player2.height / 2;
 
-		// Define a dead zone to stop jittering when close enough
+		//Define a dead zone to stop jittering when close enough
 		const deadZone = player2.width; // Pixels of tolerance
 
 		if (Math.abs(aiPaddleCenterPos - targetY) > deadZone) {
 			const direction = targetY < aiPaddleCenterPos ? -1 : 1;
 			newY += direction * player2.gravity;
+			console.log("AI moving Y, newY");
 		}
 		// Move and Ensure paddle stays within canvas bounds if ball moving towards AI
-		if (ball.speed > 0)
-			//console.log("Paddle moved");
-			window.player2.y = Math.max(Math.min(newY, canvas.height - player2.height), 0);
+		if (ball.speed > 0) {
+			console.log("AI moving Y, newY");
+			window.player2.y = Math.max(Math.min(newY, canvas.height - player2.height), 0); }
 
-		//Reset ballTurnedRight after AI has processed it
+		// Reset ballTurnedRight after AI has processed it
 		window.ballTurnedRight = false;
-}
-	else
+	} else
 		return;
 }
 
