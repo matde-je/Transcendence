@@ -13,12 +13,17 @@ let pause = false;
 let init = 0;
 let initialBallGravity = 1;
 let maxGravity = initialBallGravity * 2;
-let ballSpeed = 7;
-let paddleGravity = 3;
+let ballSpeed = 5;
+let paddleGravity = 4;
 let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
+let previousBallDirection = 0;
+
+let lastLeftHitTime = 0;
 const aiRefreshView = 1000;
+window.lastLeftHitTime = 0;
+window.ballTurnedRight = 0;
 
 window.isTournament = false;
 
@@ -35,22 +40,22 @@ export async function initializeGame() {
 			username1 = username;
 		});
 	}
-    canvas = document.getElementById("game");
-    context = canvas.getContext("2d");
-    canvas.width = 700;
-    canvas.height = 500;
+	canvas = document.getElementById("game");
+	context = canvas.getContext("2d");
+	canvas.width = 700;
+	canvas.height = 500;
 	window.canvas = canvas;
-    window.context = context;
-    score1 = 0;
-    score2 = 0;
-    init = 0;
+	window.context = context;
+	score1 = 0;
+	score2 = 0;
+	init = 0;
 	initialBallGravity = 1;
 	maxGravity = initialBallGravity * 2;
 	ballSpeed = 7;
 	multiplayer = 0;
 	window.ai = 0;
+	window.lastLeftHitTime = lastLeftHitTime;
 	window.paddleGravity = paddleGravity;
-	window.aiRefreshView = aiRefreshView;
 	ani = window.requestAnimationFrame(loop);
 }
 
@@ -114,7 +119,7 @@ window.ball = new Element ( {
 
 
 function reset_game() {
-	pause = false;
+	pause = gameOver = false;
 	score1 = score2 = 0;
 	player1.x = 10 * (window.canvas.width / 550);
 	player1.y = 170 * (window.canvas.height / 400);
@@ -127,12 +132,7 @@ function reset_game() {
 		player4.x = 530 * (window.canvas.width / 550);
 		player4.y = 230 * (window.canvas.height / 400);
 	}
-
-	ball.x = canvas.width / 2 - ball.width / 2;
-	ball.y = canvas.height / 2 - ball.width / 2;
-	ball.speed = ballSpeed;
-	ball.gravity = initialBallGravity;
-	gameOver = false;
+	ballToCenterAndMove();
 }
 
 //////////////////////////////KEYBOARD, EVENTLISTENER///////////////////////////////////
@@ -220,47 +220,45 @@ window.addEventListener("keyup", (e) => {
 
 //handle player movement based on pressed keys
 function handleMoves() {
-	if (!gameOver && !pause)
-	{
+	if (!gameOver && !pause) {
 		let newY;
 
 		// Player 1 movement
 		newY = player1.y;
-		if (keys['q'] || keys['Q'] && player1.y > 0)
-			newY -= player1.gravity * 2; //up
-		if (keys['a'] || keys['A'] && player1.y + player1.height < canvas.height)
-			newY += player1.gravity * 2; //down
+		if ((keys['q'] || keys['Q']) && player1.y > 0)
+			newY -= player1.gravity; //up
+		if ((keys['a'] || keys['A']) && player1.y + player1.height < canvas.height)
+			newY += player1.gravity; //down
 		if (!multiplayer || preventPaddleOverlap({...player1, y: newY}, player3))
-			player1.y = newY;
+			player1.y = Math.max(0, Math.min(newY, canvas.height - player1.height)); // Ensure within bounds
 
 		// Player 2 movement
 		newY = player2.y;
 		if (keys['ArrowUp'] && player2.y > 0 && !ai)
-			newY -= player2.gravity * 2; //up
+			newY -= player2.gravity; //up
 		if (keys['ArrowDown'] && player2.y + player2.height < canvas.height && !ai)
-			newY += player2.gravity * 2; //down
+			newY += player2.gravity; //down
 		if (!multiplayer || preventPaddleOverlap({...player2, y: newY}, player4) && multiplayer)
-			player2.y = newY;
+			player2.y = Math.max(0, Math.min(newY, canvas.height - player2.height)); // Ensure within bounds
 
-		if (multiplayer)
-		{
+		if (multiplayer) {
 			// Player 3 movement
 			newY = player3.y;
-			if (keys['f'] || keys['F'] && player3.y - player1.height > 0)
-				newY -= player3.gravity * 2; // move up
-			if (keys['v'] || keys['V'] && player3.y + player3.height < canvas.height)
-				newY += player3.gravity * 2; // move down, but don't cross Player 2
+			if ((keys['f'] || keys['F']) && player3.y - player1.height > 0)
+				newY -= player3.gravity; // move up
+			if ((keys['v'] || keys['V']) && player3.y + player3.height < canvas.height)
+				newY += player3.gravity; // move down, but don't cross Player 2
 			if (preventPaddleOverlap(player1, {...player3, y: newY}))
-				player3.y = newY;
+				player3.y = Math.max(0, Math.min(newY, canvas.height - player3.height)); // Ensure within bounds
 
 			// Player 4 movement
 			newY = player4.y;
 			if (keys['j'] || keys['J'] && player4.y > 0)
-				newY -= player4.gravity * 2; // move up, but don't go out
+				newY -= player4.gravity; // move up, but don't go out
 			if (keys['m'] || keys['M'] && player4.y + player4.height < canvas.height)
-				newY += player4.gravity * 2; // move down
+				newY += player4.gravity; // move down
 			if (preventPaddleOverlap(player2, {...player4, y: newY}))
-				player4.y = newY;
+				player4.y = Math.max(0, Math.min(newY, canvas.height - player4.height)); // Ensure within bounds
 		}
 	}
 }
@@ -275,12 +273,20 @@ function preventPaddleOverlap(paddle1, paddle2) {
 
 function handleEdgeCollisions(player) {
 	ball.speed *= -1;
-	if (ball.y + (ball.height / 2) <= player.y + (player.height / 6)) //Thouch upper edge!!
-	ball.gravity = -1 * maxGravity;
-	else if (ball.y + (ball.height / 2) >= player.y + (player.height * 5) / 6) // Thouch lower edge!!
-	ball.gravity = maxGravity;
-	else
-	ball.gravity = Math.sign(ball.gravity) * initialBallGravity; // Thouch center!!
+
+	// Calculate impact position as a percentage of the paddle height
+	const impactPoint = (ball.y + ball.height / 2 - player.y) / player.height; // Value between 0 and 1
+
+	// Define gravity range (-maxGravity to maxGravity)
+	const gravityRange = maxGravity - initialBallGravity;
+
+	if (impactPoint < 0.5) {
+		// Ball hit upper half → Negative gravity (upward)
+		ball.gravity = -initialBallGravity - (gravityRange * (0.5 - impactPoint) * 2);
+	} else {
+		// Ball hit lower half → Positive gravity (downward)
+		ball.gravity = initialBallGravity + (gravityRange * (impactPoint - 0.5) * 2);
+	}
 }
 
 function paddleCollision() {
@@ -300,39 +306,42 @@ function paddleCollision() {
 		else if (multiplayer && ball.y + ball.height >= player4.y && ball.y <= player4.y + player4.height)
 			handleEdgeCollisions(player4);
 	}
-	if (ball.x <= player1.x + player1.width && ball.y + ball.height >= player1.y &&
-			ball.y <= player1.y + player1.height && ball.speed < 0) // There is collision!!
-		handleEdgeCollisions(player1);
-		else if (ball.x + ball.width >= player2.x && ball.y + ball.height >= player2.y &&
-			ball.y <= player2.y + player2.height && ball.speed > 0) // There is collision!!
-		handleEdgeCollisions(player2);
 
 	//point scored
-	let randomSign = Math.random() < 0.5 ? -1 : 1;
 	if (ball.x + ball.width < 0) {
 		score2 += 1;
-		ball.x = canvas.width / 2 - ball.width / 2;
-		ball.y = canvas.height / 2 - ball.height / 2;
-		ball.gravity = initialBallGravity * randomSign;
+		ballToCenterAndMove()
+
 	} else if (ball.x > canvas.width) {
 		score1 += 1;
-		ball.x = canvas.width / 2 - ball.width / 2;
-		ball.y = canvas.height / 2 - ball.height / 2;
-		ball.gravity = initialBallGravity * randomSign;
+		ballToCenterAndMove()
 	}
 }
 
+// Put ball back in center and start to more 50/50 to left or right, up or down.
+function ballToCenterAndMove() {
+	ball.x = canvas.width / 2 - ball.width / 2;
+	ball.y = canvas.height / 2 - ball.width / 2;
+	let randomSign = Math.random() < 0.5 ? -1 : 1;
+	ball.gravity = initialBallGravity * randomSign;
+	ball.speed = ball.speed * randomSign;
+	window.previousBallDirection = randomSign;
+}
+
 function bounceBall() {
+	//console.log("bounceBall() foi chamada");
 	if (gameOver == true)
 		return ;
 	ball.x += ball.speed;
 	ball.y += ball.gravity;
-
+	//console.log("ball.speed:", ball.speed);
+	//console.log("window.previousBallDirection:", window.previousBallDirection);
 	// Update previousBallDirection and reset ballTurnedRight if necessary
 	if (ball.speed > 0 && window.previousBallDirection == -1) {
 		window.previousBallDirection = 1;
-		ballTurnedRight = true;
+		window.ballTurnedRight = true;
 		window.lastLeftHitTime = Date.now();
+		console.log("game.js: lastLeftHitTime", window.lastLeftHitTime);
 
 	} else if (ball.speed < 0 && window.previousBallDirection == 1) {
 		window.previousBallDirection = -1;
@@ -423,18 +432,18 @@ function loop() {
 		}
 		draw(player1);
 		draw(player2);
-    }
+	}
 	console.log()
-    if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
-		console.log("loop game");
+	if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
+		//console.log("loop game");
 		handleMoves();
-        bounceBall();
-        paddleCollision();
+		bounceBall();
+		paddleCollision();
 		if (window.ai) {
-			aiLogic(window.ball, window.canvas);
+			aiLogic(window.ball, window.canvas, aiRefreshView);
 		}
-        drawAll();
-        if (score1 === 10 || score2 === 10) {
+		drawAll();
+		if (score1 === 10 || score2 === 10) {
 			let x;
 			if (score1 === 10)
 				x = canvas.width / 4;
@@ -465,18 +474,18 @@ function loop() {
 					context.font = '30px \'Courier New\', Courier, monospace';
 					context.fillText('S - START NEW GAME', x, canvas.height * 0.875);
 				}
-            gameOver = true;
-            window.cancelAnimationFrame(ani);
-        }
-    }
+			gameOver = true;
+			window.cancelAnimationFrame(ani);
+		}
+	}
 
-    if (!gameOver && score1 < 10 && score2 < 10 && init === 1) {
-        ani = window.requestAnimationFrame(loop);
-    } else if (gameOver && getAuthenticationStatus()) {
-        let finalResult;
-        let opponentType;
+	if (!gameOver && score1 < 10 && score2 < 10 && init === 1) {
+		ani = window.requestAnimationFrame(loop);
+	} else if (gameOver && getAuthenticationStatus()) {
+		let finalResult;
+		let opponentType;
 
-	    // Determines the opponent type based on the game mode
+		// Determines the opponent type based on the game mode
 		if (window.isTournament)
 		{
 			opponentType = username2;
@@ -492,12 +501,12 @@ function loop() {
 			}
 		}
 
-	    // Determines the result based on the score
-	    if (score1 === 10) {
-	        finalResult = 'win';
-	    } else {
-	        finalResult = 'lose';
-	    }
+		// Determines the result based on the score
+		if (score1 === 10) {
+			finalResult = 'win';
+		} else {
+			finalResult = 'lose';
+		}
 
 		console.log('Final result:', finalResult);
 		console.log('Opponent type:', opponentType);
@@ -505,10 +514,10 @@ function loop() {
 		let score = score1 + '-' + score2;
 		console.log('Score:', score);
 
-	    // Register the result in the backend if not in a tournament
+		// Register the result in the backend if not in a tournament
 		if (!window.isTournament)
-	    	registerMatchResult(opponentType, finalResult, score);
-    }
+			registerMatchResult(opponentType, finalResult, score);
+	}
 }
 
 /**
