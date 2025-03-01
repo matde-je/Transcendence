@@ -273,12 +273,20 @@ function preventPaddleOverlap(paddle1, paddle2) {
 
 function handleEdgeCollisions(player) {
 	ball.speed *= -1;
-	if (ball.y + (ball.height / 2) <= player.y + (player.height / 6)) //Thouch upper edge!!
-	ball.gravity = -1 * maxGravity;
-	else if (ball.y + (ball.height / 2) >= player.y + (player.height * 5) / 6) // Thouch lower edge!!
-	ball.gravity = maxGravity;
-	else
-	ball.gravity = Math.sign(ball.gravity) * initialBallGravity; // Thouch center!!
+
+	// Calculate impact position as a percentage of the paddle height
+	const impactPoint = (ball.y + ball.height / 2 - player.y) / player.height; // Value between 0 and 1
+
+	// Define gravity range (-maxGravity to maxGravity)
+	const gravityRange = maxGravity - initialBallGravity;
+
+	if (impactPoint < 0.5) {
+		// Ball hit upper half → Negative gravity (upward)
+		ball.gravity = -initialBallGravity - (gravityRange * (0.5 - impactPoint) * 2);
+	} else {
+		// Ball hit lower half → Positive gravity (downward)
+		ball.gravity = initialBallGravity + (gravityRange * (impactPoint - 0.5) * 2);
+	}
 }
 
 function paddleCollision() {
