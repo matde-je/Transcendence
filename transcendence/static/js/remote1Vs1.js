@@ -1,7 +1,7 @@
 //////////////////////remote1Vs1.js////////////////////////////////
 
-import { getCookie, checkAuthentication, getAuthenticationStatus, getUserData, getUsernameById } from './utils.js';
-import { getPendingInvitesForLoggedInUser, getPendingInviteId, getInviteDetails, removeButtons, getAcceptedInvite } from './utils.js';
+import { getCookie, checkAuthentication, getAuthenticationStatus, getUserData, getUsernameById, updateInviteInit } from './utils.js';
+import { getPendingInvitesForLoggedInUser, getPendingInviteId, getInviteDetails, removeButtons, getAcceptedInvite, getAcceptedInviteId } from './utils.js';
 import { showHome } from './app.js';
 "use strict"
 
@@ -12,13 +12,13 @@ let score2 = 0;
 let ani;
 let gameOver = false;
 let pause = false;
-let init = 0;
+window.init = 0;
 let initialBallGravity = 1;
 let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
 let paddleGravity = 2;
 let remoteReady = 0;
-const gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
+// const gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
 
 export async function initializeGame() {
 
@@ -105,35 +105,91 @@ window.addEventListener("keydown", async (e) => {
 	if (window.location.pathname === '/rock-paper-scissors/multiplayer')
 		return;
 
+	const loggedInUser = await getUserData();
+	const loggedInUserId = loggedInUser.id;
+	console.log('loggedInUserId:', loggedInUserId);
+	const inviteDetails = await getAcceptedInvite(loggedInUserId)
+	console.log('inviteDetails:', inviteDetails);
 
-	if ((keys['r'] || keys['R']) && init === 0) {
-		console.log("Player pressed 'R' - Sending ready status to server");
-		remoteReady = 1;
-		context.font = "20px 'Courier New', Courier, monospace";
-		context.textAlign = "center";
-		context.fillStyle = "white";
-		if(player1 === loggedInUserId)
+	console.log('before R-init:', window.init);
+
+	if ((keys['r'] || keys['R']) && (window.init === 0)) {
+		const player1 = inviteDetails.invite.sender_id;
+		const player2 = inviteDetails.invite.recipient_id;
+		//const init = inviteDetails.invite.init_oponente;
+		console.log('player1:', player1);
+		console.log('player2:', player2);
+		console.log('key-1init:', window.init);
+
+		if(player1 === loggedInUserId) {
+			console.log("Player pressed 'R' - Sending ready status to server");
+			remoteReady = 1;
+			context.font = "20px 'Courier New', Courier, monospace";
+			context.textAlign = "center";
+			context.fillStyle = "white";
 			context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
-		else if(player2 === loggedInUserId)
-			context.fillText("PLAYER 2 - UP AND DOWN", canvas.width / 2, 290);
-		//context.fillText("PLAYER 2 - Remote ", canvas.width / 2, 290);
-		context.fillText("P - PAUSE", canvas.width / 2, 320);
-		context.fillText("S - START", canvas.width / 2, 350);
+			context.fillText("PLAYER 2 - Remote ", canvas.width / 2, 315);
+			context.fillText("P - PAUSE", canvas.width / 2, 345);
+			context.fillText("S - START", canvas.width / 2, 375);
+			draw(ball);
+			draw(player1);
+			draw(player2);
+			const message = JSON.stringify({
+				sender_id: inviteDetails.invite.sender_id,
+				recipient_id: inviteDetails.invite.recipient_id,
+				message: `Player1-The remote player is ready!`,
+				invite_status: 'accepted',
+				init_oponente: 1,
+			});
+			window.init = 1
+		//	init = inviteDetails.invite.init;
+		//	updateInviteInit(getAcceptedInviteId(player1), init + 1);
+			console.log('key1-player1:', message);
+			console.log('after R-init:', window.init);
+
+			window.remoteSocket.send(message);
+		}
+		if(player2 === loggedInUserId) {
+			console.log("Player pressed 'R' - Sending ready status to server");
+			remoteReady = 1;
+			context.font = "20px 'Courier New', Courier, monospace";
+			context.textAlign = "center";
+			context.fillStyle = "white";
+			context.fillText("PLAYER 1 - Remote ", canvas.width / 2, 290);
+			context.fillText("PLAYER 2 - UP AND DOWN", canvas.width / 2, 315);
+			context.fillText("P - PAUSE", canvas.width / 2, 345);
+			context.fillText("S - START", canvas.width / 2, 375);
+			draw(ball);
+			draw(player1);
+			draw(player2);
+			const message = JSON.stringify({
+				sender_id: inviteDetails.invite.recipient_id,
+				recipient_id: inviteDetails.invite.sender_id,
+				message: `The remote player is ready!`,
+				invite_status: 'accepted',
+				init_oponente: 1,
+			});
+			window.init = 1
+			console.log('key2-player2-init:', message);
+			window.remoteSocket.send(message);
+		}
+
+
 	}
 
-	if ((gameOver || init === 0) && (keys['s'] || keys['S'])) {
+	if ((gameOver || (window.init === 1)) && (keys['s'] || keys['S'])) {
 		console.log("Player pressed 'S'");
-		gameSocket.send(JSON.stringify({ message: "playerReady" }));
+		window.gameSocket.send(JSON.stringify({ message: "playerReady" }));
 		window.cancelAnimationFrame(ani);
 		context.clearRect(0, 0, canvas.width, canvas.height);
 		startCountdown(() => {
 			reset_game();
 			ani = window.requestAnimationFrame(loop);
-			init = 1;
+			window.init = 2;
 		});
 	}
 
-	if (keys['p'] && gameOver == false && init == 1) {
+	if (keys['p'] && gameOver == false && window.init == 2) {
 		pause = !pause;
 		if (pause == true) {
 			context.font = "20px 'Courier New', Courier, monospace";
@@ -164,7 +220,7 @@ function handleMoves() {
 		player1.y = newY;
 
 		// Send movement only if it changed
-		gameSocket.send(JSON.stringify({
+		window.gameSocket.send(JSON.stringify({
 			type: "playerMove",
 			player: 1,
 			y: player1.y
@@ -291,14 +347,14 @@ function startCountdown(callback) {
 /*Sends the current state to server to be broadcast to other players.
 It's used by the players that is considered the "source of truth" for certain aspects of the game*/
 function sendGameState() {
-	if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {
+	if (window.gameSocket && window.gameSocket.readyState === WebSocket.OPEN) {
 		const gameState = {
 			ball: { x: ball.x, y: ball.y },
 			player1: { y: player1.y },
 			score1: score1,
 			score2: score2
 		};
-		gameSocket.send(JSON.stringify({ type: 'gameState', data: gameState }));
+		window.gameSocket.send(JSON.stringify({ type: 'gameState', data: gameState }));
 	}
 }
 
@@ -315,42 +371,6 @@ function updateGameState(data) {
 	score1 = data.score1;
 	score2 = data.score2;
 }
-
-gameSocket.onopen = function (event) {
-	console.log('✅ WebSocket connection established.');
-	//alert('WebSocket connection established.');
-};
-
-// Handling messages from the WebSocket server
-gameSocket.onmessage = function (event) {
-	const data = JSON.parse(event.data);
-
-	if (data.action === "start_game" && data.message === "start_remote_1vs1") {
-		console.log('onmessage: data.action === "start_game", \nBoth players are ready, starting game countdown.');
-		startCountdown(() => {
-			reset_game();
-			ani = window.requestAnimationFrame(loop);
-			init = 1;
-		});
-	} else if (data.message === "playerMove") {
-		if (data.player === 2) {
-			player2.y = data.y;
-		}
-	} else if (data.message === "gameState") {
-		updateGameState(data);
-	}
-};
-
-// Handle errors
-gameSocket.onerror = function (error) {
-	console.error('❌ Game webSocket error:', error);
-};
-
-// Handle socket closing
-gameSocket.onclose = function () {
-	console.log('✅ Game webSocket connection closed.');
-};
-
 
 ///////////////////////PEDRO//////////////////////////
 
@@ -372,11 +392,10 @@ export async function sendInvite(recipient_id) {
 	let inviteData
 	if (response.ok) {
 		inviteData = await response.json();
-		console.log('Invite created successfully:', inviteData);
+		//console.log('Invite created successfully:', inviteData);
 	} else {
 		const errorData = await response.json();
-		console.error('Failed to create invite, status:', response.status, 'error:', errorData);
-
+		//console.error('Failed to create invite, status:', response.status, 'error:', errorData);
 	}
 	const message = JSON.stringify({
 		sender_id: inviteData.sender_id,
@@ -385,7 +404,7 @@ export async function sendInvite(recipient_id) {
 		invite_status: 'pending',
 	});
 
-	console.log('message:', message);
+	//console.log('message:', message);
 	updateInviteButtons();
 	window.remoteSocket.send(message);
 }
@@ -407,23 +426,23 @@ export async function updateInviteButtons() {
 		const friendIdNumber = parseInt(friendId, 10);
 
 		const inviteDetails = await getInviteDetails(inviteId);
-		console.log('***********************');
+		/* console.log('***********************');
 		
 		console.log('isOnline:', isOnline);
 		console.log('inviteDetails:', inviteDetails);
 		console.log('ivite_type:', invite_type.includes('sender'));
 		console.log('loggedInUserId:', loggedInUserId);
-		console.log('friendId:', friendId);
-		if(inviteId){
+		console.log('friendId:', friendId); */
+/* 		if(inviteId){
 			const inviteDetails = await getInviteDetails(inviteId);
 			console.log('inviteDetailsSender_id:', inviteDetails.invite.sender_id);
 			console.log('inviteDetailsRecipient_id:', inviteDetails.invite.recipient_id);
 			console.log('inviteDetailsInvite_status:', inviteDetails.invite.invite_status);
-		}
+		} */
 		
 	
 	if (inviteDetails && isOnline && invite_type.includes('sender') && inviteDetails.invite.sender_id === loggedInUserId  && inviteDetails.invite.recipient_id === friendIdNumber) {
-		console.log('***********2***********');
+		//console.log('***********2***********');
 			removeButtons(buttonContainer);
 			let cancelButton = buttonContainer.querySelector('#cancelButton');
 			if (!cancelButton) {
@@ -437,7 +456,7 @@ export async function updateInviteButtons() {
 				buttonContainer.insertBefore(cancelButton, buttonContainer.firstChild);
 			}
 	} else if (inviteDetails && isOnline && invite_type.includes('recipient') && inviteDetails.invite.recipient_id === loggedInUserId && inviteDetails.invite.sender_id === friendIdNumber) {
-		console.log('***********3***********');
+		//console.log('***********3***********');
 /* 			console.log('isOnline:', isOnline);
 		console.log('invite_type:', invite_type);
 		console.log('intiveDetails:', inviteDetails);
@@ -465,7 +484,7 @@ export async function updateInviteButtons() {
 		};
 		buttonContainer.insertBefore(acceptButton, buttonContainer.firstChild);
 	}else if(isOnline && !inviteDetails && inviteId){
-		console.log('***********4***********');
+	//	console.log('***********4***********');
 /* 			console.log('isOnline:', isOnline);
 		console.log('inviteId:', !inviteId);
 		console.log('inviteDetails:', !inviteDetails);
@@ -474,7 +493,7 @@ export async function updateInviteButtons() {
 
 		removeButtons(buttonContainer);
 	} else if (isOnline) {
-		console.log('***********1***********');
+		//console.log('***********1***********');
 /* 			console.log('isOnline:', isOnline);
 		console.log('inviteId:', !inviteId);
 		console.log('inviteDetails:', !inviteDetails); */
@@ -506,13 +525,13 @@ async function cancelInvite(inviteId) {
         });
 
         if (response.ok) {
-            alert('Invite canceled');
-            console.log('Invite canceled:', inviteId);
+          //  alert('Invite canceled');
+           // console.log('Invite canceled:', inviteId);
 
             // Fetch invite details after canceling
             const inviteDetails = await getInviteDetails(inviteId);
             if (inviteDetails) {
-                console.log('Invite details after cancellation:', inviteDetails);
+             //   console.log('Invite details after cancellation:', inviteDetails);
 				const message = JSON.stringify({
 					sender_id: inviteDetails.invite.sender_id,
 					recipient_id: inviteDetails.invite.recipient_id,
@@ -546,13 +565,13 @@ async function declineInvite(inviteId) {
         });
 
         if (response.ok) {
-            alert('Invite rejected');
-            console.log('Invite rejected:', inviteId);
+          //  alert('Invite rejected');
+          //  console.log('Invite rejected:', inviteId);
 
 
             const inviteDetails = await getInviteDetails(inviteId);
             if (inviteDetails) {
-                console.log('Invite details after rejected:', inviteDetails);
+             //   console.log('Invite details after rejected:', inviteDetails);
 				const message = JSON.stringify({
 					sender_id: inviteDetails.invite.recipient_id,
 					recipient_id: inviteDetails.invite.sender_id,
@@ -588,12 +607,12 @@ async function acceptInvite(inviteId) {
 
         if (response.ok) {
             alert('Invite accept');
-            console.log('Invite accept:', inviteId);
+        //    console.log('Invite accept:', inviteId);
 
 
             const inviteDetails = await getInviteDetails(inviteId);
             if (inviteDetails) {
-                console.log('Invite details after accept:', inviteDetails);
+             //   console.log('Invite details after accept:', inviteDetails);
 				const message = JSON.stringify({
 					sender_id: inviteDetails.invite.recipient_id,
 					recipient_id: inviteDetails.invite.sender_id,
@@ -622,7 +641,7 @@ async function acceptInvite(inviteId) {
 ////////////////////////////////////LOOP///////////////////////////////////
 
 function loop() {
-	if (init === 0) {
+	if (window.init === 0 ) {
 		reset_game();
 		context.font = '20px \'Courier New\', Courier, monospace';
 		context.textAlign = 'center';
@@ -632,8 +651,18 @@ function loop() {
 		draw(player1);
 		draw(player2);
 	}
+	if(window.init === 1){
+		context.font = '20px \'Courier New\', Courier, monospace';
+		context.textAlign = 'center';
+		context.fillStyle = 'white';
+		context.fillText('WAITING FOR REMOTE PLAYER TO BE READY...', canvas.width / 2,  canvas.height * 0.125);
+		draw(ball);
+		draw(player1);
+		draw(player2);
+	}
+	console.log('loop-init:', window.init);
 	console.log('Enter loop');
-	if (!gameOver && !pause && init === 1) {
+	if (!gameOver && !pause && window.init === 2) {
 		console.log("loop game");
 		handleMoves();
 		bounceBall();
@@ -659,6 +688,6 @@ function loop() {
 		}
 	}
 
-	if (!gameOver && score1 < 10 && score2 < 10 && init === 1)
+	if (!gameOver && score1 < 10 && score2 < 10 && window.init === 2)
 		ani = window.requestAnimationFrame(loop);
 }

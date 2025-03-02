@@ -132,7 +132,7 @@ export function initializeNavbar(authenticated) {
         }
         window.socket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            // console.log('Parsed data:', data);
+        //    console.log('socket - Parsed data:', data);
             if (data.online_friends) {
                 window.onlineFriends = data.online_friends;
                 update_onlinestatus_ui();
@@ -147,7 +147,7 @@ export function initializeNavbar(authenticated) {
 				const data = JSON.parse(e.data);
 				alert(data.message);
 				console.log('recipiente_data:', data);
-                console.log('invite_status:', data.invite_status);
+            //    console.log('invite_status:', data.invite_status);
                 if(data.invite_status === 'accepted') {
                     showHome();
                 }
@@ -158,6 +158,35 @@ export function initializeNavbar(authenticated) {
 				console.log("Remote WebSocket connection closed.");
 			};
 		};
+        window.gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
+        window.gameSocket.onopen = function (event) {
+            console.log('✅ WebSocket connection established.');
+            //alert('WebSocket connection established.');
+        };
+        window.gameSocket.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+        
+            if (data.action === "start_game" && data.message === "start_remote_1vs1") {
+                console.log('onmessage: data.action === "start_game", \nBoth players are ready, starting game countdown.');
+                startCountdown(() => {
+                    reset_game();
+                    ani = window.requestAnimationFrame(loop);
+                    init = 1;
+                });
+            } else if (data.message === "playerMove") {
+                if (data.player === 2) {
+                    player2.y = data.y;
+                }
+            } else if (data.message === "gameState") {
+                updateGameState(data);
+            }
+        };
+        window.gameSocket.onerror = function (error) {
+            console.error('❌ Game webSocket error:', error);
+        };
+        window.gameSocket.onclose = function () {
+            console.log('✅ Game webSocket connection closed.');
+        };
 
         fetchWithRetry('/users/user/', {
             method: 'GET',

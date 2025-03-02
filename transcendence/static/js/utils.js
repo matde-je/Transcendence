@@ -228,7 +228,7 @@ export async function getPendingInviteId(loggedInUserId) {
         if (invite) {
             return invite.invite_id;
         } else {
-            console.log('No pending invites found for the logged in user.');
+           // console.log('No pending invites found for the logged in user.');
             return null;
         }
     } catch (error) {
@@ -259,7 +259,7 @@ export function removeButtons(buttonContainer) {
 export async function getInviteDetails(inviteId) {
 	try {
         if(!inviteId) {
-            console.log('No invite ID provided');
+           // console.log('No invite ID provided');
             return null;
         }
 		const response = await fetch(`/users/invite/${inviteId}/details/`, {
@@ -271,7 +271,7 @@ export async function getInviteDetails(inviteId) {
 		});
 		if (response.ok) {
 			const inviteDetails = await response.json();
-			console.log('Invite details:', inviteDetails);
+			//console.log('Invite details:', inviteDetails);
 			return inviteDetails;
 		} else {
 			console.error('Failed to fetch invite details, status:', response.status);
@@ -306,3 +306,52 @@ export async function getAcceptedInvite(user_id)
         return null;
     }
 }
+
+export async function updateInviteInit(inviteId, newInitValue) {
+    try {
+        const response = await fetch(`/users/invite/${inviteId}/update_init/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ init_oponente: newInitValue })
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to update invite init, status: ${response.status}`);
+        }
+        const updatedInvite = await response.json();
+        return updatedInvite;
+    } catch (error) {
+        console.error('Error updating invite init:', error);
+        return null;
+    }
+}
+
+
+export async function getAcceptedInviteId(loggedInUserId) {
+    try {
+        const response = await fetch(`/users/invite/${loggedInUserId}/invites_id_accepted/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        const data = await response.json();
+        const invite = data.invites.find(invite => 
+            invite.invite_status === 'accepted' && (invite.sender_id === loggedInUserId || invite.recipient_id === loggedInUserId)
+        );
+
+        if (invite) {
+            return invite.invite_id;
+        } else {
+           // console.log('No pending invites found for the logged in user.');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching invites:', error);
+        return null;
+    }
+}
+

@@ -243,6 +243,7 @@ def create_invite(request):
         sender=sender,
         recipient=recipient,
         invite_status='pending',
+        init_oponente = data.get('init_oponente', 0)
     )
     return JsonResponse({
         'detail': 'Invite created successfully!',
@@ -250,6 +251,7 @@ def create_invite(request):
         'sender_id': sender.id,
         'recipient_id': recipient.id,
         'invite_status': invite.invite_status,
+        'init_oponente' : data.get('init_oponente', 0),
     })
 
 @login_required
@@ -268,6 +270,29 @@ def check_user_invites(request, user_id):
             'sender_id': invite.sender.id,
             'recipient_id': invite.recipient.id,
             'invite_status': invite.invite_status,
+            'init_oponente': invite.init_oponente
+        })
+
+    return JsonResponse({'invites': invites})
+
+
+@login_required
+def invites_id_accepted(request, user_id):
+    accepted_invites = GameInvite.objects.filter(invite_status='accepted').filter(
+        sender=user_id
+    ) | GameInvite.objects.filter(invite_status='accepted').filter(
+        recipient=user_id
+    )
+    
+    invites = []
+
+    for invite in accepted_invites:
+        invites.append({
+            'invite_id': invite.id,
+            'sender_id': invite.sender.id,
+            'recipient_id': invite.recipient.id,
+            'invite_status': invite.invite_status,
+            '_oponente': invite.init_oponente
         })
 
     return JsonResponse({'invites': invites})
@@ -327,21 +352,46 @@ def get_invite_details(request, invite_id):
 @login_required
 def get_accepted_invite(request, user_id):
     try:
-        invite = GameInvite.objects.get(
-            invite_status='accepted',
+        invite = GameInvite.objects.filter(
+            invite_status='accepted'
+        ).filter(
             sender_id=user_id
-        ) or GameInvite.objects.get(
-            invite_status='accepted',
+        ).first() or GameInvite.objects.filter(
+            invite_status='accepted'
+        ).filter(
             recipient_id=user_id
-        )
+        ).first()
+        
+        if not invite:
+            return JsonResponse({'error': 'Accepted invite not found'}, status=404)
         
         invite_details = {
             'invite_id': invite.id,
             'sender_id': invite.sender.id,
             'recipient_id': invite.recipient.id,
             'invite_status': invite.invite_status,
+            'init_oponente': invite.init_oponente
         }
         
         return JsonResponse({'invite': invite_details})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+@login_required
+@require_POST
+def update_invite_init(request, invite_id):
+    try:
+        invite = GameInvite.objects.get(id=invite_id)
+        data = json.loads(request.body)
+        new_init_value = data.get('init_oponente')
+        invite.init_oponente = new_init_value
+        invite.save()
+        return JsonResponse({
+            'detail': 'Invite init updated successfully!',
+            'invite_id': invite.id,
+            'init_oponente': invite.init_oponente
+        })
     except GameInvite.DoesNotExist:
-        return JsonResponse({'error': 'Accepted invite not found'}, status=404)
+        return JsonResponse({'error': 'Invite not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

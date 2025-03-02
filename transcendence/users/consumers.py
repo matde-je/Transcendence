@@ -107,8 +107,9 @@ class AlertConsumer(AsyncWebsocketConsumer):
         message = text_data_json.get('message')
         sender_id = self.user.id
         invite_status = text_data_json.get('invite_status', None)
+        init_oponente = text_data_json.get('init_oponente', None)
 
-        print(f"Parsed message: recipient_id={recipient_id}, message={message}, sender_id={sender_id}, invite_status={invite_status}")
+        print(f"Parsed message: recipient_id={recipient_id}, message={message}, sender_id={sender_id}, invite_status={invite_status}, init_oponente={init_oponente}")
 
         if recipient_id:
             recipient_group_name = f'user_{recipient_id}'
@@ -120,6 +121,7 @@ class AlertConsumer(AsyncWebsocketConsumer):
                     'recipient_id': recipient_id,
                     'sender_id': sender_id,
                     'invite_status': invite_status,
+                    'init_oponente': init_oponente,
                 }
             )
 
@@ -128,14 +130,16 @@ class AlertConsumer(AsyncWebsocketConsumer):
         recipient_id = event['recipient_id']
         sender_id = event['sender_id']
         invite_status = event.get('invite_status', None)
+        init_oponente = event.get('init_oponente', 0)
 
-        print(f"Parsed message-chat: recipient_id={recipient_id}, message={message}, sender_id={sender_id}, invite_status={invite_status}")
+        print(f"Parsed message-chat: recipient_id={recipient_id}, message={message}, sender_id={sender_id}, invite_status={invite_status}, init_oponente={init_oponente}")
 
         await self.send(text_data=json.dumps({
             'message': message,
             'recipient_id': recipient_id,
             'sender_id': sender_id,
             'invite_status': invite_status,
+            'init_oponente': init_oponente,
         }))
 
     async def accept_invite(self, event):
