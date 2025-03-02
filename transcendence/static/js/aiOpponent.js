@@ -12,16 +12,13 @@ function addPredicError(predictedY, player2, canvas) {
 	// Generate a random\\ number to determine the error type
 	const randomFactor = Math.random(); // Value between 0 and 1
 
-	if (randomFactor < 0.03) {
-		// 3% chance: completely wrong predic (outside the paddle)
-		return Math.random() * canvas.height;
-	} else if (randomFactor < 0.4) {
-		// 37% chance: high deviation (closer to edges)
-		return predictedY + (Math.random() * maxOffset * 2 - maxOffset);
-	} else {
+	if (randomFactor < 1) {
+		// 40% chance: High deviation (closer to edges and sometimes outside)
+		return predictedY + (Math.random() * maxOffset * 2.6 - maxOffset * 1.3);
+	} /*else {
 		// 60% chance: small deviation (close to the center)
 		return predictedY + (Math.random() * maxOffset * 1.2 - maxOffset * 0.6);
-	}
+	}*/
 }
 
 function predBallYPos(ball, canvas, player2) {
@@ -58,11 +55,9 @@ function aiLogic(ball, canvas, aiRefreshView, inicialTime) {
 
 		if (!lastPredicUpdateTime || (currentTime - lastPredicUpdateTime >= aiRefreshView)) {
 				//console.log("currentTime - lastPredic:", currentTime - lastPredicUpdateTime);
-
 			const predictedY = predBallYPos(ball, canvas, player2);
 			lastPredicY = addPredicError(predictedY, player2, canvas);
 			lastPredicUpdateTime = currentTime;
-
 				//console.log("aioppon.js: lastPredicUpdateTime:", lastPredicUpdateTime);
 		}
 		let newY = player2.y;

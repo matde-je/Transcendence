@@ -12,8 +12,7 @@ let gameOver = false;
 let pause = false;
 let init = 0;
 let initialBallGravity = 1;
-let maxGravity = initialBallGravity * 2;
-let ballSpeed = 5;
+let ballSpeed = 6;
 let paddleGravity = 4;
 let multiplayer = 0;
 let username1 = " Anonymous";
@@ -42,15 +41,14 @@ export async function initializeGame() {
 	}
 	canvas = document.getElementById("game");
 	context = canvas.getContext("2d");
-	canvas.width = 700;
+	canvas.width = 800;
 	canvas.height = 500;
 	window.canvas = canvas;
 	window.context = context;
 	score1 = 0;
 	score2 = 0;
 	init = 0;
-	initialBallGravity = 1;
-	maxGravity = initialBallGravity * 2;
+	window.maxGravity = initialBallGravity * 3;
 	ballSpeed = 7;
 	multiplayer = 0;
 	window.ai = 0;
@@ -117,21 +115,10 @@ window.ball = new Element ( {
 	gravity: initialBallGravity,
 });
 
-
 function reset_game() {
 	pause = gameOver = false;
 	score1 = score2 = 0;
-	player1.x = 10 * (window.canvas.width / 550);
-	player1.y = 170 * (window.canvas.height / 400);
-	window.player2.x = 530 * (window.canvas.width / 550);
-	window.player2.y = 170 * (window.canvas.height / 400);
-
-	if (multiplayer) {
-		player3.x = 10 * (window.canvas.width / 550);
-		player3.y = 230 * (window.canvas.height / 400);
-		player4.x = 530 * (window.canvas.width / 550);
-		player4.y = 230 * (window.canvas.height / 400);
-	}
+	playersToInitialPos();
 	ballToCenterAndMove();
 }
 
@@ -272,22 +259,28 @@ function preventPaddleOverlap(paddle1, paddle2) {
 }
 
 function handleEdgeCollisions(player) {
-	ball.speed *= -1;
+	ball.speed *= -1; // Reverse X direction when hitting paddle
 
-	// Calculate impact position as a percentage of the paddle height
-	const impactPoint = (ball.y + ball.height / 2 - player.y) / player.height; // Value between 0 and 1
+	let impactPoint = (ball.y + ball.height / 2 - player.y) / player.height; // Normalize impact position
+	console.log("impactPoint:", impactPoint);
 
-	// Define gravity range (-maxGravity to maxGravity)
-	const gravityRange = maxGravity - initialBallGravity;
-
-	if (impactPoint < 0.5) {
-		// Ball hit upper half → Negative gravity (upward)
-		ball.gravity = -initialBallGravity - (gravityRange * (0.5 - impactPoint) * 2);
-	} else {
-		// Ball hit lower half → Positive gravity (downward)
-		ball.gravity = initialBallGravity + (gravityRange * (impactPoint - 0.5) * 2);
+	// If hitting the top 5%, force the ball to go UP (-maxGravity)
+	if (impactPoint < 0.15) {
+		ball.gravity = -maxGravity;
 	}
+	// If hitting the bottom 5%, force the ball to go DOWN (+maxGravity)
+	else if (impactPoint > 0.85) {
+		ball.gravity = maxGravity;
+	}
+	// Otherwise, smoothly adjust gravity while keeping its direction
+	else {
+		let gravitySign = Math.sign(ball.gravity); // Keep current direction
+		let gravityRange = (maxGravity - initialBallGravity) * (0.5 - Math.abs(impactPoint - 0.5)) * 2;
+		ball.gravity = gravitySign * gravityRange;
+	}
+	console.log("ball.gravity:", ball.gravity);
 }
+console.log("ball.gravity:", ball.gravity);
 
 function paddleCollision() {
 	if (gameOver == true)
@@ -310,11 +303,13 @@ function paddleCollision() {
 	//point scored
 	if (ball.x + ball.width < 0) {
 		score2 += 1;
-		ballToCenterAndMove()
+		ballToCenterAndMove();
+		playersToInitialPos();
 
 	} else if (ball.x > canvas.width) {
 		score1 += 1;
-		ballToCenterAndMove()
+		ballToCenterAndMove();
+		playersToInitialPos();
 	}
 }
 
@@ -328,26 +323,38 @@ function ballToCenterAndMove() {
 	window.previousBallDirection = randomSign;
 }
 
+function playersToInitialPos() {
+	player1.x = 10 * (window.canvas.width / 550);
+	player1.y = 170 * (window.canvas.height / 400);
+	window.player2.x = 530 * (window.canvas.width / 550);
+	window.player2.y = 170 * (window.canvas.height / 400);
+	if (multiplayer) {
+		player3.x = 10 * (window.canvas.width / 550);
+		player3.y = 230 * (window.canvas.height / 400);
+		player4.x = 530 * (window.canvas.width / 550);
+		player4.y = 230 * (window.canvas.height / 400);
+	}
+}
+
 function bounceBall() {
 	//console.log("bounceBall() foi chamada");
 	if (gameOver == true)
 		return ;
 	ball.x += ball.speed;
 	ball.y += ball.gravity;
-	//console.log("ball.speed:", ball.speed);
-	//console.log("window.previousBallDirection:", window.previousBallDirection);
+		//console.log("ball.speed:", ball.speed);
+		//console.log("window.previousBallDirection:", window.previousBallDirection);
 	// Update previousBallDirection and reset ballTurnedRight if necessary
 	if (ball.speed > 0 && window.previousBallDirection == -1) {
 		window.previousBallDirection = 1;
 		window.ballTurnedRight = true;
 		window.lastLeftHitTime = Date.now();
-		console.log("game.js: lastLeftHitTime", window.lastLeftHitTime);
+			//console.log("game.js: lastLeftHitTime", window.lastLeftHitTime);
 
 	} else if (ball.speed < 0 && window.previousBallDirection == 1) {
 		window.previousBallDirection = -1;
 		ballTurnedRight = false;
 	}
-
 	//Keep in bounds
 	if (ball.y <= 0 || ball.y + ball.width >= canvas.height) {
 		ball.gravity *= -1;
