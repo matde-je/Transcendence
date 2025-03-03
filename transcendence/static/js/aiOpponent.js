@@ -4,21 +4,23 @@
 
 let lastPredicUpdateTime = 0;
 let lastPredicY = 0;
-
+/*
+//Getting value 0 to 1 where 0 ball hit upper edde, 0,5 center, 1 lower edge.
+let impactPoint = (ball.y + ball.height / 2 - player2.y) / player2.height;
+*/
 function addPredicError(predictedY, player2, canvas) {
-	const paddleCenter = player2.y + player2.height / 2;
 	const maxOffset = player2.height / 2; // Max deviation within paddle height
 
 	// Generate a random\\ number to determine the error type
 	const randomFactor = Math.random(); // Value between 0 and 1
 
-	if (randomFactor < 1) {
-		// 40% chance: High deviation (closer to edges and sometimes outside)
-		return predictedY + (Math.random() * maxOffset * 2.6 - maxOffset * 1.3);
-	} /*else {
-		// 60% chance: small deviation (close to the center)
-		return predictedY + (Math.random() * maxOffset * 1.2 - maxOffset * 0.6);
-	}*/
+	if (randomFactor < 0.3) {
+		// 30% chance: High deviation (closer to edges and sometimes outside)
+		return predictedY + (Math.random() * maxOffset * 3 - maxOffset * 1.5);
+	} else {
+		// 70% chance: small deviation (close to the center)
+		return predictedY + (Math.random() * maxOffset * 1.5 - maxOffset * 0.75);
+	}
 }
 
 function predBallYPos(ball, canvas, player2) {

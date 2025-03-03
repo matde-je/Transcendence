@@ -260,8 +260,8 @@ function preventPaddleOverlap(paddle1, paddle2) {
 
 function handleEdgeCollisions(player) {
 	ball.speed *= -1; // Reverse X direction when hitting paddle
-
-	let impactPoint = (ball.y + ball.height / 2 - player.y) / player.height; // Normalize impact position
+	//Getting value 0 to 1 where 0 ball hit upper edde, 0,5 center, 1 lower edge.
+	let impactPoint = (ball.y + ball.height / 2 - player.y) / player.height;
 	console.log("impactPoint:", impactPoint);
 
 	// If hitting the top 5%, force the ball to go UP (-maxGravity)
