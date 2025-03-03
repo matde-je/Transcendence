@@ -56,7 +56,7 @@ class GameInvite(models.Model):
     invite_status = models.CharField(max_length=20, default='none')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    init_oponente = models.IntegerField(default=0)
+    init_opponent = models.IntegerField(default=0)
     
     def __str__(self):
-        return f"GameInvite from {self.sender} to {self.recipient} - invite_status: {self.invite_status}, init_oponente: {self.init_oponente}"
+        return f"GameInvite from {self.sender} to {self.recipient} - invite_status: {self.invite_status}, init_opponent: {self.init_opponent}"

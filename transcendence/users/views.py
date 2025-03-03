@@ -243,7 +243,7 @@ def create_invite(request):
         sender=sender,
         recipient=recipient,
         invite_status='pending',
-        init_oponente = data.get('init_oponente', 0)
+        init_opponent = data.get('init_opponent', 0)
     )
     return JsonResponse({
         'detail': 'Invite created successfully!',
@@ -251,7 +251,7 @@ def create_invite(request):
         'sender_id': sender.id,
         'recipient_id': recipient.id,
         'invite_status': invite.invite_status,
-        'init_oponente' : data.get('init_oponente', 0),
+        'init_opponent' : data.get('init_opponent', 0),
     })
 
 @login_required
@@ -270,7 +270,7 @@ def check_user_invites(request, user_id):
             'sender_id': invite.sender.id,
             'recipient_id': invite.recipient.id,
             'invite_status': invite.invite_status,
-            'init_oponente': invite.init_oponente
+            'init_opponent': invite.init_opponent
         })
 
     return JsonResponse({'invites': invites})
@@ -292,7 +292,7 @@ def invites_id_accepted(request, user_id):
             'sender_id': invite.sender.id,
             'recipient_id': invite.recipient.id,
             'invite_status': invite.invite_status,
-            '_oponente': invite.init_oponente
+            '_oponente': invite.init_opponent
         })
 
     return JsonResponse({'invites': invites})
@@ -370,7 +370,7 @@ def get_accepted_invite(request, user_id):
             'sender_id': invite.sender.id,
             'recipient_id': invite.recipient.id,
             'invite_status': invite.invite_status,
-            'init_oponente': invite.init_oponente
+            'init_opponent': invite.init_opponent
         }
         
         return JsonResponse({'invite': invite_details})
@@ -383,13 +383,13 @@ def update_invite_init(request, invite_id):
     try:
         invite = GameInvite.objects.get(id=invite_id)
         data = json.loads(request.body)
-        new_init_value = data.get('init_oponente')
-        invite.init_oponente = new_init_value
+        new_init_value = data.get('init_opponent')
+        invite.init_opponent = (invite.init_opponent or 0) + new_init_value
         invite.save()
         return JsonResponse({
             'detail': 'Invite init updated successfully!',
             'invite_id': invite.id,
-            'init_oponente': invite.init_oponente
+            'init_opponent': invite.init_opponent
         })
     except GameInvite.DoesNotExist:
         return JsonResponse({'error': 'Invite not found'}, status=404)

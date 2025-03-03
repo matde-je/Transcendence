@@ -145,13 +145,20 @@ export function initializeNavbar(authenticated) {
 			};
 			window.remoteSocket.onmessage = async function (e) {
 				const data = JSON.parse(e.data);
-				alert(data.message);
+                if(data.message)
+				    alert(data.message);
 				console.log('recipiente_data:', data);
             //    console.log('invite_status:', data.invite_status);
                 if(data.invite_status === 'accepted') {
                     showHome();
                 }
-				console.log('message:', data.message);
+                console.log('data.message:', data.message);
+                if(data.message === "playerReady"){
+                    window.init++;
+                }
+                console.log('init:', window.init);
+                if(data.message)
+				    console.log('message:', data.message);
 				updateInviteButtons();
 			};
 			window.remoteSocket.onclose = function(e) {

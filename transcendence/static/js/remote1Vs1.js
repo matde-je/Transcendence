@@ -12,12 +12,14 @@ let score2 = 0;
 let ani;
 let gameOver = false;
 let pause = false;
-window.init = 0;
 let initialBallGravity = 1;
 let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
 let paddleGravity = 2;
 let remoteReady = 0;
+if (typeof window.init === 'undefined') {
+    window.init = 0;
+}
 // const gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
 
 export async function initializeGame() {
@@ -31,7 +33,6 @@ export async function initializeGame() {
 	window.context = context;
 	score1 = 0;
 	score2 = 0;
-	init = 0;
 	initialBallGravity = 1;
 	maxGravity = initialBallGravity * 2;
 	ballSpeed = 7;
@@ -107,79 +108,52 @@ window.addEventListener("keydown", async (e) => {
 
 	const loggedInUser = await getUserData();
 	const loggedInUserId = loggedInUser.id;
-	console.log('loggedInUserId:', loggedInUserId);
 	const inviteDetails = await getAcceptedInvite(loggedInUserId)
 	console.log('inviteDetails:', inviteDetails);
+	console.log('key-init:', window.init);
 
-	console.log('before R-init:', window.init);
 
-	if ((keys['r'] || keys['R']) && (window.init === 0)) {
+	if (gameOver || (window.init === 0) && (keys['r'] || keys['R'])) {
+		console.log("Player pressed 'R'");
 		const player1 = inviteDetails.invite.sender_id;
 		const player2 = inviteDetails.invite.recipient_id;
-		//const init = inviteDetails.invite.init_oponente;
-		console.log('player1:', player1);
-		console.log('player2:', player2);
-		console.log('key-1init:', window.init);
-
-		if(player1 === loggedInUserId) {
-			console.log("Player pressed 'R' - Sending ready status to server");
-			remoteReady = 1;
-			context.font = "20px 'Courier New', Courier, monospace";
-			context.textAlign = "center";
-			context.fillStyle = "white";
-			context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
-			context.fillText("PLAYER 2 - Remote ", canvas.width / 2, 315);
-			context.fillText("P - PAUSE", canvas.width / 2, 345);
-			context.fillText("S - START", canvas.width / 2, 375);
-			draw(ball);
-			draw(player1);
-			draw(player2);
+		if(player1 === loggedInUserId){
+			console.log('Player1');
 			const message = JSON.stringify({
 				sender_id: inviteDetails.invite.sender_id,
 				recipient_id: inviteDetails.invite.recipient_id,
-				message: `Player1-The remote player is ready!`,
+				//message: `Player1-The remote player is ready!`,
 				invite_status: 'accepted',
-				init_oponente: 1,
+				init_opponent: 1,
 			});
-			window.init = 1
-		//	init = inviteDetails.invite.init;
-		//	updateInviteInit(getAcceptedInviteId(player1), init + 1);
-			console.log('key1-player1:', message);
-			console.log('after R-init:', window.init);
+			console.log('p1-inviteDetails.invite.init_opponent:', inviteDetails.invite.init_opponent);
+			updateInviteInit(inviteDetails.invite.invite_id, 1);
+			console.log('p1-inviteDetails.invite.init_opponent:', inviteDetails.invite.init_opponent);
 
+			window.init++;
 			window.remoteSocket.send(message);
-		}
-		if(player2 === loggedInUserId) {
-			console.log("Player pressed 'R' - Sending ready status to server");
-			remoteReady = 1;
-			context.font = "20px 'Courier New', Courier, monospace";
-			context.textAlign = "center";
-			context.fillStyle = "white";
-			context.fillText("PLAYER 1 - Remote ", canvas.width / 2, 290);
-			context.fillText("PLAYER 2 - UP AND DOWN", canvas.width / 2, 315);
-			context.fillText("P - PAUSE", canvas.width / 2, 345);
-			context.fillText("S - START", canvas.width / 2, 375);
-			draw(ball);
-			draw(player1);
-			draw(player2);
+		}else if(player2 === loggedInUserId){
+			console.log('Player2');
 			const message = JSON.stringify({
 				sender_id: inviteDetails.invite.recipient_id,
 				recipient_id: inviteDetails.invite.sender_id,
-				message: `The remote player is ready!`,
+				message: `Player1-The remote player is ready!`,
 				invite_status: 'accepted',
-				init_oponente: 1,
+				init_opponent: 1,
 			});
-			window.init = 1
-			console.log('key2-player2-init:', message);
+			console.log('p2-inviteDetails.invite.init_opponent:', inviteDetails.invite.init_opponent);
+			updateInviteInit(inviteDetails.invite.invite_id, 1);
+			console.log('p2-inviteDetails.invite.init_opponent:', inviteDetails.invite.init_opponent);
+
 			window.remoteSocket.send(message);
+			window.init++;
 		}
-
-
+		loop();
 	}
+	if (gameOver || (window.init === 1 && inviteDetails.invite.init_opponent === 1) && (keys['r'] || keys['R'])) {
 
-	if ((gameOver || (window.init === 1)) && (keys['s'] || keys['S'])) {
-		console.log("Player pressed 'S'");
-		window.gameSocket.send(JSON.stringify({ message: "playerReady" }));
+		window.remoteSocket.send(JSON.stringify({ message: "playerReady" }));
+
 		window.cancelAnimationFrame(ani);
 		context.clearRect(0, 0, canvas.width, canvas.height);
 		startCountdown(() => {
@@ -189,7 +163,7 @@ window.addEventListener("keydown", async (e) => {
 		});
 	}
 
-	if (keys['p'] && gameOver == false && window.init == 2) {
+	if (keys['p'] && gameOver == false && window.init == 2 && inviteDetails.invite.init_opponent === 2) {
 		pause = !pause;
 		if (pause == true) {
 			context.font = "20px 'Courier New', Courier, monospace";
@@ -346,7 +320,7 @@ function startCountdown(callback) {
 
 /*Sends the current state to server to be broadcast to other players.
 It's used by the players that is considered the "source of truth" for certain aspects of the game*/
-function sendGameState() {
+function sendGameState(id) {
 	if (window.gameSocket && window.gameSocket.readyState === WebSocket.OPEN) {
 		const gameState = {
 			ball: { x: ball.x, y: ball.y },
@@ -640,9 +614,16 @@ async function acceptInvite(inviteId) {
 
 ////////////////////////////////////LOOP///////////////////////////////////
 
-function loop() {
-	if (window.init === 0 ) {
+async function loop() {
+
+	const loggedInUser = await getUserData();
+	const loggedInUserId = loggedInUser.id;
+	//console.log('loggedInUserId:', loggedInUserId);
+	const inviteDetails = await getAcceptedInvite(loggedInUserId)
+
+	if (window.init === 0 && inviteDetails.invite.init_opponent === 0) {
 		reset_game();
+		context.clearRect(0, 0, canvas.width, canvas.height);
 		context.font = '20px \'Courier New\', Courier, monospace';
 		context.textAlign = 'center';
 		context.fillStyle = 'white';
@@ -651,24 +632,45 @@ function loop() {
 		draw(player1);
 		draw(player2);
 	}
-	if(window.init === 1){
+	if (window.init === 1 && inviteDetails.invite.init_opponent === 1) {
+		reset_game();
+		context.clearRect(0, 0, canvas.width, canvas.height);
 		context.font = '20px \'Courier New\', Courier, monospace';
 		context.textAlign = 'center';
 		context.fillStyle = 'white';
-		context.fillText('WAITING FOR REMOTE PLAYER TO BE READY...', canvas.width / 2,  canvas.height * 0.125);
+		context.fillText('WAITING FOR REMOTE PLAYER...', canvas.width / 2,  canvas.height * 0.125);
 		draw(ball);
 		draw(player1);
 		draw(player2);
 	}
+	if (window.init === 0 && inviteDetails.invite.init_opponent === 1) {
+		reset_game();
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		context.font = '20px \'Courier New\', Courier, monospace';
+		context.textAlign = 'center';
+		context.fillStyle = 'white';
+		context.fillText('Remote player is ready! Press (r) to start the game.', canvas.width / 2, canvas.height * 0.125);
+		draw(ball);
+		draw(player1);
+		draw(player2);
+	}
+
+ 	console.log('loop-remote_init:', inviteDetails.invite.init_opponent);
 	console.log('loop-init:', window.init);
 	console.log('Enter loop');
+	if(loggedInUser.id === inviteDetails.invite.sender_id){
+		const id = inviteDetails.invite.recipient_id;
+	}else{
+		const id = inviteDetails.invite.sender_id;
+	}
+
 	if (!gameOver && !pause && window.init === 2) {
 		console.log("loop game");
 		handleMoves();
 		bounceBall();
 		paddleCollision();
 		drawAll();
-		sendGameState();
+		sendGameState(id);
 
 		if (score1 === 10 || score2 === 10) {
 			let x;

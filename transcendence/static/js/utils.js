@@ -309,25 +309,36 @@ export async function getAcceptedInvite(user_id)
 
 export async function updateInviteInit(inviteId, newInitValue) {
     try {
+        // Buscar os detalhes atuais do convite
+        const inviteDetails = await getInviteDetails(inviteId);
+        if (!inviteDetails) {
+            throw new Error('Falha ao buscar detalhes do convite');
+        }
+
+        // Calcular o novo valor de init_opponent
+        const updatedInitValue = (inviteDetails.init_opponent || 0) + newInitValue;
+
+        // Enviar o valor atualizado para o servidor
         const response = await fetch(`/users/invite/${inviteId}/update_init/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
             },
-            body: JSON.stringify({ init_oponente: newInitValue })
+            body: JSON.stringify({ init_opponent: updatedInitValue })
         });
+
         if (!response.ok) {
-            throw new Error(`Failed to update invite init, status: ${response.status}`);
+            throw new Error(`Falha ao atualizar init do convite, status: ${response.status}`);
         }
+
         const updatedInvite = await response.json();
         return updatedInvite;
     } catch (error) {
-        console.error('Error updating invite init:', error);
+        console.error('Erro ao atualizar init do convite:', error);
         return null;
     }
 }
-
 
 export async function getAcceptedInviteId(loggedInUserId) {
     try {
