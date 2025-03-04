@@ -13,7 +13,7 @@ let pause = false;
 let init = 0;
 let initialBallGravity = 1;
 let ballSpeed = 6;
-let paddleGravity = 4;
+let paddleGravity = 4.5;
 let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
@@ -42,7 +42,7 @@ export async function initializeGame() {
 	canvas = document.getElementById("game");
 	context = canvas.getContext("2d");
 	canvas.width = 800;
-	canvas.height = 500;
+	canvas.height = 530;
 	window.canvas = canvas;
 	window.context = context;
 	score1 = 0;

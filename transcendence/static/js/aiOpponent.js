@@ -14,12 +14,12 @@ function addPredicError(predictedY, player2, canvas) {
 	// Generate a random\\ number to determine the error type
 	const randomFactor = Math.random(); // Value between 0 and 1
 
-	if (randomFactor < 0.3) {
+	if (randomFactor < 0.25) {
 		// 30% chance: High deviation (closer to edges and sometimes outside)
-		return predictedY + (Math.random() * maxOffset * 3 - maxOffset * 1.5);
+		return predictedY + (Math.random() * maxOffset * 2.7 - maxOffset * 1.35);
 	} else {
 		// 70% chance: small deviation (close to the center)
-		return predictedY + (Math.random() * maxOffset * 1.5 - maxOffset * 0.75);
+		return predictedY + (Math.random() * maxOffset * 1.4 - maxOffset * 0.70);
 	}
 }
 
