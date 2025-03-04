@@ -78,7 +78,7 @@ export function initializeNavbar(authenticated) {
     if (window.isTournament === true) {
         /* Create an empty navbar for Tournament mode.
            No additional links will be added. */
-        container.innerHTML = ''; 
+        container.innerHTML = '';
         navBarContainer.appendChild(container);
         document.body.appendChild(navBarContainer);
         return;
@@ -172,15 +172,8 @@ export function initializeNavbar(authenticated) {
         };
         window.gameSocket.onmessage = function (event) {
             const data = JSON.parse(event.data);
-        
-            if (data.action === "start_game" && data.message === "start_remote_1vs1") {
-                console.log('onmessage: data.action === "start_game", \nBoth players are ready, starting game countdown.');
-                startCountdown(() => {
-                    reset_game();
-                    ani = window.requestAnimationFrame(loop);
-                    init = 1;
-                });
-            } else if (data.message === "playerMove") {
+
+			if (data.message === "playerMove") {
                 if (data.player === 2) {
                     player2.y = data.y;
                 }
@@ -206,7 +199,7 @@ export function initializeNavbar(authenticated) {
             tournamentLink.innerHTML =
             '<a class="nav-link" href="/tournament" id="tournament" data-link>Pong Tournament</a>';
             navLinksLeft.appendChild(tournamentLink);
-            tournamentLink.querySelector('a').addEventListener('click', 
+            tournamentLink.querySelector('a').addEventListener('click',
                 (e) => {
                     e.preventDefault();
                     showTournamentMenu();
@@ -241,7 +234,7 @@ export function initializeNavbar(authenticated) {
                     const existingAvatar = navLinksRight.querySelector('img');
             if (!existingAvatar) {
                 navLinksRight.appendChild(usernameLink);
-                usernameLink.querySelector('a').addEventListener('click', 
+                usernameLink.querySelector('a').addEventListener('click',
                     (e) => {
                         e.preventDefault();
                         showDashboard();
@@ -312,7 +305,7 @@ export function showHome() {
     document.getElementById('aiScript')?.remove();
     contentElement.innerHTML = `
         <h2 class="text-center text-dark fw-bold mb-5">Pong Game</h2>
-        <div class="text-center"> 
+        <div class="text-center">
             <div class="d-flex justify-content-center">
                 <canvas id="game" width="550" height="400" style="background-color: #000;"></canvas>
             </div>
