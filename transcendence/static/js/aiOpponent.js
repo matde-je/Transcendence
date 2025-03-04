@@ -4,23 +4,22 @@
 
 let lastPredicUpdateTime = 0;
 let lastPredicY = 0;
-
+/*
+//Getting value 0 to 1 where 0 ball hit upper edde, 0,5 center, 1 lower edge.
+let impactPoint = (ball.y + ball.height / 2 - player2.y) / player2.height;
+*/
 function addPredicError(predictedY, player2, canvas) {
-	const paddleCenter = player2.y + player2.height / 2;
 	const maxOffset = player2.height / 2; // Max deviation within paddle height
 
 	// Generate a random\\ number to determine the error type
 	const randomFactor = Math.random(); // Value between 0 and 1
 
-	if (randomFactor < 0.03) {
-		// 3% chance: completely wrong predic (outside the paddle)
-		return Math.random() * canvas.height;
-	} else if (randomFactor < 0.4) {
-		// 37% chance: high deviation (closer to edges)
-		return predictedY + (Math.random() * maxOffset * 2 - maxOffset);
+	if (randomFactor < 0.25) {
+		// 30% chance: High deviation (closer to edges and sometimes outside)
+		return predictedY + (Math.random() * maxOffset * 2.7 - maxOffset * 1.35);
 	} else {
-		// 60% chance: small deviation (close to the center)
-		return predictedY + (Math.random() * maxOffset * 1.2 - maxOffset * 0.6);
+		// 70% chance: small deviation (close to the center)
+		return predictedY + (Math.random() * maxOffset * 1.4 - maxOffset * 0.70);
 	}
 }
 
@@ -58,11 +57,9 @@ function aiLogic(ball, canvas, aiRefreshView, inicialTime) {
 
 		if (!lastPredicUpdateTime || (currentTime - lastPredicUpdateTime >= aiRefreshView)) {
 				//console.log("currentTime - lastPredic:", currentTime - lastPredicUpdateTime);
-
 			const predictedY = predBallYPos(ball, canvas, player2);
 			lastPredicY = addPredicError(predictedY, player2, canvas);
 			lastPredicUpdateTime = currentTime;
-
 				//console.log("aioppon.js: lastPredicUpdateTime:", lastPredicUpdateTime);
 		}
 		let newY = player2.y;
