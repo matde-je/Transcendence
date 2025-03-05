@@ -35,15 +35,15 @@ export async function initializeGame() {
 			username1 = username;
 		});
 	}
-    canvas = document.getElementById("game");
-    context = canvas.getContext("2d");
-    canvas.width = 700;
-    canvas.height = 500;
+	canvas = document.getElementById("game");
+	context = canvas.getContext("2d");
+	canvas.width = 700;
+	canvas.height = 500;
 	window.canvas = canvas;
-    window.context = context;
-    score1 = 0;
-    score2 = 0;
-    init = 0;
+	window.context = context;
+	score1 = 0;
+	score2 = 0;
+	init = 0;
 	initialBallGravity = 1;
 	maxGravity = initialBallGravity * 2;
 	ballSpeed = 7;
@@ -68,7 +68,7 @@ class Element {
 
 const player1 = new Element ( {
 	x: 10,
-    y: 170,
+	y: 170,
 	width: 12,
 	height: 60,
 	color: "#fff",
@@ -77,7 +77,7 @@ const player1 = new Element ( {
 
 window.player2 = new Element ( {
 	x: 530,
-    y: 170, // Center vertically
+	y: 170, // Center vertically
 	width: 12,
 	height: 60,
 	color: "#fff",
@@ -152,7 +152,7 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
 			context.fillText("P - PAUSE", canvas.width / 2, 410);
 			context.fillText("S - START", canvas.width / 2, 440);
-			username2 = "        AI";
+			username2 = "		AI";
 		}
 		if (keys['2'] && init === 0) {
 			context.font = "20px 'Courier New', Courier, monospace";
@@ -163,7 +163,7 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("P - PAUSE", canvas.width / 2, 410);
 			context.fillText("S - START", canvas.width / 2, 440);
 			if (!window.isTournament)
-				username2 = "     HUMAN";
+				username2 = "	 HUMAN";
 		}
 
 		if (keys['4'] && init === 0 && window.isTournament === false) {
@@ -422,18 +422,18 @@ function loop() {
 		}
 		draw(player1);
 		draw(player2);
-    }
+	}
 	console.log()
-    if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
+	if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
 		console.log("loop game");
 		handleMoves();
-        bounceBall();
-        paddleCollision();
+		bounceBall();
+		paddleCollision();
 		if (window.ai) {
 			aiLogic(window.ball, window.canvas);
 		}
-        drawAll();
-        if (score1 === 10 || score2 === 10) {
+		drawAll();
+		if (score1 === 10 || score2 === 10) {
 			let x;
 			if (score1 === 10)
 				x = canvas.width / 4;
@@ -464,18 +464,18 @@ function loop() {
 					context.font = '30px \'Courier New\', Courier, monospace';
 					context.fillText('S - START NEW GAME', x, canvas.height * 0.875);
 				}
-            gameOver = true;
-            window.cancelAnimationFrame(ani);
-        }
-    }
+			gameOver = true;
+			window.cancelAnimationFrame(ani);
+		}
+	}
 
-    if (!gameOver && score1 < 10 && score2 < 10 && init === 1) {
-        ani = window.requestAnimationFrame(loop);
-    } else if (gameOver && getAuthenticationStatus()) {
-        let finalResult;
-        let opponentType;
+	if (!gameOver && score1 < 10 && score2 < 10 && init === 1) {
+		ani = window.requestAnimationFrame(loop);
+	} else if (gameOver && getAuthenticationStatus()) {
+		let finalResult;
+		let opponentType;
 
-	    // Determines the opponent type based on the game mode
+		// Determines the opponent type based on the game mode
 		if (window.isTournament)
 		{
 			opponentType = username2;
@@ -491,12 +491,12 @@ function loop() {
 			}
 		}
 
-	    // Determines the result based on the score
-	    if (score1 === 10) {
-	        finalResult = 'win';
-	    } else {
-	        finalResult = 'lose';
-	    }
+		// Determines the result based on the score
+		if (score1 === 10) {
+			finalResult = 'win';
+		} else {
+			finalResult = 'lose';
+		}
 
 		console.log('Final result:', finalResult);
 		console.log('Opponent type:', opponentType);
@@ -504,10 +504,10 @@ function loop() {
 		let score = score1 + '-' + score2;
 		console.log('Score:', score);
 
-	    // Register the result in the backend if not in a tournament
+		// Register the result in the backend if not in a tournament
 		if (!window.isTournament)
-	    	registerMatchResult(opponentType, finalResult, score);
-    }
+			registerMatchResult(opponentType, finalResult, score);
+	}
 }
 
 /**

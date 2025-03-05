@@ -34,9 +34,7 @@ export async function initializeGame() {
 	initialBallGravity = 1;
 	maxGravity = initialBallGravity * 2;
 	ballSpeed = 7;
-	window.paddleGravity = paddleGravity;
-	window.aiRefreshView = aiRefreshView;
-	ani = window.requestAnimationFrame(loop);
+
 	setupGameSocket();
 }
 
@@ -104,6 +102,7 @@ window.addEventListener("keydown", (e) => {
 	keys[e.key] = true; //mark the key as pressed
 	if (window.location.pathname === '/rock-paper-scissors/multiplayer') {
 		return;
+
 	} else {
 		if ((keys['r'] || keys['R']) && init === 0) {
 			ai = 1;
@@ -152,7 +151,14 @@ function handleMoves() {
 		if (keys['a'] && player1.y + player1.height < canvas.height)
 			newY += player1.gravity * 2; //down
 		player1.y = newY;
+	}
+	/*window.gameSocket.send(JSON.stringify({
+			type: "playerMove",
+			player: 1,
+			y: player1.y
+		}));*/
 }
+//
 /*Invert X ball movement and determine ball effect (gravity) according to point of contact*/
 function handleEdgeCollisions(player) {
 	ball.speed *= -1;
@@ -261,6 +267,9 @@ function startCountdown(callback) {
 		}
 	}, 1000);
 }
+
+////////////////////////////////////REMOTE///////////////////////////////////
+	////////////////NUNO//////////////////
 
 function setupGameSocket() {
 	gameSocket = new WebSocket("wss://your-server-url/game");

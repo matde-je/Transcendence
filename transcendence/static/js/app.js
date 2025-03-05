@@ -173,13 +173,8 @@ export function initializeNavbar(authenticated) {
         };
         window.gameSocket.onmessage = function (event) {
             const data = JSON.parse(event.data);
-
-			if (data.message === "playerMove") {
-                if (data.player === 2) {
-                    player2.y = data.y;
-                }
-            } else if (data.message === "gameState") {
-                updateGameState(data);
+			if (data.message === "gameState") {
+                ??????????
             }
         };
         window.gameSocket.onerror = function (error) {

@@ -17,11 +17,12 @@ let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
 let paddleGravity = 2;
 let remoteReady = 0;
+let isHost = false; // Determines which player controls ball updates
 if (typeof window.init === 'undefined') {
-    window.init = 0;
+	window.init = 0;
 }
 if (typeof window.init_opp === 'undefined') {
-    window.init_opp = 0;
+	window.init_opp = 0;
 }
 // const gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
 
@@ -41,47 +42,22 @@ export async function initializeGame() {
 	ballSpeed = 7;
 	window.paddleGravity = paddleGravity;
 	ani = window.requestAnimationFrame(loop);
+
+	setupGameSocket();
 }
 
 class Element {
-	constructor(options) {
-	this.x = options.x;
-	this.y = options.y;
-	this.width = options.width;
-	this.height = options.height;
-	this.color = options.color;
-	this.speed = options.speed || 2;
-	this.gravity = options.gravity;
-	}
+	constructor(options) {this.x = options.x;this.y = options.y; this.width = options.width;
+		this.height = options.height; this.color = options.color;
+		this.speed = options.speed || 2;this.gravity = options.gravity;}
 }
 
-const player1 = new Element ( {
-	x: 10,
-	y: 170,
-	width: 12,
-	height: 60,
-	color: "#fff",
-	gravity: paddleGravity,
-});
+const player1 = new Element ( { x: 10, y: 170, width: 12, height: 60, color: "#fff", gravity: paddleGravity,});
 
-const player2 = new Element ( {
-	x: 530,
-	y: 170,
-	width: 12,
-	height: 60,
-	color: "#fff",
-	gravity: paddleGravity,
-});
+const player2 = new Element ( { x: 530, y: 170, width: 12, height: 60, color: "#fff", gravity: paddleGravity,});
 
-window.ball = new Element ( {
-	x: 175,
-	y: 200,
-	width: 10,
-	height: 10,
-	color: "#fff",
-	speed: ballSpeed,
-	gravity: initialBallGravity,
-});
+window.ball = new Element ( { x: 175, y: 200, width: 10, height: 10, color: "#fff",
+								speed: ballSpeed, gravity: initialBallGravity,});
 
 function reset_game() {
 	pause = false;
@@ -134,7 +110,7 @@ window.addEventListener("keydown", async (e) => {
 				//message: `Player1-The remote player is ready!`,
 				//invite_status: 'accepted',
 				init_opponent: 1,
-			});		
+			});
 			window.remoteSocket.send(message);
 			window.init++;
 		}
@@ -264,7 +240,6 @@ function bounceBall() {
 	}
 }
 
-
 ///////////////////////////////DRAW FUNCTIONS////////////////////////////////////
 
 function center_line() {
@@ -326,30 +301,41 @@ function startCountdown(callback) {
 ////////////////////////////////////REMOTE///////////////////////////////////
 	////////////////NUNO//////////////////
 
-/*Sends the current state to server to be broadcast to other players.
-It's used by the players that is considered the "source of truth" for certain aspects of the game*/
-function sendGameState() {
-	if (window.gameSocket && window.gameSocket.readyState === WebSocket.OPEN) {
-		const gameState = {
-			ball: { x: ball.x, y: ball.y },
-			player1: { y: player1.y },
-			score1: score1,
-			score2: score2
-		};
-		window.gameSocket.send(JSON.stringify({ type: 'gameState', data: gameState }));
-	}
+function setupGameSocket() { //app.js
+	gameSocket = new WebSocket("wss://your-server-url/game");
+
+	gameSocket.onmessage = function (e) {
+		const data = JSON.parse(e.data);
+		if (data.type === "gameState") {
+			receiveGameState(data);
+		}
+	};
 }
 
-/*Receives game state data from the server and updates the local game state.
-Used by clients to synchronize their game with the state being maintained by the server.*/
-function updateGameState(data) {
-	// Sync game state with received data
-	player1.y = data.player1Y;
-	player2.y = data.player2Y;
-	ball.x = data.ballX;
-	ball.y = data.ballY;
-	ball.speed = data.ballSpeed;
-	ball.gravity = data.ballGravity;
+function sendGameState() {
+	const gameState = {
+		type: "gameState",
+		playerY: player1.y,
+		opponentY: player2.y,
+		ballX: ball.x,
+		ballY: ball.y,
+		ballSpeed: ball.speed,
+		ballGravity: ball.gravity,
+		score1: score1,
+		score2: score2,
+		isHost: isHost
+	};
+	gameSocket.send(JSON.stringify({ type: 'gameState', data: gameState }));
+}
+
+function receiveGameState(data) {
+	player2.y = data.playerY;
+	if (!isHost) {
+		ball.x = data.ballX;
+		ball.y = data.ballY;
+		ball.speed = data.ballSpeed;
+		ball.gravity = data.ballGravity;
+	}
 	score1 = data.score1;
 	score2 = data.score2;
 }
@@ -409,7 +395,7 @@ export async function updateInviteButtons() {
 
 		const inviteDetails = await getInviteDetails(inviteId);
 		/* console.log('***********************');
-		
+
 		console.log('isOnline:', isOnline);
 		console.log('inviteDetails:', inviteDetails);
 		console.log('ivite_type:', invite_type.includes('sender'));
@@ -421,8 +407,8 @@ export async function updateInviteButtons() {
 			console.log('inviteDetailsRecipient_id:', inviteDetails.invite.recipient_id);
 			console.log('inviteDetailsInvite_status:', inviteDetails.invite.invite_status);
 		} */
-		
-	
+
+
 	if (inviteDetails && isOnline && invite_type.includes('sender') && inviteDetails.invite.sender_id === loggedInUserId  && inviteDetails.invite.recipient_id === friendIdNumber) {
 		//console.log('***********2***********');
 			removeButtons(buttonContainer);
@@ -496,24 +482,24 @@ export async function updateInviteButtons() {
 }
 
 async function cancelInvite(inviteId) {
-    try {
-        const response = await fetch(`/users/invite/${inviteId}/cancel/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            credentials: 'include'
-        });
+	try {
+		const response = await fetch(`/users/invite/${inviteId}/cancel/`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			credentials: 'include'
+		});
 
-        if (response.ok) {
-          //  alert('Invite canceled');
-           // console.log('Invite canceled:', inviteId);
+		if (response.ok) {
+		  //  alert('Invite canceled');
+		   // console.log('Invite canceled:', inviteId);
 
-            // Fetch invite details after canceling
-            const inviteDetails = await getInviteDetails(inviteId);
-            if (inviteDetails) {
-             //   console.log('Invite details after cancellation:', inviteDetails);
+			// Fetch invite details after canceling
+			const inviteDetails = await getInviteDetails(inviteId);
+			if (inviteDetails) {
+			 //   console.log('Invite details after cancellation:', inviteDetails);
 				const message = JSON.stringify({
 					sender_id: inviteDetails.invite.sender_id,
 					recipient_id: inviteDetails.invite.recipient_id,
@@ -521,39 +507,39 @@ async function cancelInvite(inviteId) {
 				});
 				window.remoteSocket.send(message);
 				updateInviteButtons();
-            } else {
-                console.log('No invite details after cancellation');
-            }
-        } else {
-            const data = await response.json();
-            console.error('Failed to cancel invite:', data);
-            alert('Failed to cancel invite');
-        }
-    } catch (error) {
-        console.error('Error canceling invite:', error);
-        alert('Error canceling invite');
-    }
+			} else {
+				console.log('No invite details after cancellation');
+			}
+		} else {
+			const data = await response.json();
+			console.error('Failed to cancel invite:', data);
+			alert('Failed to cancel invite');
+		}
+	} catch (error) {
+		console.error('Error canceling invite:', error);
+		alert('Error canceling invite');
+	}
 }
 
 async function declineInvite(inviteId) {
 	try {
-        const response = await fetch(`/users/invite/${inviteId}/reject/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            credentials: 'include'
-        });
+		const response = await fetch(`/users/invite/${inviteId}/reject/`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			credentials: 'include'
+		});
 
-        if (response.ok) {
-          //  alert('Invite rejected');
-          //  console.log('Invite rejected:', inviteId);
+		if (response.ok) {
+		  //  alert('Invite rejected');
+		  //  console.log('Invite rejected:', inviteId);
 
 
-            const inviteDetails = await getInviteDetails(inviteId);
-            if (inviteDetails) {
-             //   console.log('Invite details after rejected:', inviteDetails);
+			const inviteDetails = await getInviteDetails(inviteId);
+			if (inviteDetails) {
+			 //   console.log('Invite details after rejected:', inviteDetails);
 				const message = JSON.stringify({
 					sender_id: inviteDetails.invite.recipient_id,
 					recipient_id: inviteDetails.invite.sender_id,
@@ -561,40 +547,40 @@ async function declineInvite(inviteId) {
 				});
 				window.remoteSocket.send(message);
 				updateInviteButtons();
-            } else {
-                console.log('No invite details after rejected');
-            }
-        } else {
-            const data = await response.json();
-            console.error('Failed to rejected invite:', data);
-            alert('Failed to rejected invite');
-        }
-    } catch (error) {
-        console.error('Error rejecting invite:', error);
-        alert('Error rejecting invite');
-    }
+			} else {
+				console.log('No invite details after rejected');
+			}
+		} else {
+			const data = await response.json();
+			console.error('Failed to rejected invite:', data);
+			alert('Failed to rejected invite');
+		}
+	} catch (error) {
+		console.error('Error rejecting invite:', error);
+		alert('Error rejecting invite');
+	}
 
 }
 
 async function acceptInvite(inviteId) {
 	try {
-        const response = await fetch(`/users/invite/${inviteId}/accept/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            credentials: 'include'
-        });
+		const response = await fetch(`/users/invite/${inviteId}/accept/`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			credentials: 'include'
+		});
 
-        if (response.ok) {
-            alert('Invite accept');
-        //    console.log('Invite accept:', inviteId);
+		if (response.ok) {
+			alert('Invite accept');
+		//	console.log('Invite accept:', inviteId);
 
 
-            const inviteDetails = await getInviteDetails(inviteId);
-            if (inviteDetails) {
-             //   console.log('Invite details after accept:', inviteDetails);
+			const inviteDetails = await getInviteDetails(inviteId);
+			if (inviteDetails) {
+			 //   console.log('Invite details after accept:', inviteDetails);
 				const message = JSON.stringify({
 					sender_id: inviteDetails.invite.recipient_id,
 					recipient_id: inviteDetails.invite.sender_id,
@@ -604,18 +590,18 @@ async function acceptInvite(inviteId) {
 				window.remoteSocket.send(message);
 				updateInviteButtons();
 				showHome()
-            } else {
-                console.log('No invite details after accept');
-            }
-        } else {
-            const data = await response.json();
-            console.error('Failed to accept invite:', data);
-            alert('Failed to accept invite');
-        }
-    } catch (error) {
-        console.error('Error accepting invite:', error);
-        alert('Error accepting invite');
-    }
+			} else {
+				console.log('No invite details after accept');
+			}
+		} else {
+			const data = await response.json();
+			console.error('Failed to accept invite:', data);
+			alert('Failed to accept invite');
+		}
+	} catch (error) {
+		console.error('Error accepting invite:', error);
+		alert('Error accepting invite');
+	}
 
 
 }
@@ -624,38 +610,27 @@ async function acceptInvite(inviteId) {
 
 export async function loop() {
 
+	const displayMessage = (message) => {
+		reset_game();
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		context.font = '20px \'Courier New\', Courier, monospace';
+		context.textAlign = 'center';
+		context.fillStyle = 'white';
+		context.fillText(message, canvas.width / 2, canvas.height * 0.125);
+		draw(ball);
+		draw(player1);
+		draw(player2);
+	};
+
+	// Handle different waiting states
 	if (window.init === 0 && window.init_opp === 0) {
-		reset_game();
-		context.clearRect(0, 0, canvas.width, canvas.height);
-		context.font = '20px \'Courier New\', Courier, monospace';
-		context.textAlign = 'center';
-		context.fillStyle = 'white';
-		context.fillText('WAITING FOR REMOTE PLAYER...\n Press (r) for Ready!', canvas.width / 2,  canvas.height * 0.125);
-		draw(ball);
-		draw(player1);
-		draw(player2);
+		displayMessage('WAITING FOR REMOTE PLAYER...\n Press (r) for Ready!');
 	}
-	if (window.init === 1 && window.init_opp === 0) {
-		reset_game();
-		context.clearRect(0, 0, canvas.width, canvas.height);
-		context.font = '20px \'Courier New\', Courier, monospace';
-		context.textAlign = 'center';
-		context.fillStyle = 'white';
-		context.fillText('WAITING FOR REMOTE PLAYER...', canvas.width / 2,  canvas.height * 0.125);
-		draw(ball);
-		draw(player1);
-		draw(player2);
+	else if (window.init === 1 && window.init_opp === 0) {
+		displayMessage('WAITING FOR REMOTE PLAYER...');
 	}
-	if (window.init === 0 && window.init_opp === 1) {
-		reset_game();
-		context.clearRect(0, 0, canvas.width, canvas.height);
-		context.font = '20px \'Courier New\', Courier, monospace';
-		context.textAlign = 'center';
-		context.fillStyle = 'white';
-		context.fillText('Remote player is ready! Press (r) to start the game.', canvas.width / 2, canvas.height * 0.125);
-		draw(ball);
-		draw(player1);
-		draw(player2);
+	else if (window.init === 0 && window.init_opp === 1) {
+		displayMessage('Remote player is ready! Press (r) to start the game.');
 	}
 
 	//console.log('Enter loop');
@@ -678,10 +653,11 @@ export async function loop() {
 	if (!gameOver && !pause && window.init === 3) {
 		console.log("loop game");
 		handleMoves();
-		bounceBall();
-		paddleCollision();
-		drawAll();
-		sendGameState();
+		if (isHost) {
+			bounceBall();
+			paddleCollision();
+			sendGameState();
+		}
 
 		if (score1 === 10 || score2 === 10) {
 			let x;
