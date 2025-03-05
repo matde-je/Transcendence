@@ -38,7 +38,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Include subdomains in HSTS
 
 SECURE_SSL_REDIRECT = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.18.0.1']
 
 # Application definition
 INSTALLED_APPS = [
@@ -106,7 +106,9 @@ CORS_ALLOWED_ORIGINS = [
     'https://localhost:8000', 
     # 'wss://localhost:8000', 
     # 'wss://127.0.0.1:8000', 
-    "https://127.0.0.1:8000"
+    "https://127.0.0.1:8000",
+    "https://172.18.0.1:8000"
+    
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -120,7 +122,9 @@ CORS_ALLOW_METHODS = [
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://localhost:8000",
-    "https://127.0.0.1:8000"
+    "https://127.0.0.1:8000",
+    "https://172.18.0.1:8000"
+
 ]
 # CSRF_COOKIE_DOMAIN = 'localhost'
 # CSRF_COOKIE_DOMAIN = None

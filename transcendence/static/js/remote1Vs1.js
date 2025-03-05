@@ -20,6 +20,9 @@ let remoteReady = 0;
 if (typeof window.init === 'undefined') {
     window.init = 0;
 }
+if (typeof window.init_opp === 'undefined') {
+    window.init_opp = 0;
+}
 // const gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
 
 export async function initializeGame() {
@@ -109,61 +112,66 @@ window.addEventListener("keydown", async (e) => {
 	const loggedInUser = await getUserData();
 	const loggedInUserId = loggedInUser.id;
 	const inviteDetails = await getAcceptedInvite(loggedInUserId)
-	console.log('inviteDetails:', inviteDetails);
-	console.log('key-init:', window.init);
-
 
 	if (gameOver || (window.init === 0) && (keys['r'] || keys['R'])) {
-		console.log("Player pressed 'R'");
 		const player1 = inviteDetails.invite.sender_id;
 		const player2 = inviteDetails.invite.recipient_id;
 		if(player1 === loggedInUserId){
-			console.log('Player1');
+
 			const message = JSON.stringify({
 				sender_id: inviteDetails.invite.sender_id,
 				recipient_id: inviteDetails.invite.recipient_id,
 				//message: `Player1-The remote player is ready!`,
-				invite_status: 'accepted',
+				//invite_status: 'accepted',
 				init_opponent: 1,
 			});
-			console.log('p1-inviteDetails.invite.init_opponent:', inviteDetails.invite.init_opponent);
-			updateInviteInit(inviteDetails.invite.invite_id, 1);
-			console.log('p1-inviteDetails.invite.init_opponent:', inviteDetails.invite.init_opponent);
-
 			window.init++;
 			window.remoteSocket.send(message);
 		}else if(player2 === loggedInUserId){
-			console.log('Player2');
 			const message = JSON.stringify({
 				sender_id: inviteDetails.invite.recipient_id,
 				recipient_id: inviteDetails.invite.sender_id,
-				message: `Player1-The remote player is ready!`,
-				invite_status: 'accepted',
+				//message: `Player1-The remote player is ready!`,
+				//invite_status: 'accepted',
 				init_opponent: 1,
-			});
-			console.log('p2-inviteDetails.invite.init_opponent:', inviteDetails.invite.init_opponent);
-			updateInviteInit(inviteDetails.invite.invite_id, 1);
-			console.log('p2-inviteDetails.invite.init_opponent:', inviteDetails.invite.init_opponent);
-
+			});		
 			window.remoteSocket.send(message);
 			window.init++;
 		}
 		loop();
 	}
-	if (gameOver || (window.init === 1 && inviteDetails.invite.init_opponent === 1) && (keys['r'] || keys['R'])) {
+	if (gameOver || (window.init === 1 && window.init_opp === 1) && (keys['r'] || keys['R'])) {
+		const player1 = inviteDetails.invite.sender_id;
+		const player2 = inviteDetails.invite.recipient_id;
+		if(player1 === loggedInUserId){
 
-		window.remoteSocket.send(JSON.stringify({ message: "playerReady" }));
+			const message = JSON.stringify({
+				sender_id: player1,
+				recipient_id: player2,
+				//message: `Player1-The remote player is ready!`,
+				//invite_status: 'accepted',
+				init_opponent: 3,
+			});
+			window.init++;
+			window.init_opp++;
+			window.remoteSocket.send(message);
+		}else if(player2 === loggedInUserId){
 
-		window.cancelAnimationFrame(ani);
-		context.clearRect(0, 0, canvas.width, canvas.height);
-		startCountdown(() => {
-			reset_game();
-			ani = window.requestAnimationFrame(loop);
-			window.init = 2;
-		});
+			const message = JSON.stringify({
+				sender_id: player2,
+				recipient_id: player1,
+				//message: `Player1-The remote player is ready!`,
+				//invite_status: 'accepted',
+				init_opponent: 3,
+			});
+			window.init++;
+			window.init_opp++;
+			window.remoteSocket.send(message);
+		}
+		loop();
 	}
 
-	if (keys['p'] && gameOver == false && window.init == 2 && inviteDetails.invite.init_opponent === 2) {
+	if (keys['p'] && gameOver == false && window.init == 2 && window.init_opp === 2) {
 		pause = !pause;
 		if (pause == true) {
 			context.font = "20px 'Courier New', Courier, monospace";
@@ -320,7 +328,7 @@ function startCountdown(callback) {
 
 /*Sends the current state to server to be broadcast to other players.
 It's used by the players that is considered the "source of truth" for certain aspects of the game*/
-function sendGameState(id) {
+function sendGameState() {
 	if (window.gameSocket && window.gameSocket.readyState === WebSocket.OPEN) {
 		const gameState = {
 			ball: { x: ball.x, y: ball.y },
@@ -614,14 +622,9 @@ async function acceptInvite(inviteId) {
 
 ////////////////////////////////////LOOP///////////////////////////////////
 
-async function loop() {
+export async function loop() {
 
-	const loggedInUser = await getUserData();
-	const loggedInUserId = loggedInUser.id;
-	//console.log('loggedInUserId:', loggedInUserId);
-	const inviteDetails = await getAcceptedInvite(loggedInUserId)
-
-	if (window.init === 0 && inviteDetails.invite.init_opponent === 0) {
+	if (window.init === 0 && window.init_opp === 0) {
 		reset_game();
 		context.clearRect(0, 0, canvas.width, canvas.height);
 		context.font = '20px \'Courier New\', Courier, monospace';
@@ -632,7 +635,7 @@ async function loop() {
 		draw(player1);
 		draw(player2);
 	}
-	if (window.init === 1 && inviteDetails.invite.init_opponent === 1) {
+	if (window.init === 1 && window.init_opp === 0) {
 		reset_game();
 		context.clearRect(0, 0, canvas.width, canvas.height);
 		context.font = '20px \'Courier New\', Courier, monospace';
@@ -643,7 +646,7 @@ async function loop() {
 		draw(player1);
 		draw(player2);
 	}
-	if (window.init === 0 && inviteDetails.invite.init_opponent === 1) {
+	if (window.init === 0 && window.init_opp === 1) {
 		reset_game();
 		context.clearRect(0, 0, canvas.width, canvas.height);
 		context.font = '20px \'Courier New\', Courier, monospace';
@@ -655,22 +658,30 @@ async function loop() {
 		draw(player2);
 	}
 
- 	console.log('loop-remote_init:', inviteDetails.invite.init_opponent);
-	console.log('loop-init:', window.init);
-	console.log('Enter loop');
-	if(loggedInUser.id === inviteDetails.invite.sender_id){
-		const id = inviteDetails.invite.recipient_id;
-	}else{
-		const id = inviteDetails.invite.sender_id;
-	}
+	//console.log('Enter loop');
+ 	//console.log('loop-remote_init:', window.init_opp);
+	//console.log('loop-init:', window.init);
+	//console.log('loop--loggedInUserId:', loggedInUserId);
+	if(!gameOver && !pause && window.init === 2){
+		console.log('**loop game');
+		window.cancelAnimationFrame(ani);
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		startCountdown(() => {
+			reset_game();
+			ani = window.requestAnimationFrame(loop);
+			window.init = 3;
+		});
 
-	if (!gameOver && !pause && window.init === 2) {
+	}
+	console.log('window.init:', window.init);
+	//console.log('loop-remote_init:', window.init_opp);{
+	if (!gameOver && !pause && window.init === 3) {
 		console.log("loop game");
 		handleMoves();
 		bounceBall();
 		paddleCollision();
 		drawAll();
-		sendGameState(id);
+		sendGameState();
 
 		if (score1 === 10 || score2 === 10) {
 			let x;
@@ -690,6 +701,6 @@ async function loop() {
 		}
 	}
 
-	if (!gameOver && score1 < 10 && score2 < 10 && window.init === 2)
+	if (!gameOver && score1 < 10 && score2 < 10 && window.init === 3)
 		ani = window.requestAnimationFrame(loop);
 }

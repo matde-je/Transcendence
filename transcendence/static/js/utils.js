@@ -295,7 +295,7 @@ export async function getAcceptedInvite(user_id)
     });
     if (response.ok) {
         const inviteDetails = await response.json();
-        console.log('Invite details:', inviteDetails);
+       // console.log('Invite details:', inviteDetails);
         return inviteDetails;
     } else {
         console.error('Failed to fetch invite details, status:', response.status);

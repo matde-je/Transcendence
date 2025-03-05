@@ -8,6 +8,7 @@ import { update_onlinestatus_ui, showFriends } from './friendship.js';
 import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { showTournamentMenu, showCreateTournamentForm} from './tournament.js';
 import { updateInviteButtons } from './remote1Vs1.js'
+import { loop } from './remote1Vs1.js';
 
 async function handleRouteChange() {
     const path = window.location.pathname;
@@ -139,7 +140,7 @@ export function initializeNavbar(authenticated) {
             }
         };
 		if (!window.remoteSocket) {
-			window.remoteSocket = new WebSocket('wss://localhost:8000/ws/alerts/');
+			window.remoteSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/alerts/`);
 			window.remoteSocket.onopen = function() {
 				console.log("Remote WebSocket connection established.");
 			};
@@ -147,16 +148,16 @@ export function initializeNavbar(authenticated) {
 				const data = JSON.parse(e.data);
                 if(data.message)
 				    alert(data.message);
-				console.log('recipiente_data:', data);
-            //    console.log('invite_status:', data.invite_status);
                 if(data.invite_status === 'accepted') {
                     showHome();
                 }
-                console.log('data.message:', data.message);
-                if(data.message === "playerReady"){
-                    window.init++;
+                if(data.init_opponent === 1){
+                    window.init_opp++;
                 }
-                console.log('init:', window.init);
+                if(data.init_opponent === 3){
+                    window.init++;
+                    loop();
+                }
                 if(data.message)
 				    console.log('message:', data.message);
 				updateInviteButtons();
