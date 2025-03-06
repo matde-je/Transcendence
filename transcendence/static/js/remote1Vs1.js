@@ -24,7 +24,7 @@ if (typeof window.init === 'undefined') {
 if (typeof window.init_opp === 'undefined') {
 	window.init_opp = 0;
 }
-// const gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
+
 
 export async function initializeGame() {
 
@@ -176,6 +176,7 @@ function handleMoves() {
 		if (keys['a'] && player1.y + player1.height < canvas.height)
 			newY += player1.gravity * 2; //down
 		player1.y = newY;
+		sendGameState();
 
 		// Send movement only if it changed
 		window.gameSocket.send(JSON.stringify({
@@ -301,17 +302,30 @@ function startCountdown(callback) {
 ////////////////////////////////////REMOTE///////////////////////////////////
 	////////////////NUNO//////////////////
 
-function setupGameSocket() { //app.js
-	gameSocket = new WebSocket("wss://your-server-url/game");
+// Iniciada na initializeGame()
+function setupGameSocket() {
+	// Game WebSocket is responsible for real-time game communication
+	if (!window.gameSocket)
+		window.gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
 
-	gameSocket.onmessage = function (e) {
-		const data = JSON.parse(e.data);
+	window.gameSocket.onopen = function (event) {
+		console.log('✅ Gamesocket connection established.');
+		//alert('Gamesocket connection established.');
+	};
+	window.gameSocket.onmessage = function (event) {
+		const data = JSON.parse(event.data);
 		if (data.type === "gameState") {
 			receiveGameState(data);
 		}
 	};
+	window.gameSocket.onerror = function (error) {
+		console.error('❌ Game Gamesocket error:', error);
+	};
+	window.gameSocket.onclose = function () {
+		console.log('✅ Game Gamesocket connection closed.');
+	};
 }
-
+// Sends paddle positions, ball movement (only from the host), and scores
 function sendGameState() {
 	const gameState = {
 		type: "gameState",
@@ -327,7 +341,7 @@ function sendGameState() {
 	};
 	gameSocket.send(JSON.stringify({ type: 'gameState', data: gameState }));
 }
-
+// Update the opponent's paddle and (if not the host) the ball
 function receiveGameState(data) {
 	player2.y = data.playerY;
 	if (!isHost) {
@@ -375,8 +389,8 @@ export async function sendInvite(recipient_id) {
 	//console.log('message:', message);
 	updateInviteButtons();
 	window.remoteSocket.send(message);
+	isHost = true;
 }
-
 
 export async function updateInviteButtons() {
 	const allFriendItems = document.querySelectorAll('[data-friend-id]');
@@ -602,8 +616,6 @@ async function acceptInvite(inviteId) {
 		console.error('Error accepting invite:', error);
 		alert('Error accepting invite');
 	}
-
-
 }
 
 ////////////////////////////////////LOOP///////////////////////////////////

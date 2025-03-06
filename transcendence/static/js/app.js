@@ -68,14 +68,15 @@ export function initializeNavbar(authenticated) {
     if (existingNavbar) {
         existingNavbar.remove();
     }
-    // Create navbar container
+    // Create navbar container, and Bootstrap classes to style it
     const navBarContainer = document.createElement('nav'); // navigation
     navBarContainer.id = 'navbar';
     navBarContainer.className =
         'navbar navbar-expand-lg navbar-light bg-light fixed-top';
     const container = document.createElement('div'); // grouping
     container.className = 'container-fluid';
-    // Check if tournament mode is active
+
+    // If tournament mode is on, prevents extra navigation links from appearing during tournaments
     if (window.isTournament === true) {
         /* Create an empty navbar for Tournament mode.
            No additional links will be added. */
@@ -84,7 +85,7 @@ export function initializeNavbar(authenticated) {
         document.body.appendChild(navBarContainer);
         return;
     }
-    // Create brand link
+    // Create brand link, that redirects to the homepage when clicked
     const navbarBrand = document.createElement('a'); // hyperlink
     navbarBrand.className = 'navbar-brand';
     navbarBrand.href = '/';
@@ -95,6 +96,8 @@ export function initializeNavbar(authenticated) {
         history.pushState({ page: 'home' }, 'Home', '/');
     });
     container.appendChild(navbarBrand);
+
+	// Create Navbar Toggle button that allows navbar to collapse on smaller screens
     const toggleButton = document.createElement('button');
     toggleButton.className = 'navbar-toggler';
     toggleButton.type = 'button';
@@ -110,18 +113,23 @@ export function initializeNavbar(authenticated) {
     const navbarCollapse = document.createElement('div');
     navbarCollapse.className = 'collapse navbar-collapse';
     navbarCollapse.id = 'navbarNav';
+
+	// Two lists are created for navigation links, navLinksLeft, navLinksRight, aligned to left/right
     const navLinksLeft = document.createElement('ul'); // left side links
     navLinksLeft.className = 'navbar-nav me-auto mb-2 mb-lg-0';
+
     const navLinksRight = document.createElement('ul'); // right side links
     navLinksRight.className = 'navbar-nav';
-
+	// Lists are added inside the navbar:
     navbarCollapse.appendChild(navLinksLeft);
     navbarCollapse.appendChild(navLinksRight);
     container.appendChild(navbarCollapse);
     navBarContainer.appendChild(container);
     document.body.appendChild(navBarContainer);
 
+	// If the user is authenticated, WebSocket connections are established
     if (authenticated) {
+		// Online Status WebSocket tracks online friends
         if (!window.socket) {
             window.socket = new WebSocket(`wss://${window.location.hostname}:8000/ws/online_status/`);
             window.socket.onopen = function() {};
@@ -139,6 +147,7 @@ export function initializeNavbar(authenticated) {
                 update_onlinestatus_ui();
             }
         };
+		// Remote Notifications WebSocket, listens for alerts (e.g., game invitations)
 		if (!window.remoteSocket) {
 			window.remoteSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/alerts/`);
 			window.remoteSocket.onopen = function() {
@@ -166,24 +175,10 @@ export function initializeNavbar(authenticated) {
 				console.log("Remote WebSocket connection closed.");
 			};
 		};
-        window.gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
-        window.gameSocket.onopen = function (event) {
-            console.log('✅ WebSocket connection established.');
-            //alert('WebSocket connection established.');
-        };
-        window.gameSocket.onmessage = function (event) {
-            const data = JSON.parse(event.data);
-			if (data.message === "gameState") {
-                ??????????
-            }
-        };
-        window.gameSocket.onerror = function (error) {
-            console.error('❌ Game webSocket error:', error);
-        };
-        window.gameSocket.onclose = function () {
-            console.log('✅ Game webSocket connection closed.');
-        };
 
+
+		// Fetch User Data & Add Authenticated Links, if authenticated, the function
+		//  fetches user data and adds additional navigation links
         fetchWithRetry('/users/user/', {
             method: 'GET',
             credentials: 'include',
@@ -258,6 +253,8 @@ export function initializeNavbar(authenticated) {
             alert('Error: ' + error.message);
         });
     } else {
+		// Add Links for Non-Authenticated Users, if the user is not
+		//  authenticated, only Login and Register links are shown
         const loginLink = document.createElement('li'); // list item
         loginLink.className = 'nav-item';
         loginLink.innerHTML =
