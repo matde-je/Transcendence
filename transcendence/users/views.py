@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.db import transaction
 from django.utils import timezone
 from .services.tournament_service import create_tournament_for_user
+from pong_history.serializers import MatchPongHistorySerializer
 
 class UserList(generics.ListAPIView):
     queryset = CustomUser.objects.all()
@@ -193,6 +194,26 @@ def get_user_by_id(request, id):
     serializer = UserSerializer(user)
     return Response(serializer.data)
 
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def user_results(request):
+#     user = request.user
+#     total_matches = MatchPongHistory.objects.filter(player=user).count()
+#     total_wins = MatchPongHistory.objects.filter(player=user, result='win').count()
+#     win_percentage = round((total_wins / total_matches * 100), 2) if total_matches > 0 else 0.0
+
+#     data = {
+#         'total_matches': total_matches,
+#         'total_wins': total_wins,
+#         'win_percentage': win_percentage,
+#     }
+
+#     serializer = UserResultsSerializer(data)
+#     return Response(serializer.data)
+
+
+  # Import match serializer
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_results(request):
@@ -201,12 +222,16 @@ def user_results(request):
     total_wins = MatchPongHistory.objects.filter(player=user, result='win').count()
     win_percentage = round((total_wins / total_matches * 100), 2) if total_matches > 0 else 0.0
 
+    matches = MatchPongHistory.objects.filter(player=user)
+    match_serializer = MatchPongHistorySerializer(matches, many=True)
+
     data = {
         'total_matches': total_matches,
         'total_wins': total_wins,
         'win_percentage': win_percentage,
+        'matches': match_serializer.data,  # Add match history to response
     }
+    return Response(data)
 
-    serializer = UserResultsSerializer(data)
-    return Response(serializer.data)
+
 

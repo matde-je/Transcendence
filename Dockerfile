@@ -22,6 +22,7 @@ COPY cert.pem /app/cert.crt
 COPY ./transcendence /app
 
 
+
 # Set the environment variable for Django to run in non-interactive mode
 ENV PYTHONUNBUFFERED=1
 
