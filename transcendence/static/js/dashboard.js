@@ -189,21 +189,26 @@ export async function showTournamentResults() {
         const tournaments = await response.json();
         const content = document.getElementById('content');
         content.innerHTML = '<h2 class="mb-4 mt-4">Tournament Results</h2>';
+        const labels = [];
+        const wins1 = [];  
         if (tournaments.length > 0) {
             tournaments.forEach(tournament => {
                 const div = document.createElement('div');
+                const date = formatDate(tournament.finished_on);
                 div.innerHTML = `
-                    <p>${tournament.tournament_name}
-                       ---   Finished on: ${new Date(tournament.finished_on).toLocaleString()}
-                       ---   Winner: ${tournament.is_winner ? 'Yes' : 'No'}</p>
-                `;
+                <p>${tournament.tournament_name}
+                ---   Finished on: ${date}
+                ---   Winner: ${tournament.is_winner ? 'Yes' : 'No'}</p>`;
+                labels.push(date); // X-axis labels 
+                wins1.push(tournament.is_winner  ? 1 : 0); // Y-axis data 
                 content.appendChild(div);
             });
+            console.log(wins1);
 			// Calculate statistics
             const total = tournaments.length;
             const wins = tournaments.filter(t => t.is_winner).length;
             const losses = total - wins;
-            const winPercentage = ((wins / total) * 100).toFixed(2);
+            const winPercentage = ((wins / total) * 100);
 			// Show statistics
             const statsDiv = document.createElement('div');
             statsDiv.innerHTML = `
@@ -212,17 +217,71 @@ export async function showTournamentResults() {
                 <p>Total Wins: ${wins}</p>
                 <p>Total Losses: ${losses}</p>
                 <p>Win Percentage: ${winPercentage}%</p>
-            `;
+                <div class="chart-container mt-5 mb-5">
+                    <canvas id="resultsChart"></canvas>
+                </div>`;
             content.appendChild(statsDiv);
         } else {
             content.innerHTML += '<p>You have not participated in any tournaments.</p>';
         } 
+        if (window.myChart instanceof Chart) {
+            window.myChart.destroy();
+        }
+        const ctx = document.getElementById("resultsChart");
+        window.myChart = new Chart(ctx, {
+            type: 'bar',  // Bar chart type
+            data: {
+                labels: labels, // X-axis (dates)
+                datasets: [{
+                    label: 'Wins Over Time',
+                    data: wins1, // Y-axis (1 for win, 0 for loss)
+                    borderColor: "#28a745",
+                    backgroundColor: "rgba(40, 167, 69, 0.2)",
+                    borderWidth: 2,
+                    borderSkipped: false, // Makes sure bars are not skipped
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: "Date",
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            }
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: "Wins",
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            }
+                        },
+                        ticks: {
+                            beginAtZero: true,
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
     } catch (error) {
-        console.error('Error fetching tournament results:', error);
         alert('Error fetching tournament results.');
     }
 }
 
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleString(); // Adjusts to user's locale
+}
+
+window.myChart = null;
 export async function showPongResults() {
     try {
         const response = await fetch('/users/results/', {
@@ -234,14 +293,84 @@ export async function showPongResults() {
         }
         const data = await response.json();
         const content = document.getElementById('content');
-        content.innerHTML = '<h3 class="mb-4 mt-5">Pong Results</h3>';
-        content.innerHTML += `
+        content.innerHTML = `
+            <h3 class="mb-4 mt-5">Pong Results</h3>
             <p>Total Matches: ${data.total_matches}</p>
             <p>Wins: ${data.total_wins}</p>
             <p>Win Percentage: ${data.win_percentage}%</p>
-        `;
+            <div class="chart-container mt-5 mb-5 h-25">
+                <canvas id="resultsChart"></canvas>
+            </div> `;
+        const labels = [];
+        const wins = [];  
+        if (data.matches && data.matches.length > 0) {
+            data.matches.forEach(match => {
+                const date = formatDate(match.date_played);
+                labels.push(date); // X-axis labels 
+                wins.push(match.result === "win" ? 1 : 0); // Y-axis data 
+            });
+        } 
+        if (window.myChart instanceof Chart) {
+            window.myChart.destroy();
+        }
+        const ctx = document.getElementById("resultsChart");
+        window.myChart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: labels, // X-axis 
+                datasets: [{
+                    label: "Wins Over Time",
+                    data: wins,
+                    borderColor: "#28a745",
+                    backgroundColor: "rgba(40, 167, 69, 0.2)",
+                    borderWidth: 2,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: "Date",
+                            font: {
+                                weight: 'bold', 
+                                size: 14
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: "Wins",
+                            font: {
+                                weight: 'bold',
+                                size: 14 
+                            },
+                        },
+                        ticks: {
+                            stepSize: 1,
+                        },
+                        grid: {
+                            display: false 
+                        },
+                    }
+                },
+                layout: {
+                    padding: {
+                        left: 60,
+                        right: 60,
+                        top: 20, 
+                        bottom: 40 
+                    }          
+                }
+            }
+        });
     } catch (error) {
-        console.error('Error getting results:', error);
         alert('Error getting results.');
     }
 }
@@ -265,8 +394,54 @@ export async function showRockPaperScissor() {
             <p>Win Percentage: ${rpsResults.win_percentage}%</p>
             <p>Wins: ${rpsResults.wins}</p>
             <p>Losses: ${rpsResults.losses}</p>
-        `;
-        // content.appendChild(rpsResultsDiv);
+            <div class="chart-container mt-5 mb-5 h-25">
+                <canvas id="resultsChart"></canvas>
+            </div>`;
+        const labels = [];
+        const wins = [];  
+        if (results.matches && results.matches.length > 0) {
+            results.matches.forEach(match => {
+                const date = formatDate(match.date_played);
+                labels.push(date); // X-axis labels 
+                wins.push(match.result === "win" ? 1 : 0); // Y-axis data 
+            });
+        }
+        if (window.myChart instanceof Chart) {
+            window.myChart.destroy();
+        }
+        const ctx = document.getElementById("resultsChart");
+        window.myChart = new Chart(ctx, {
+            type: 'radar',  // Radar chart type
+            data: {
+                labels: labels, // X-axis (dates)
+                datasets: [{
+                    label: 'Wins Over Time',
+                    data: wins, // Y-axis (1 for win, 0 for loss)
+                    borderColor: "#28a745",
+                    backgroundColor: "rgba(40, 167, 69, 0.2)",
+                    borderWidth: 2,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    r: { //Radius scale
+                        min: 0,
+                        max: 1,
+                        ticks: {
+                            stepSize: 1
+                        },
+                        angleLines: {
+                            display: true
+                        },
+                        grid: {
+                            display: true
+                        }
+                    }
+                }
+            }
+        });
     } catch (error) {
         console.error('Error fetching Rock-Paper-Scissors results:', error);
         alert('Error fetching Rock-Paper-Scissors results.');

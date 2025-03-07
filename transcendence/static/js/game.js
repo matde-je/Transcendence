@@ -128,7 +128,7 @@ window.keys = {};
 
 window.addEventListener("keydown", (e) => {
 	keys[e.key] = true; //mark the key as pressed
-	if (window.location.pathname === '/rock-paper-scissors/multiplayer'){
+	if (window.location.href != `https://${window.location.hostname}:8000/` && window.isTournament === false){
 		return;
 	}else{
 		if (keys['1'] && init === 0 && window.isTournament === false) {
@@ -170,13 +170,10 @@ window.addEventListener("keydown", (e) => {
 		if (((gameOver == true && window.isTournament == false) || init == 0) && (keys['s'] || keys['S']))
 		{
 			window.cancelAnimationFrame(ani);
-			if (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true) {
-				reset_game();
-				context.clearRect(0, 0, canvas.width, canvas.height);
-				ani = window.requestAnimationFrame(loop);
-			}
+			reset_game();
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			ani = window.requestAnimationFrame(loop);
 			init = 1;
-			// console.log("start game clicked");
 		}
 
 		if (gameOver === true && (keys['n'] || keys['N']) && window.isTournament === true)
@@ -548,6 +545,7 @@ function registerMatchResult(opponent, result, score) {
             opponent: opponent,
             result: result,
 			score: score,
+			// date: new Date().toISOString(),
         }),
     })
     .then(response => response.json())
