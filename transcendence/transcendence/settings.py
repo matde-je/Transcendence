@@ -23,14 +23,14 @@ load_dotenv()
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = True
+DEBUG = False
 
 SECURE_BROWSER_XSS_FILTER = True  # Prevent cross-site scripting attacks
 SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent browser content sniffing
 
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Include subdomains in HSTS
 
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -96,8 +96,8 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 CORS_ALLOWED_ORIGINS = [
-    'https://localhost:8000', 
-    "https://127.0.0.1:8000"
+    'https://localhost', 
+    "https://127.0.0.1"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -110,8 +110,8 @@ CORS_ALLOW_METHODS = [
     'PUT',
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "https://localhost:8000",
-    "https://127.0.0.1:8000"
+    "https://localhost",
+    "https://127.0.0.1"
 ]
 # CSRF_COOKIE_DOMAIN = 'localhost'
 # CSRF_COOKIE_DOMAIN = None
@@ -221,6 +221,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
+
+STATIC_ROOT = "/app/staticfiles" #debug false
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [

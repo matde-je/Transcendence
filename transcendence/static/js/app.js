@@ -15,8 +15,13 @@ async function handleRouteChange() {
         showLogin();
     } else if (path === '/register') {
         showRegister();
-    } else if (username === ' Anonymous')
-        showHome();
+    } else if (username === ' Anonymous' && path !== '/') 
+    {
+        let contentElement = document.getElementById('content');
+        contentElement.innerHTML = `
+            <h2 class="text-center text-dark fw-bold mb-5 mt-5">404 - Page Not Found</h2>
+        `;
+    }
     else if (path === '/dashboard') {
         showDashboard();
     } else if (path === '/rock-paper-scissors') {
@@ -39,8 +44,15 @@ async function handleRouteChange() {
         showCreateTournamentForm();
     } else if (path === '/tournament') {
         showTournamentMenu();
-    } else {
+    } else if (path === '/'){
         showHome();
+    }
+    else 
+    {
+        let contentElement = document.getElementById('content');
+        contentElement.innerHTML = `
+            <h2 class="text-center text-dark fw-bold mb-5 mt-5">404 - Page Not Found</h2>
+        `;
     }
 }
 window.addEventListener('popstate', handleRouteChange);
@@ -50,6 +62,9 @@ export async function fetchWithRetry(url, options, maxRetries = 3) {
     for (let i = 0; i < maxRetries; i++) {
         try {
             const response = await fetch(url, options);
+            if (!response.ok) {  // Check if the response status is not OK (2xx)
+                throw new Error(`Error HTTP! status: ${response.status}`);
+            }
             return await response.json();
         } catch (error) {
             if (i === maxRetries - 1) throw error;
@@ -121,7 +136,7 @@ export function initializeNavbar(authenticated) {
 
     if (authenticated) {
         if (!window.socket) {
-            window.socket = new WebSocket(`wss://${window.location.hostname}:8000/ws/online_status/`);
+            window.socket = new WebSocket(`wss://${window.location.hostname}/ws/online_status/`);
             window.socket.onopen = function() {};
             window.socket.onerror = function(error) {
                 console.error('WebSocket error:', error);

@@ -84,7 +84,7 @@ tournament-it:
 # Display containers logs
 logs:
 	@clear
-	docker compose --file docker-compose.yml logs
+	docker-compose --file docker-compose.yml logs
 
 # Generate SSL certificates (only if they don't exist)
 generate-certs:

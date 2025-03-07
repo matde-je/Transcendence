@@ -1,7 +1,7 @@
 // static/js/dashboard.js
 
 import { checkAuthentication, getCookie } from './utils.js';
-import { showHome } from './app.js';
+import { fetchWithRetry, showHome } from './app.js';
 import { sendFriendRequest, acceptFriendRequest, removeFriend, showFriends } from './friendship.js';
 
 window.sendFriendRequest = sendFriendRequest;
@@ -179,14 +179,10 @@ export function showEditUserForm(userData) {
 
 export async function showTournamentResults() {
     try {
-        const response = await fetch('/tournament/user/results/', {
+        const tournaments = await fetchWithRetry('/tournament/user/results/', {
             method: 'GET',
             credentials: 'include',
         });
-        if (!response.ok) {
-            throw new Error(`Error HTTP! status: ${response.status}`);
-        }
-        const tournaments = await response.json();
         const content = document.getElementById('content');
         content.innerHTML = '<h2 class="mb-4 mt-4">Tournament Results</h2>';
         const labels = [];
@@ -252,7 +248,10 @@ export async function showTournamentResults() {
                                 weight: 'bold',
                                 size: 14
                             }
-                        }
+                        },
+                        grid: {
+                            display: false  // Hide grid lines on the y-axis
+                        },
                     },
                     y: {
                         title: {
@@ -266,9 +265,14 @@ export async function showTournamentResults() {
                         ticks: {
                             beginAtZero: true,
                             stepSize: 1
+                        },
+                        grid: {
+                            display: false  // Hide grid lines on the y-axis
                         }
                     }
-                }
+                },
+                barPercentage: 0.5, // Controls the width of the bars
+                categoryPercentage: 0.7,
             }
         });
     } catch (error) {
@@ -284,14 +288,10 @@ function formatDate(dateString) {
 window.myChart = null;
 export async function showPongResults() {
     try {
-        const response = await fetch('/users/results/', {
+        const data = await fetchWithRetry('/users/results/', {
             method: 'GET',
             credentials: 'include',
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
         const content = document.getElementById('content');
         content.innerHTML = `
             <h3 class="mb-4 mt-5">Pong Results</h3>
@@ -377,17 +377,12 @@ export async function showPongResults() {
 
 export async function showRockPaperScissor() {
     try {
-        const response = await fetch('/rps/get_rps_results/', {
+        const response = await fetchWithRetry('/rps/get_rps_results/', {
             method: 'GET',
             credentials: 'include',
         });
-
-        if (!response.ok) {
-            throw new Error(`Error HTTP! status: ${response.status}`);
-        }
-        const results = await response.json();
         const content = document.getElementById('content');
-        const rpsResults = results;
+        const rpsResults = response;
         content.innerHTML = `
             <h3 class="pt-5 mb-5">Rock-Paper-Scissors Results</h3>
             <p>Total Games: ${rpsResults.total_games}</p>
@@ -399,8 +394,8 @@ export async function showRockPaperScissor() {
             </div>`;
         const labels = [];
         const wins = [];  
-        if (results.matches && results.matches.length > 0) {
-            results.matches.forEach(match => {
+        if (rpsResults.matches && rpsResults.matches.length > 0) {
+            rpsResults.matches.forEach(match => {
                 const date = formatDate(match.date_played);
                 labels.push(date); // X-axis labels 
                 wins.push(match.result === "win" ? 1 : 0); // Y-axis data 
