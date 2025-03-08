@@ -25,11 +25,10 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = False
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_BROWSER_XSS_FILTER = True  # Prevent cross-site scripting attacks
 SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent browser content sniffing
-
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Include subdomains in HSTS
-
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
@@ -111,10 +110,6 @@ CSRF_TRUSTED_ORIGINS = [
     "https://localhost",
     "https://127.0.0.1"
 ]
-# CSRF_COOKIE_DOMAIN = 'localhost'
-# CSRF_COOKIE_DOMAIN = None
-# CSRF_USE_SESSIONS = True
-# CSRF_COOKIE_HTTPONLY = True
 
 ROOT_URLCONF = 'transcendence.urls'
 

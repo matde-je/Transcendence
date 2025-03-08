@@ -199,7 +199,6 @@ export async function showTournamentResults() {
                 wins1.push(tournament.is_winner  ? 1 : 0); // Y-axis data 
                 content.appendChild(div);
             });
-            console.log(wins1);
 			// Calculate statistics
             const total = tournaments.length;
             const wins = tournaments.filter(t => t.is_winner).length;
