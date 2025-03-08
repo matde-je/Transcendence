@@ -30,8 +30,6 @@ SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent browser content sniffing
 
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Include subdomains in HSTS
 
-SECURE_SSL_REDIRECT = False
-
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
