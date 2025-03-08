@@ -217,14 +217,11 @@ export async function showTournamentResults() {
                     <canvas id="resultsChart"></canvas>
                 </div>`;
             content.appendChild(statsDiv);
-        } else {
-            content.innerHTML += '<p>You have not participated in any tournaments.</p>';
-        } 
-        if (window.myChart instanceof Chart) {
-            window.myChart.destroy();
-        }
-        const ctx = document.getElementById("resultsChart");
-        window.myChart = new Chart(ctx, {
+            if (window.myChart instanceof Chart) {
+                window.myChart.destroy();
+            }
+            const ctx = document.getElementById("resultsChart");
+            window.myChart = new Chart(ctx, {
             type: 'bar',  // Bar chart type
             data: {
                 labels: labels, // X-axis (dates)
@@ -275,6 +272,9 @@ export async function showTournamentResults() {
                 categoryPercentage: 0.7,
             }
         });
+    } else {
+        content.innerHTML += '<p>You have not participated in any tournaments.</p>';
+    } 
     } catch (error) {
         alert('Error fetching tournament results.');
     }
