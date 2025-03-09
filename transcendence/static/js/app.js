@@ -155,8 +155,10 @@ export function initializeNavbar(authenticated) {
 			};
 			window.remoteSocket.onmessage = async function (e) {
 				const data = JSON.parse(e.data);
-                if(data.message)
-				    alert(data.message);
+                if(data.message) {
+					//alert(data.message);
+					console.log(data.message);
+				}
                 if(data.invite_status === 'accepted') {
                     showHome();
                 }

@@ -175,8 +175,6 @@ function handleMoves() {
 		if (keys['a'] && player1.y + player1.height < canvas.height)
 			newY += player1.gravity * 2; //down
 		player1.y = newY;
-		if (!isHost)
-			sendGameState();
 	}
 }
 
@@ -287,7 +285,7 @@ function drawAll(){
 }
 
 function startCountdown(callback) {
-	let countdown = 1;
+	let countdown = 2;
 	console.log('Countdown...');
 	const countdownInterval = setInterval(() => {
 		context.clearRect(0, 0, canvas.width, canvas.height);
@@ -351,15 +349,15 @@ function sendGameState() {
 // Update the opponent's paddle and (if not the host) the ball
 function receiveGameState(data) {
 	console.log('receiving:\n',data);
-	player2.y = data.playerY;
+	player2.y = data.data.playerY;
 	if (!isHost) {
-		ball.x = data.ballX;
-		ball.y = data.ballY;
-		ball.speed = data.ballSpeed;
-		ball.gravity = data.ballGravity;
+		ball.x = data.data.ballX;
+		ball.y = data.data.ballY;
+		ball.speed = data.data.ballSpeed;
+		ball.gravity = data.data.ballGravity;
 	}
-	score1 = data.score1;
-	score2 = data.score2;
+	score1 = data.data.score1;
+	score2 = data.data.score2;
 }
 
 ///////////////////////PEDRO//////////////////////////
@@ -694,7 +692,7 @@ export async function loop() {
 		}
 	}
 
-	if (!gameOver && score1 < 10 && score2 < 10 && window.init === 3) {
+	if (!gameOver && score1 < 10 && score2 < 10 && window.init === 2) {
 		ani = window.requestAnimationFrame(loop);
 	}
 }
