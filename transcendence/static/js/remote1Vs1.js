@@ -61,6 +61,7 @@ window.ball = new Element ( { x: 175, y: 200, width: 10, height: 10, color: "#ff
 function reset_game() {
 	pause = false;
 	score1 = score2 = 0;
+
 	player1.x = 10 * (window.canvas.width / 550);
 	player1.y = 170 * (window.canvas.height / 400);
 	player2.x = 530 * (window.canvas.width / 550);
@@ -216,6 +217,7 @@ function paddleCollision() {
 		ball.y = canvas.height / 2 - ball.height / 2;
 		ball.gravity = initialBallGravity * randomSign;
 	}
+
 }
 
 /*Move ball and bounce on top and bottom walls*/
@@ -262,7 +264,6 @@ function draw(element) {
 }
 
 function score_1(){
-	console.log('scor1: ', score1);
 	context.font = "50px 'Courier New', Courier, monospace";
 	context.fillStyle = "#fff";
 	context.fillText(`${score1}`, canvas.width * 0.4, canvas.height * 0.125);
@@ -345,21 +346,22 @@ function sendGameState() {
 		score2: score2,
 		isHost: isHost
 	};
+
 	console.log('sending:\n',gameState);
 	gameSocket.send(JSON.stringify({ type: 'gameState', data: gameState }));
 }
 // Update the opponent's paddle and (if not the host) the ball
 function receiveGameState(data) {
 	console.log('receiving:\n',data);
-	player2.y = data.playerY;
+	player2.y = data.data.playerY;
 	if (!isHost) {
 		ball.x = data.ballX;
 		ball.y = data.ballY;
 		ball.speed = data.ballSpeed;
 		ball.gravity = data.ballGravity;
 	}
-	score1 = data.score1;
-	score2 = data.score2;
+	score1 = data.data.score1;
+	score2 = data.data.score2;
 }
 
 ///////////////////////PEDRO//////////////////////////
@@ -694,7 +696,7 @@ export async function loop() {
 		}
 	}
 
-	if (!gameOver && score1 < 10 && score2 < 10 && window.init === 3) {
+	if (!gameOver && score1 < 10 && score2 < 10 && window.init === 2) {
 		ani = window.requestAnimationFrame(loop);
 	}
 }
