@@ -191,11 +191,8 @@ export async function showTournamentResults() {
             tournaments.forEach(tournament => {
                 const div = document.createElement('div');
                 const date = formatDate(tournament.finished_on);
-                div.innerHTML = `
-                <p>${tournament.tournament_name}
-                ---   Finished on: ${date}
-                ---   Winner: ${tournament.is_winner ? 'Yes' : 'No'}</p>`;
-                labels.push(date); // X-axis labels 
+
+				labels.push(date); // X-axis labels 
                 wins1.push(tournament.is_winner  ? 1 : 0); // Y-axis data 
                 content.appendChild(div);
             });
