@@ -176,7 +176,6 @@ function handleMoves() {
 		if (keys['a'] && player1.y + player1.height < canvas.height)
 			newY += player1.gravity * 2; //down
 		player1.y = newY;
-		//sendGameState();
 	}
 }
 
@@ -310,7 +309,6 @@ function startCountdown(callback) {
 // Iniciada na initializeGame()
 async function setupGameSocket() {
 	const isAuthenticated = await checkAuthentication();
-
 	if (!window.gameSocket)
 		window.gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
 
@@ -337,25 +335,30 @@ async function setupGameSocket() {
 function sendGameState() {
 	const gameState = {
 		type: "gameState",
-		playerY: player1.y,
-		opponentY: player2.y,
-		ballX: ball.x,
-		ballY: ball.y,
-		ballSpeed: ball.speed,
-		ballGravity: ball.gravity,
+		playerY: player1.y, // Local player's paddle position (for both host and non-host)
 		score1: score1,
 		score2: score2,
 		isHost: isHost
 	};
-	console.log('sending:\n',gameState);
+
+	if (isHost) {
+		// Host-specific data
+		gameState.ballX = ball.x;
+		gameState.ballY = ball.y;
+		gameState.ballSpeed = ball.speed;
+		gameState.ballGravity = ball.gravity;
+	}
+
+	console.log('sending:\n', gameState);
 	gameSocket.send(JSON.stringify({ type: 'gameState', data: gameState }));
 }
-// Update the opponent's paddle and (if not the host) the ball
+
+// RECEIVE: Update the opponent's paddle and (if not the host) the ball
 function receiveGameState(data) {
 	console.log('receiving:\n',data);
-	//player1.y = data.data.opponentY;
-	player2.y = data.data.playerY;
 
+	player2.y = data.data.playerY; // Update opponent's paddle position
+	// Non-host updates ball position from host's data
 	if (!isHost) {
 		ball.x = data.data.ballX;
 		ball.y = data.data.ballY;
@@ -652,11 +655,9 @@ export async function loop() {
 	// Handle different waiting states
 	if (window.init === 0 && window.init_opp === 0) {
 		displayMessage('You and the opponent need to press (r) for Ready!');
-	}
-	else if (window.init === 1 && window.init_opp === 0) {
+	} else if (window.init === 1 && window.init_opp === 0) {
 		displayMessage('You pressed (r) already! WAITING FOR REMOTE PLAYER...');
-	}
-	else if (window.init === 0 && window.init_opp === 1) {
+	} else if (window.init === 0 && window.init_opp === 1) {
 		displayMessage('Remote player is ready! Press (r) to start the game.');
 	}
 	//console.log('Enter loop');
@@ -667,17 +668,13 @@ export async function loop() {
 		logGameMove('Game Anymations Iteractions:');
 		window.cancelAnimationFrame(ani);
 		context.clearRect(0, 0, canvas.width, canvas.height);
+
 		handleMoves();
 		if (isHost) {
 			bounceBall();
 			paddleCollision();
 			sendGameState();
 		}
-		/*
-		if (!isHost) {
-			player1.y = gameState.p1y;
-		}*/
-
 		drawAll();
 
 		if (score1 === 10 || score2 === 10) {

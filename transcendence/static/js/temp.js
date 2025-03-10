@@ -270,8 +270,8 @@ function drawAll(){
 	////////////////NUNO//////////////////
 
 // Iniciada na initializeGame()
-function setupGameSocket() {
-	// Game WebSocket is responsible for real-time game communication
+async function setupGameSocket() {
+	const isAuthenticated = await checkAuthentication();
 	if (!window.gameSocket)
 		window.gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
 
@@ -326,8 +326,8 @@ function receiveGameState(data) {
 
 ////////////////////////////////////LOOP///////////////////////////////////
 
-function logGameMove() {
-	console.count("loop game moves");
+function logGameMove(message) {
+	console.count(message);
 }
 
 export async function loop() {
@@ -356,11 +356,10 @@ export async function loop() {
 	}
 
 	if(!gameOver && !pause && window.init === 2){
-		console.log('Both ready, start game, countdown');
+		logGameMove('Game Anymations Iteractions:');
 		window.cancelAnimationFrame(ani);
 		context.clearRect(0, 0, canvas.width, canvas.height);
 
-		logGameMove();
 		handleMoves();
 		if (isHost) {
 			bounceBall();
