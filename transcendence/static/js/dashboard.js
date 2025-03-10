@@ -164,7 +164,7 @@ export function showEditUserForm(userData) {
                 history.pushState({ page: 'dashboard' }, 'Dashboard', '/dashboard');
             } else {
                 const data = await response.json();
-                alert('Error updating data: ' + JSON.stringify(data.errors));
+                alert('Error updating data: ' + data.errors);
             }
         } catch (error) {
             console.error('Error:', error);

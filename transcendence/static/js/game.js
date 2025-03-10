@@ -545,7 +545,6 @@ function registerMatchResult(opponent, result, score) {
             opponent: opponent,
             result: result,
 			score: score,
-			// date: new Date().toISOString(),
         }),
     })
     .then(response => response.json())

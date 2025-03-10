@@ -184,6 +184,7 @@ export async function removeUserFromTournament(tournamentId) {
         } else {
             const data = await response.json();
             alert('Error removing from tournament: ' + data.detail);
+			listOpenTournaments();
         }
     } catch (error) {
         console.error('Error removing from tournament:', error);
@@ -264,7 +265,7 @@ export function showCreateTournamentForm() {
             showTournamentMenu();
         } else {
             const data = await response.json();
-            alert('Error creating tournament: ' + JSON.stringify(data));
+            alert('Error creating tournament: ' + data.detail);
         }
     });
 }
@@ -289,7 +290,8 @@ async function deleteTournament(tournamentId) {
             listOpenTournaments();
         } else {
             const data = await response.json();
-            alert('Error when deleting tournament: ' + JSON.stringify(data));
+            alert('Error when deleting tournament: ' + data.detail);
+			listOpenTournaments();
         }
     } catch (error) {
         console.error('Error when deleting tournament:', error);
@@ -309,7 +311,7 @@ async function startTournament(tournamentId) {
         });
         if (!participantsResponse.ok) {
             const data = await participantsResponse.json();
-            alert('Error getting participants: ' + JSON.stringify(data));
+            alert('Error getting participants: ' + data.detail);
             return;
         }
 

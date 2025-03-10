@@ -124,7 +124,7 @@ export function removeFriend(user_id) {
            showFriends();
         } else {
             response.json().then(data => {
-                alert('Error removing friendship: ' + JSON.stringify(data));
+                alert('Error removing friendship: ' + data.detail);
             });
         }
     })

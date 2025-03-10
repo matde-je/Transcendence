@@ -81,9 +81,9 @@ services:
           echo 'Waiting for Postgres...';
           sleep 2;
         done &&
-        python manage.py makemigrations && 
+        python manage.py makemigrations &&
         python manage.py migrate --database=tournament &&
-        python manage.py runserver_plus --cert-file cert.pem 0.0.0.0:8001"
+        daphne -e ssl:8001:privateKey=/app/cert.key:certKey=/app/cert.crt transcendence.asgi:application"
     volumes:
       - ./transcendence:/app:cached
     ports:
@@ -114,7 +114,7 @@ services:
           sleep 2;
         done &&
         python manage.py migrate --database=rps &&
-        python manage.py runserver_plus --cert-file cert.pem 0.0.0.0:8002"
+        daphne -e ssl:8002:privateKey=/app/cert.key:certKey=/app/cert.crt transcendence.asgi:application"
     volumes:
       - ./transcendence:/app:cached
     ports:
@@ -159,7 +159,7 @@ services:
           sleep 2;
         done &&
         python manage.py migrate --database=pong &&
-        python manage.py runserver_plus --cert-file cert.pem 0.0.0.0:8003"
+        daphne -e ssl:8003:privateKey=/app/cert.key:certKey=/app/cert.crt transcendence.asgi:application"
     volumes:
       - ./transcendence:/app:cached
     ports:
@@ -173,7 +173,7 @@ services:
       - db
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "curl -f https://localhost:8003 || exit 1"]
+      test: ["CMD-SHELL", "curl -f https://localhost:8003 --insecure || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
