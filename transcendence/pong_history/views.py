@@ -7,13 +7,12 @@ from django.views.decorators.http import require_POST
 from .models import MatchPongHistory
 import json
 
-login_required
-@require_POST
 def register_pong_history(request):
     data = json.loads(request.body)
     result = data.get('result')
     opponent = data.get('opponent')
     score = data.get('score')
+    date_played = data.get('date')
 
     if not result:
         return JsonResponse({'error': 'Invalid data'}, status=400)

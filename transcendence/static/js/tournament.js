@@ -183,11 +183,12 @@ export async function removeUserFromTournament(tournamentId) {
             listOpenTournaments();
         } else {
             const data = await response.json();
-            alert('Error removing from tournament: ' + data.detail);
+            alert('Error quiting from tournament: ' + data.detail);
+			listOpenTournaments();
         }
     } catch (error) {
-        console.error('Error removing from tournament:', error);
-        alert('Error removing from tournament.');
+        console.error('Error quiting from tournament:', error);
+        alert('Error quiting from tournament.');
     }
 }
 
@@ -264,7 +265,7 @@ export function showCreateTournamentForm() {
             showTournamentMenu();
         } else {
             const data = await response.json();
-            alert('Error creating tournament: ' + JSON.stringify(data));
+            alert('Error creating tournament: ' + data.detail);
         }
     });
 }
@@ -289,7 +290,8 @@ async function deleteTournament(tournamentId) {
             listOpenTournaments();
         } else {
             const data = await response.json();
-            alert('Error when deleting tournament: ' + JSON.stringify(data));
+            alert('Error when deleting tournament: ' + data.detail);
+			listOpenTournaments();
         }
     } catch (error) {
         console.error('Error when deleting tournament:', error);
@@ -309,38 +311,42 @@ async function startTournament(tournamentId) {
         });
         if (!participantsResponse.ok) {
             const data = await participantsResponse.json();
-            alert('Error getting participants: ' + JSON.stringify(data));
-            return;
+            alert('Error getting participants: ' + data.detail);
+            listOpenTournaments();
         }
+		else
+		{
 
-        const participants = await participantsResponse.json();
-        const count = participants.length;
-
-        // Checks if the number of participants is a power of 2
-        if (!isPowerOfTwo(count)) {
-            const needed = nextPowerOfTwo(count) - count;
-            alert(`The tournament cannot be started with ${count} players. \n\nIt's needed more ${needed} players.`);
-            return;
-        }
-
-        // Start tournament
-        const names = participants.map((p) => p.username).join('\n');
-
-        const response = await fetch(`/tournament/${tournamentId}/start/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken
-            },
-            credentials: 'include',
-        });
-        if (response.ok) {
-			window.isTournament = true;
-			checkAuthentication();
-            startMatchmaking(tournamentId);
-        } else {
-			const data = await response.json();
-			alert(data.detail || 'Error starting tournament.');
-			listOpenTournaments();
+			const participants = await participantsResponse.json();
+			const count = participants.length;
+			
+			// Checks if the number of participants is a power of 2
+			if (!isPowerOfTwo(count)) {
+				const needed = nextPowerOfTwo(count) - count;
+				alert(`The tournament cannot be started with ${count} players. \n\nIt's needed more ${needed} players.`);
+				return;
+			}
+			
+			// Start tournament
+			const names = participants.map((p) => p.username).join('\n');
+			
+			const response = await fetch(`/tournament/${tournamentId}/start/`, {
+				method: 'POST',
+				headers: {
+					'X-CSRFToken': csrftoken
+				},
+				credentials: 'include',
+			});
+			
+			if (response.ok) {
+				window.isTournament = true;
+				checkAuthentication();
+				startMatchmaking(tournamentId);
+			} else {
+				const data = await response.json();
+				alert(data.detail || 'Error starting tournament.');
+				listOpenTournaments();
+			}
 		}
     } catch (error) {
         console.error('Error starting tournament:', error);
@@ -463,6 +469,7 @@ export async function startMatchmaking(tournamentId)
  */
 async function executeMatches(matches, tournamentId, round) {
 	let winnerId;
+	let winnerUsername;
     for (const match of matches) {
 
 		// Check if the match ID is defined
@@ -498,7 +505,7 @@ async function executeMatches(matches, tournamentId, round) {
         await updateMatch(tournamentId, match.id, winnerId);
 
         // Shows the winner of the match
-        const winnerUsername = winnerId === match.player1 ? match.player1_username : match.player2_username;
+        winnerUsername = winnerId === match.player1 ? match.player1_username : match.player2_username;
 		console.log('Match Winner: ', winnerUsername);
     }
 
@@ -533,7 +540,7 @@ async function executeMatches(matches, tournamentId, round) {
 			content.innerHTML = `
 				<h3 class="mb-5 mt-5 pt-5">Pong Tournament</h3>
 				<div class="fs-8 fw-bold mb-3">Congratulations!</div>
-				<div class="fs-6 mb-3">Player <span class="fw-bold">${window.username1}</span> has won the Tournament!</div>
+				<div class="fs-6 mb-3">Player <span class="fw-bold">${winnerUsername}</span> has won the Tournament!</div>
 				<div class="fs-6">Thank you for playing!</p>
 			`;
 			})

@@ -8,7 +8,6 @@ from rest_framework.response import Response
 from .models import Tournament, TournamentUser, TournamentMatch
 from .serializers import TournamentSerializer, TournamentUserSerializer, TournamentMatchSerializer, TournamentResultSerializer
 from users.models import CustomUser
-from .services.matchmaking import create_knockout_matches
 from rest_framework.decorators import action
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
@@ -173,13 +172,13 @@ def update_match(request, tournament_id, match_id=None):
         except Exception as e:
             return Response({'error': 'An unexpected error occurred.', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def start_matchmaking(request, tournament_id):
-    result = create_knockout_matches(tournament_id)
-    if 'error' in result:
-        return Response(result, status=status.HTTP_400_BAD_REQUEST)
-    return Response({'detail': 'Matchmaking started successfully.'}, status=status.HTTP_200_OK)
+#@api_view(['POST'])
+#@permission_classes([IsAuthenticated])
+#def start_matchmaking(request, tournament_id):
+#    result = create_knockout_matches(tournament_id)
+#    if 'error' in result:
+#        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+#    return Response({'detail': 'Matchmaking started successfully.'}, status=status.HTTP_200_OK)
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])

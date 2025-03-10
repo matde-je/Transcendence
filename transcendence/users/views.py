@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.db import transaction
 from django.utils import timezone
 from .services.tournament_service import create_tournament_for_user
+from pong_history.serializers import MatchPongHistorySerializer
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
@@ -195,6 +196,26 @@ def get_user_by_id(request, id):
     serializer = UserSerializer(user)
     return Response(serializer.data)
 
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def user_results(request):
+#     user = request.user
+#     total_matches = MatchPongHistory.objects.filter(player=user).count()
+#     total_wins = MatchPongHistory.objects.filter(player=user, result='win').count()
+#     win_percentage = round((total_wins / total_matches * 100), 2) if total_matches > 0 else 0.0
+
+#     data = {
+#         'total_matches': total_matches,
+#         'total_wins': total_wins,
+#         'win_percentage': win_percentage,
+#     }
+
+#     serializer = UserResultsSerializer(data)
+#     return Response(serializer.data)
+
+
+  # Import match serializer
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_results(request):
@@ -203,14 +224,17 @@ def user_results(request):
     total_wins = MatchPongHistory.objects.filter(player=user, result='win').count()
     win_percentage = round((total_wins / total_matches * 100), 2) if total_matches > 0 else 0.0
 
+    matches = MatchPongHistory.objects.filter(player=user)
+    match_serializer = MatchPongHistorySerializer(matches, many=True)
+
     data = {
         'total_matches': total_matches,
         'total_wins': total_wins,
         'win_percentage': win_percentage,
+        'matches': match_serializer.data,  # Add match history to response
     }
+    return Response(data)
 
-    serializer = UserResultsSerializer(data)
-    return Response(serializer.data)
 
 def send_alert_to_user(user_id, message):
     channel_layer = get_channel_layer()
@@ -221,177 +245,3 @@ def send_alert_to_user(user_id, message):
             'message': message
         }
     )
-
-
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-""""""""""""""""""""""""""" Remote Play"""""""""""""""""""""""""""""""""
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-from django.views.decorators.http import require_POST
-import json
-from .models import GameInvite
-
-@login_required
-@require_POST
-def create_invite(request):
-    sender = request.user
-    data = json.loads(request.body)
-    recipient_id = data.get('recipient_id')
-    recipient = CustomUser.objects.get(id=recipient_id)
-
-    invite = GameInvite.objects.create(
-        sender=sender,
-        recipient=recipient,
-        invite_status='pending',
-        init_opponent = data.get('init_opponent', 0)
-    )
-    return JsonResponse({
-        'detail': 'Invite created successfully!',
-        'invite_id': invite.id,
-        'sender_id': sender.id,
-        'recipient_id': recipient.id,
-        'invite_status': invite.invite_status,
-        'init_opponent' : data.get('init_opponent', 0),
-    })
-
-@login_required
-def check_user_invites(request, user_id):
-    pending_invites = GameInvite.objects.filter(invite_status='pending').filter(
-        sender=user_id
-    ) | GameInvite.objects.filter(invite_status='pending').filter(
-        recipient=user_id
-    )
-    
-    invites = []
-
-    for invite in pending_invites:
-        invites.append({
-            'invite_id': invite.id,
-            'sender_id': invite.sender.id,
-            'recipient_id': invite.recipient.id,
-            'invite_status': invite.invite_status,
-            'init_opponent': invite.init_opponent
-        })
-
-    return JsonResponse({'invites': invites})
-
-
-@login_required
-def invites_id_accepted(request, user_id):
-    accepted_invites = GameInvite.objects.filter(invite_status='accepted').filter(
-        sender=user_id
-    ) | GameInvite.objects.filter(invite_status='accepted').filter(
-        recipient=user_id
-    )
-    
-    invites = []
-
-    for invite in accepted_invites:
-        invites.append({
-            'invite_id': invite.id,
-            'sender_id': invite.sender.id,
-            'recipient_id': invite.recipient.id,
-            'invite_status': invite.invite_status,
-            '_oponente': invite.init_opponent
-        })
-
-    return JsonResponse({'invites': invites})
-
-
-@login_required
-@require_POST
-def accept_invite(request, invite_id):
-    try:
-        invite = GameInvite.objects.get(id=invite_id)
-        invite.invite_status = 'accepted'
-        invite.save()
-        return JsonResponse({'detail': 'Invite accepted successfully!'})
-    except GameInvite.DoesNotExist:
-        return JsonResponse({'error': 'Invite not found'}, status=404)
-
-@login_required
-@require_POST
-def reject_invite(request, invite_id):
-    try:
-        invite = GameInvite.objects.get(id=invite_id)
-        invite.invite_status = 'rejected'
-        invite.save()
-        return JsonResponse({'detail': 'Invite rejected successfully!'})
-    except GameInvite.DoesNotExist:
-        return JsonResponse({'error': 'Invite not found'}, status=404)
-
-@login_required
-@require_POST
-def cancel_invite(request, invite_id):
-    try:
-        invite = GameInvite.objects.get(id=invite_id)
-        print(f"Invite found: {invite}")
-        invite.invite_status = 'cancelled'
-        invite.save()
-        print(f"Invite {invite_id} status changed to cancelled")
-        return JsonResponse({'detail': 'Invite cancelled successfully!'})
-    except GameInvite.DoesNotExist:
-        print(f"Invite {invite_id} not found")
-        return JsonResponse({'error': 'Invite not found'}, status=404)
-    
-    
-@login_required
-def get_invite_details(request, invite_id):
-    try:
-        invite = GameInvite.objects.get(id=invite_id)
-        invite_details = {
-            'invite_id': invite.id,
-            'sender_id': invite.sender.id,
-            'recipient_id': invite.recipient.id,
-            'invite_status': invite.invite_status,
-        }
-        return JsonResponse({'invite': invite_details})
-    except GameInvite.DoesNotExist:
-        return JsonResponse({'error': 'Invite not found'}, status=404)
-    
-@login_required
-def get_accepted_invite(request, user_id):
-    try:
-        invite = GameInvite.objects.filter(
-            invite_status='accepted'
-        ).filter(
-            sender_id=user_id
-        ).first() or GameInvite.objects.filter(
-            invite_status='accepted'
-        ).filter(
-            recipient_id=user_id
-        ).first()
-        
-        if not invite:
-            return JsonResponse({'error': 'Accepted invite not found'}, status=404)
-        
-        invite_details = {
-            'invite_id': invite.id,
-            'sender_id': invite.sender.id,
-            'recipient_id': invite.recipient.id,
-            'invite_status': invite.invite_status,
-            'init_opponent': invite.init_opponent
-        }
-        
-        return JsonResponse({'invite': invite_details})
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-    
-@login_required
-@require_POST
-def update_invite_init(request, invite_id):
-    try:
-        invite = GameInvite.objects.get(id=invite_id)
-        data = json.loads(request.body)
-        new_init_value = data.get('init_opponent')
-        invite.init_opponent = (invite.init_opponent or 0) + new_init_value
-        invite.save()
-        return JsonResponse({
-            'detail': 'Invite init updated successfully!',
-            'invite_id': invite.id,
-            'init_opponent': invite.init_opponent
-        })
-    except GameInvite.DoesNotExist:
-        return JsonResponse({'error': 'Invite not found'}, status=404)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
