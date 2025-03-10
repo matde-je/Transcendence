@@ -17,7 +17,6 @@ let maxGravity = initialBallGravity * 2;
 let ballSpeed = 7;
 let paddleGravity = 2;
 let remoteReady = 0;
-let loopI = 0;
 let isHost = false; // Determines which player controls ball updates
 if (typeof window.init === 'undefined') {
 	window.init = 0;
@@ -58,22 +57,6 @@ const player2 = new Element ( { x: 530, y: 170, width: 12, height: 60, color: "#
 
 window.ball = new Element ( { x: 175, y: 200, width: 10, height: 10, color: "#fff",
 								speed: ballSpeed, gravity: initialBallGravity,});
-
-function reset_game() {
-	pause = false;
-	score1 = score2 = 0;
-	player1.x = 10 * (window.canvas.width / 550);
-	player1.y = 170 * (window.canvas.height / 400);
-	player2.x = 530 * (window.canvas.width / 550);
-	player2.y = 170 * (window.canvas.height / 400);
-
-	ball.x = canvas.width / 2 - ball.width / 2;
-	ball.y = canvas.height / 2 - ball.width / 2;
-	ball.speed = ballSpeed;
-	ball.gravity = initialBallGravity;
-	gameOver = false;
-}
-
 
 //////////////////////////////KEYBOARD, EVENTLISTENER///////////////////////////////////
 
@@ -163,7 +146,6 @@ window.addEventListener("keyup", (e) => {
 	keys[e.key] = false; //mark the key as released
 });
 
-
 /////////////////////////////////MOVES ENGINE//////////////////////////////////////
 
 //handle player movement based on pressed keys
@@ -176,10 +158,8 @@ function handleMoves() {
 		if (keys['a'] && player1.y + player1.height < canvas.height)
 			newY += player1.gravity * 2; //down
 		player1.y = newY;
-		//sendGameState();
 	}
 }
-
 /*Invert X ball movement and determine ball effect (gravity) according to point of contact*/
 function handleEdgeCollisions(player) {
 	ball.speed *= -1;
@@ -286,31 +266,12 @@ function drawAll(){
 	score_2();
 }
 
-function startCountdown(callback) {
-	let countdown = 2;
-	console.log('Countdown...');
-	const countdownInterval = setInterval(() => {
-		context.clearRect(0, 0, canvas.width, canvas.height);
-		context.font = "60px 'Courier New', Courier, monospace";
-		context.fillStyle = "white";
-		context.textAlign = "center";
-		context.fillText(countdown, canvas.width / 2, canvas.height / 2);
-		countdown--;
-
-		if (countdown < 0) {
-			clearInterval(countdownInterval);
-			callback(); // Start the game after countdown
-		}
-	}, 1000);
-}
-
 ////////////////////////////////////REMOTE///////////////////////////////////
 	////////////////NUNO//////////////////
 
 // Iniciada na initializeGame()
-async function setupGameSocket() {
-	const isAuthenticated = await checkAuthentication();
-
+function setupGameSocket() {
+	// Game WebSocket is responsible for real-time game communication
 	if (!window.gameSocket)
 		window.gameSocket = new WebSocket(`wss://${window.location.hostname}:8000/ws/game/`);
 
@@ -332,7 +293,6 @@ async function setupGameSocket() {
 		console.log('✅ Game Gamesocket connection closed.');
 	};
 }
-
 // Sends paddle positions, ball movement (only from the host), and scores
 function sendGameState() {
 	const gameState = {
@@ -353,9 +313,7 @@ function sendGameState() {
 // Update the opponent's paddle and (if not the host) the ball
 function receiveGameState(data) {
 	console.log('receiving:\n',data);
-	//player1.y = data.data.opponentY;
 	player2.y = data.data.playerY;
-
 	if (!isHost) {
 		ball.x = data.data.ballX;
 		ball.y = data.data.ballY;
@@ -366,278 +324,14 @@ function receiveGameState(data) {
 	score2 = data.data.score2;
 }
 
-///////////////////////PEDRO//////////////////////////
-
-export async function sendInvite(recipient_id) {
-	alert('Your remote game invite has been sent to ' + await getUsernameById(recipient_id));
-
-	const loggedInUser = await getUserData();
-
-	const response = await fetch('/users/create_invite/', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'X-CSRFToken': getCookie('csrftoken'),
-		},
-		credentials: 'include',
-		body: JSON.stringify({ recipient_id: recipient_id }),
-	});
-
-	let inviteData
-	if (response.ok) {
-		inviteData = await response.json();
-		//console.log('Invite created successfully:', inviteData);
-	} else {
-		const errorData = await response.json();
-		//console.error('Failed to create invite, status:', response.status, 'error:', errorData);
-	}
-	const message = JSON.stringify({
-		sender_id: inviteData.sender_id,
-		recipient_id: inviteData.recipient_id,
-		message: `You have received a new game invite from ${await getUsernameById(inviteData.sender_id)}! Join the Pong game now!`,
-		invite_status: 'pending',
-	});
-
-	//console.log('message:', message);
-	updateInviteButtons();
-	window.remoteSocket.send(message);
-	console.log('Changing isHost to true');
-	isHost = true;
-}
-
-export async function updateInviteButtons() {
-	const allFriendItems = document.querySelectorAll('[data-friend-id]');
-	allFriendItems.forEach(async friendItem => {
-		const friendId = friendItem.getAttribute('data-friend-id');
-		const isOnline = window.onlineFriends.some(f => f.id == friendId);
-		const buttonContainer = friendItem.querySelector('.ms-auto');
-		const loggedInUser = await getUserData();
-		const loggedInUserId = loggedInUser.id;
-		const invite_type = await getPendingInvitesForLoggedInUser(loggedInUserId);
-		const invite_type_friend = await getPendingInviteId(loggedInUserId);
-		const invite_type_friend2 = await getPendingInviteId(friendId);
-
-		const inviteId = await getPendingInviteId(loggedInUserId);
-		const friendIdNumber = parseInt(friendId, 10);
-
-		const inviteDetails = await getInviteDetails(inviteId);
-		/* console.log('***********************');
-
-		console.log('isOnline:', isOnline);
-		console.log('inviteDetails:', inviteDetails);
-		console.log('ivite_type:', invite_type.includes('sender'));
-		console.log('loggedInUserId:', loggedInUserId);
-		console.log('friendId:', friendId); */
-/* 		if(inviteId){
-			const inviteDetails = await getInviteDetails(inviteId);
-			console.log('inviteDetailsSender_id:', inviteDetails.invite.sender_id);
-			console.log('inviteDetailsRecipient_id:', inviteDetails.invite.recipient_id);
-			console.log('inviteDetailsInvite_status:', inviteDetails.invite.invite_status);
-		} */
-
-
-	if (inviteDetails && isOnline && invite_type.includes('sender') && inviteDetails.invite.sender_id === loggedInUserId  && inviteDetails.invite.recipient_id === friendIdNumber) {
-		//console.log('***********2***********');
-			removeButtons(buttonContainer);
-			let cancelButton = buttonContainer.querySelector('#cancelButton');
-			if (!cancelButton) {
-				cancelButton = document.createElement('button');
-				cancelButton.textContent = 'Cancel Invite';
-				cancelButton.className = 'btn btn-sm btn-info';
-				cancelButton.id = 'cancelButton';
-				cancelButton.onclick = function() {
-					cancelInvite(inviteId);
-				};
-				buttonContainer.insertBefore(cancelButton, buttonContainer.firstChild);
-			}
-	} else if (inviteDetails && isOnline && invite_type.includes('recipient') && inviteDetails.invite.recipient_id === loggedInUserId && inviteDetails.invite.sender_id === friendIdNumber) {
-		//console.log('***********3***********');
-/* 			console.log('isOnline:', isOnline);
-		console.log('invite_type:', invite_type);
-		console.log('intiveDetails:', inviteDetails);
-		console.log('inviteDetailsInvite_status:', inviteDetails.invite.invite_status);
-		console.log('loggedInUserId:', loggedInUserId);
-		console.log('friendId:', friendId);
-		console.log('inviteDetailsSender_id:', inviteDetails.invite.sender_id);
-		console.log('inviteDetailsRecipient_id:', inviteDetails.invite.recipient_id); */
-		removeButtons(buttonContainer);
-		const rejectButton = document.createElement('button');
-		rejectButton.textContent = 'Reject';
-		rejectButton.className = 'btn btn-sm btn-danger';
-		rejectButton.id = 'rejectButton';
-		rejectButton.onclick = function() {
-			declineInvite(inviteId)
-		};
-		buttonContainer.insertBefore(rejectButton, buttonContainer.firstChild);
-
-		const acceptButton = document.createElement('button');
-		acceptButton.textContent = 'Accept';
-		acceptButton.className = 'btn btn-sm btn-success';
-		acceptButton.id = 'acceptButton';
-		acceptButton.onclick = function() {
-			acceptInvite(inviteId)
-		};
-		buttonContainer.insertBefore(acceptButton, buttonContainer.firstChild);
-	}else if(isOnline && !inviteDetails && inviteId){
-	//	console.log('***********4***********');
-/* 			console.log('isOnline:', isOnline);
-		console.log('inviteId:', !inviteId);
-		console.log('inviteDetails:', !inviteDetails);
-		console.log('invite_type_friend:', invite_type_friend);
-		console.log('invite_type_friend2:', !invite_type_friend2); */
-
-		removeButtons(buttonContainer);
-	} else if (isOnline) {
-		//console.log('***********1***********');
-/* 			console.log('isOnline:', isOnline);
-		console.log('inviteId:', !inviteId);
-		console.log('inviteDetails:', !inviteDetails); */
-		removeButtons(buttonContainer);
-		let inviteButton = buttonContainer.querySelector('#inviteButton');
-		if (!inviteButton) {
-			inviteButton = document.createElement('button');
-			inviteButton.textContent = 'Invite to Remote Play';
-			inviteButton.className = 'btn btn-sm btn-primary';
-			inviteButton.id = 'inviteButton';
-			inviteButton.addEventListener('click', () => {
-				sendInvite(friendId);
-			});
-			buttonContainer.insertBefore(inviteButton, buttonContainer.firstChild);
-		}
-	}
-	});
-}
-
-async function cancelInvite(inviteId) {
-	try {
-		const response = await fetch(`/users/invite/${inviteId}/cancel/`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': getCookie('csrftoken')
-			},
-			credentials: 'include'
-		});
-
-		if (response.ok) {
-		  //  alert('Invite canceled');
-		   // console.log('Invite canceled:', inviteId);
-
-			// Fetch invite details after canceling
-			const inviteDetails = await getInviteDetails(inviteId);
-			if (inviteDetails) {
-			 //   console.log('Invite details after cancellation:', inviteDetails);
-				const message = JSON.stringify({
-					sender_id: inviteDetails.invite.sender_id,
-					recipient_id: inviteDetails.invite.recipient_id,
-					message: 'The ' + await getUsernameById(inviteDetails.invite.sender_id) + ' canceled the invitation!',
-				});
-				window.remoteSocket.send(message);
-				updateInviteButtons();
-			} else {
-				console.log('No invite details after cancellation');
-			}
-		} else {
-			const data = await response.json();
-			console.error('Failed to cancel invite:', data);
-			alert('Failed to cancel invite');
-		}
-	} catch (error) {
-		console.error('Error canceling invite:', error);
-		alert('Error canceling invite');
-	}
-}
-
-async function declineInvite(inviteId) {
-	try {
-		const response = await fetch(`/users/invite/${inviteId}/reject/`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': getCookie('csrftoken')
-			},
-			credentials: 'include'
-		});
-
-		if (response.ok) {
-		  //  alert('Invite rejected');
-		  //  console.log('Invite rejected:', inviteId);
-
-
-			const inviteDetails = await getInviteDetails(inviteId);
-			if (inviteDetails) {
-			 //   console.log('Invite details after rejected:', inviteDetails);
-				const message = JSON.stringify({
-					sender_id: inviteDetails.invite.recipient_id,
-					recipient_id: inviteDetails.invite.sender_id,
-					message: 'The ' + await getUsernameById(inviteDetails.invite.recipient_id) + ' rejected the invitation!',
-				});
-				window.remoteSocket.send(message);
-				updateInviteButtons();
-			} else {
-				console.log('No invite details after rejected');
-			}
-		} else {
-			const data = await response.json();
-			console.error('Failed to rejected invite:', data);
-			alert('Failed to rejected invite');
-		}
-	} catch (error) {
-		console.error('Error rejecting invite:', error);
-		alert('Error rejecting invite');
-	}
-
-}
-
-async function acceptInvite(inviteId) {
-	try {
-		const response = await fetch(`/users/invite/${inviteId}/accept/`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': getCookie('csrftoken')
-			},
-			credentials: 'include'
-		});
-
-		if (response.ok) {
-			alert('Invite accept');
-		//	console.log('Invite accept:', inviteId);
-
-
-			const inviteDetails = await getInviteDetails(inviteId);
-			if (inviteDetails) {
-			 //   console.log('Invite details after accept:', inviteDetails);
-				const message = JSON.stringify({
-					sender_id: inviteDetails.invite.recipient_id,
-					recipient_id: inviteDetails.invite.sender_id,
-					message: 'The ' + await getUsernameById(inviteDetails.invite.recipient_id) + ' accept the invitation!',
-					invite_status: 'accepted',
-				});
-				window.remoteSocket.send(message);
-				updateInviteButtons();
-				showHome()
-			} else {
-				console.log('No invite details after accept');
-			}
-		} else {
-			const data = await response.json();
-			console.error('Failed to accept invite:', data);
-			alert('Failed to accept invite');
-		}
-	} catch (error) {
-		console.error('Error accepting invite:', error);
-		alert('Error accepting invite');
-	}
-}
-
 ////////////////////////////////////LOOP///////////////////////////////////
 
-function logGameMove(message) {
-	console.count(message);
+function logGameMove() {
+	console.count("loop game moves");
 }
 
 export async function loop() {
+
 	const displayMessage = (message) => {
 		reset_game();
 		context.clearRect(0, 0, canvas.width, canvas.height);
@@ -649,6 +343,7 @@ export async function loop() {
 		draw(player1);
 		draw(player2);
 	};
+
 	// Handle different waiting states
 	if (window.init === 0 && window.init_opp === 0) {
 		displayMessage('You and the opponent need to press (r) for Ready!');
@@ -659,25 +354,19 @@ export async function loop() {
 	else if (window.init === 0 && window.init_opp === 1) {
 		displayMessage('Remote player is ready! Press (r) to start the game.');
 	}
-	//console.log('Enter loop');
- 	//console.log('loop-remote_init:', window.init_opp);
-	//console.log('loop-init:', window.init);
-	//console.log('loop--loggedInUserId:', loggedInUserId);
+
 	if(!gameOver && !pause && window.init === 2){
-		logGameMove('Game Anymations Iteractions:');
+		console.log('Both ready, start game, countdown');
 		window.cancelAnimationFrame(ani);
 		context.clearRect(0, 0, canvas.width, canvas.height);
+
+		logGameMove();
 		handleMoves();
 		if (isHost) {
 			bounceBall();
 			paddleCollision();
 			sendGameState();
 		}
-		/*
-		if (!isHost) {
-			player1.y = gameState.p1y;
-		}*/
-
 		drawAll();
 
 		if (score1 === 10 || score2 === 10) {
@@ -698,7 +387,7 @@ export async function loop() {
 		}
 	}
 
-	if (!gameOver && score1 < 10 && score2 < 10 && window.init === 2 && loopI++ < 1000) {
+	if (!gameOver && score1 < 10 && score2 < 10 && window.init === 2) {
 		ani = window.requestAnimationFrame(loop);
 	}
 }
