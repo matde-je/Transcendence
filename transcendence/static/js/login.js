@@ -60,7 +60,7 @@ export function showLogin() {
             checkAuthentication();
         } else {
             const data = await response.json();
-            alert('Login failed: ' + data.errors);
+            alert('Login failed: ' + JSON.stringify(data.errors));
         }
     });
 }

@@ -9,7 +9,6 @@ import json, random
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import ensure_csrf_cookie
 import logging
-from .serializers import MatchHistorySerializer
 
 logger = logging.getLogger(__name__)
 
@@ -91,20 +90,19 @@ def find_match(request):
 @login_required
 def get_rps_results(request):
     user = request.user
-    user_matches = MatchHistory.objects.filter(player=user) #return matches where the player field matches the current user
+    user_matches = MatchHistory.objects.filter(player=user)
     user_wins = user_matches.filter(result='win').count()
     user_losses = user_matches.filter(result='lose').count()
     user_total = user_matches.count()
     user_win_percentage = int((user_wins / user_total) * 100) if user_total > 0 else 0
 
-    match_serializer = MatchHistorySerializer(user_matches, many=True)
     return JsonResponse({
         'total_games': user_total,
         'wins': user_wins,
         'losses': user_losses,
-        'win_percentage': user_win_percentage,
-        'matches': match_serializer.data 
+        'win_percentage': user_win_percentage
     })
+    
 
 @login_required
 def is_user_in_waiting_list(request):

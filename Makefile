@@ -90,10 +90,7 @@ logs:
 generate-certs:
 	@clear
 	@echo "Generating SSL certificates..."
-	@openssl req -x509 -newkey rsa:4096 -sha256 -days 365 \
-	-nodes -keyout cert.key -out cert.crt \
-	-subj "/CN=localhost" \
-	-addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+	@openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/C=PT/ST=Lisboa/L=Lisboa/O=42/OU=42/CN=localhost"
 	@echo "Certificates generated and saved..."
 
 # Copy the certificates to the app directory
