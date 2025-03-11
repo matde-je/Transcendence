@@ -131,6 +131,19 @@ window.addEventListener("keydown", (e) => {
 	if (window.location.href != `https://${window.location.hostname}:8443/` && window.isTournament === false){
 		return;
 	}else{
+		if (window.isTournament === false)
+		{
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			
+			context.font = '20px \'Courier New\', Courier, monospace';
+			context.textAlign = 'center';
+			context.fillStyle = 'white';
+			context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2,  canvas.height * 0.125);
+			
+			draw(player1);
+			draw(player2);
+		}
+
 		if (keys['1'] && init === 0 && window.isTournament === false) {
 			ai = 1;
 			context.font = "20px 'Courier New', Courier, monospace";
@@ -141,7 +154,7 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("S - START", canvas.width / 2, 440);
 			username2 = "        AI";
 		}
-		if (keys['2'] && init === 0) {
+		else if (keys['2'] && init === 0) {
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
@@ -152,8 +165,7 @@ window.addEventListener("keydown", (e) => {
 			if (!window.isTournament)
 				username2 = "     HUMAN";
 		}
-
-		if (keys['4'] && init === 0 && window.isTournament === false) {
+		else if (keys['4'] && init === 0 && window.isTournament === false) {
 			multiplayer = 1;
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
@@ -166,8 +178,11 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("S - START", canvas.width / 2, 440);
 			username2 = "HUMAN PAIR";
 		}
+		else if (!keys['s'] && !keys['S'] && init === 0) {
+			username2 = "";
+		}
 
-		if (((gameOver == true && window.isTournament == false) || init == 0) && (keys['s'] || keys['S']))
+		if (username2 != "" && ((gameOver == true && window.isTournament == false) || init == 0) && (keys['s'] || keys['S']))
 		{
 			window.cancelAnimationFrame(ani);
 			reset_game();
