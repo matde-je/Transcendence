@@ -127,6 +127,9 @@ function reset_game() {
 window.keys = {};
 
 window.addEventListener("keydown", (e) => {
+	if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+		e.preventDefault();
+    }
 	keys[e.key] = true; //mark the key as pressed
 	if (window.location.href != `https://${window.location.hostname}:8443/` && window.isTournament === false){
 		return;
@@ -213,6 +216,9 @@ window.addEventListener("keydown", (e) => {
 
 window.addEventListener("keyup", (e) => {
 	keys[e.key] = false; //mark the key as released
+	if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+    }
 });
 
 /////////////////////////////////MOVES ENGINE//////////////////////////////////////
