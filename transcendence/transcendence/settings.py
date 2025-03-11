@@ -93,8 +93,10 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 CORS_ALLOWED_ORIGINS = [
-    'https://localhost', 
-    "https://127.0.0.1"
+    'https://localhost',
+	'https://localhost:8443',
+    "https://127.0.0.1",
+	"https://127.0.0.1:8443"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -108,7 +110,9 @@ CORS_ALLOW_METHODS = [
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://localhost",
-    "https://127.0.0.1"
+	'https://localhost:8443',
+    "https://127.0.0.1",
+	"https://127.0.0.1:8443"
 ]
 
 ROOT_URLCONF = 'transcendence.urls'

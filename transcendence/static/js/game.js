@@ -128,7 +128,7 @@ window.keys = {};
 
 window.addEventListener("keydown", (e) => {
 	keys[e.key] = true; //mark the key as pressed
-	if (window.location.href != `https://${window.location.hostname}/` && window.isTournament === false){
+	if (window.location.href != `https://${window.location.hostname}:8443/` && window.isTournament === false){
 		return;
 	}else{
 		if (keys['1'] && init === 0 && window.isTournament === false) {
@@ -413,7 +413,7 @@ function drawAll(){
 let AiLastUpdateTime = Date.now();
 
 function loop() {
-	if (init === 0 && (window.location.href === `https://${window.location.hostname}/` || window.isTournament == true)) {
+	if (init === 0 && (window.location.href === `https://${window.location.hostname}:8443/` || window.isTournament == true)) {
 		reset_game();
 		if (window.isTournament)
 		{
@@ -438,7 +438,7 @@ function loop() {
 		draw(player2);
 	}
 	console.log()
-	if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}/` || window.isTournament == true)) {
+	if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8443/` || window.isTournament == true)) {
 		//console.log("loop game");
 		handleMoves();
 		bounceBall();

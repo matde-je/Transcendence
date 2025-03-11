@@ -81,6 +81,22 @@ tournament-it:
 	@clear
 	docker exec -it tournament /bin/bash
 
+nginx-it:
+	@clear
+	docker exec -it nginx /bin/bash
+
+rps-it:
+	@clear
+	docker exec -it rps /bin/bash
+
+redis-it:
+	@clear
+	docker exec -it redis /bin/bash
+
+pong-it:
+	@clear
+	docker exec -it pong /bin/bash
+
 # Display containers logs
 logs:
 	@clear
@@ -100,8 +116,8 @@ generate-certs:
 copy-certs:
 	@clear
 	@echo "Copying certificates to the app directory..."
-	@cp cert.pem ./transcendence/cert.crt
-	@cp key.pem ./transcendence/cert.key
+	@cp cert.crt ./transcendence/cert.crt
+	@cp cert.key ./transcendence/cert.key
 	@echo "Certificates copied."
 
 
