@@ -12,13 +12,14 @@ let gameOver = false;
 let pause = false;
 let init = 0;
 let initialBallGravity = 1;
-let ballSpeed = 6;
-let paddleGravity = 4.5;
+let ballSpeed;
+let initialBallSpeed = 5;
+let paddleGravity = 7;
 let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
 let previousBallDirection = 0;
-
+let loopIterCount;
 let lastLeftHitTime = 0;
 const aiRefreshView = 1000;
 window.lastLeftHitTime = 0;
@@ -41,15 +42,16 @@ export async function initializeGame() {
 	}
 	canvas = document.getElementById("game");
 	context = canvas.getContext("2d");
-	canvas.width = 800;
-	canvas.height = 530;
+	canvas.width = 900;
+	canvas.height = 500;
 	window.canvas = canvas;
 	window.context = context;
 	score1 = 0;
 	score2 = 0;
 	init = 0;
+	loopIterCount = 0
+	ballSpeed = initialBallSpeed;
 	window.maxGravity = initialBallGravity * 3;
-	ballSpeed = 7;
 	multiplayer = 0;
 	window.ai = 0;
 	window.lastLeftHitTime = lastLeftHitTime;
@@ -58,62 +60,21 @@ export async function initializeGame() {
 }
 
 class Element {
-	constructor(options) {
-	this.x = options.x; // Assuming 550 was the original width
-	this.y = options.y; // Assuming 400 was the original height
-	this.width = options.width;
-	this.height = options.height;
-	this.color = options.color;
-	this.speed = options.speed || 2;
-	this.gravity = options.gravity;
-	}
+	constructor(options) {this.x = options.x;this.y = options.y; this.width = options.width;
+		this.height = options.height; this.color = options.color;
+		this.speed = options.speed || 2;this.gravity = options.gravity;}
 }
 
-const player1 = new Element ( {
-	x: 10,
-    y: 170,
-	width: 12,
-	height: 60,
-	color: "#fff",
-	gravity: paddleGravity,
-});
+const player1 = new Element ( { x: 10, y: 170, width: 12, height: 60, color: "#fff", gravity: paddleGravity,});
 
-window.player2 = new Element ( {
-	x: 530,
-    y: 170, // Center vertically
-	width: 12,
-	height: 60,
-	color: "#fff",
-	gravity: paddleGravity,
-});
+window.player2 = new Element ( { x: 530, y: 170, width: 12, height: 60, color: "#fff", gravity: paddleGravity,});
 
-const player3 = new Element({
-	x: 10,
-	y: 230,
-	width: 12,
-	height: 60,
-	color: "#fff",
-	gravity: paddleGravity,
-});
+const player3 = new Element ( { x: 10, y: 230, width: 12, height: 60, color: "#fff", gravity: paddleGravity,});
 
-const player4 = new Element({
-	x: 525,
-	y: 230,
-	width: 12,
-	height: 60,
-	color: "#fff",
-	gravity: paddleGravity,
-});
+const player4 = new Element ( { x: 10, y: 175, width: 12, height: 60, color: "#fff", gravity: paddleGravity,});
 
-window.ball = new Element ( {
-	x: 175,
-	y: 200,
-	width: 10,
-	height: 10,
-	color: "#fff",
-	speed: ballSpeed,
-	gravity: initialBallGravity,
-});
+window.ball = new Element ( { x: 175, y: 200, width: 10, height: 10, color: "#fff",
+	speed: ballSpeed, gravity: initialBallGravity,});
 
 function reset_game() {
 	pause = gameOver = false;
@@ -277,7 +238,6 @@ function handleEdgeCollisions(player) {
 	}
 	console.log("ball.gravity:", ball.gravity);
 }
-console.log("ball.gravity:", ball.gravity);
 
 function paddleCollision() {
 	if (gameOver == true)
@@ -362,6 +322,13 @@ function bounceBall() {
 	}
 }
 
+function incrementSpeed() {
+	ball.speed = ball.speed + ball.speed * loopIterCount * 0.01;
+	context.font = "15px 'Courier New', Courier, monospace";
+	context.fillStyle = "#fff";
+	context.fillText(`Ball_Speed: ${ball.speed}`, canvas.width * 0.1, canvas.height * 0.975);
+}
+
 ///////////////////////////////DRAW FUNCTIONS////////////////////////////////////
 
 function center_line() {
@@ -413,6 +380,7 @@ function drawAll(){
 let AiLastUpdateTime = Date.now();
 
 function loop() {
+
 	if (init === 0 && (window.location.href === `https://${window.location.hostname}/` || window.isTournament == true)) {
 		reset_game();
 		if (window.isTournament)
@@ -439,7 +407,7 @@ function loop() {
 	}
 	console.log()
 	if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}/` || window.isTournament == true)) {
-		//console.log("loop game");
+		incrementSpeed();
 		handleMoves();
 		bounceBall();
 		paddleCollision();
