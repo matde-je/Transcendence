@@ -332,24 +332,21 @@ async function setupGameSocket() {
 }
 
 // Sends paddle positions, ball movement (only from the host), and scores
+// Sends paddle positions, ball movement (only from the host), and scores
 function sendGameState() {
 	const gameState = {
 		type: "gameState",
-		playerY: player1.y, // Local player's paddle position (for both host and non-host)
+		playerY: player1.y,
+		opponentY: player2.y,
+		ballX: ball.x,
+		ballY: ball.y,
+		ballSpeed: ball.speed,
+		ballGravity: ball.gravity,
 		score1: score1,
 		score2: score2,
 		isHost: isHost
 	};
-
-	if (isHost) {
-		// Host-specific data
-		gameState.ballX = ball.x;
-		gameState.ballY = ball.y;
-		gameState.ballSpeed = ball.speed;
-		gameState.ballGravity = ball.gravity;
-	}
-
-	console.log('sending:\n', gameState);
+	console.log('sending:\n',gameState);
 	gameSocket.send(JSON.stringify({ type: 'gameState', data: gameState }));
 }
 
