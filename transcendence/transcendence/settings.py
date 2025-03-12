@@ -19,25 +19,16 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# Use environment variables
 load_dotenv()
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_BROWSER_XSS_FILTER = True  # Prevent cross-site scripting attacks
 SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent browser content sniffing
-
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Include subdomains in HSTS
-
-SECURE_SSL_REDIRECT = True
-
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
@@ -102,11 +93,10 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 CORS_ALLOWED_ORIGINS = [
-    # "http://localhost:8000", 
-    'https://localhost:8000', 
-    # 'wss://localhost:8000', 
-    # 'wss://127.0.0.1:8000', 
-    "https://127.0.0.1:8000"
+    'https://localhost',
+	'https://localhost:8443',
+    "https://127.0.0.1",
+	"https://127.0.0.1:8443"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -119,13 +109,11 @@ CORS_ALLOW_METHODS = [
     'PUT',
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "https://localhost:8000",
-    "https://127.0.0.1:8000"
+    "https://localhost",
+	'https://localhost:8443',
+    "https://127.0.0.1",
+	"https://127.0.0.1:8443"
 ]
-# CSRF_COOKIE_DOMAIN = 'localhost'
-# CSRF_COOKIE_DOMAIN = None
-# CSRF_USE_SESSIONS = True
-# CSRF_COOKIE_HTTPONLY = True
 
 ROOT_URLCONF = 'transcendence.urls'
 
@@ -230,6 +218,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
+
+STATIC_ROOT = "/app/staticfiles" #debug false
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [

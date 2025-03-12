@@ -12,13 +12,12 @@ let gameOver = false;
 let pause = false;
 let init = 0;
 let initialBallGravity = 1;
-let ballSpeed = 6;
-let paddleGravity = 4.5;
+let ballSpeed = 12;
+let paddleGravity = 7;
 let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
 let previousBallDirection = 0;
-
 let lastLeftHitTime = 0;
 const aiRefreshView = 1000;
 window.lastLeftHitTime = 0;
@@ -42,14 +41,14 @@ export async function initializeGame() {
 	canvas = document.getElementById("game");
 	context = canvas.getContext("2d");
 	canvas.width = 800;
-	canvas.height = 530;
+	canvas.height = 470;
 	window.canvas = canvas;
 	window.context = context;
 	score1 = 0;
 	score2 = 0;
 	init = 0;
+	ballSpeed = 8;
 	window.maxGravity = initialBallGravity * 3;
-	ballSpeed = 7;
 	multiplayer = 0;
 	window.ai = 0;
 	window.lastLeftHitTime = lastLeftHitTime;
@@ -59,61 +58,26 @@ export async function initializeGame() {
 
 class Element {
 	constructor(options) {
-	this.x = options.x; // Assuming 550 was the original width
-	this.y = options.y; // Assuming 400 was the original height
-	this.width = options.width;
-	this.height = options.height;
-	this.color = options.color;
-	this.speed = options.speed || 2;
-	this.gravity = options.gravity;
+		this.x = options.x;
+		this.y = options.y;
+		this.width = options.width;
+		this.height = options.height;
+		this.color = options.color;
+		this.speed = options.speed;
+		this.gravity = options.gravity;
 	}
 }
 
-const player1 = new Element ( {
-	x: 10,
-    y: 170,
-	width: 12,
-	height: 60,
-	color: "#fff",
-	gravity: paddleGravity,
-});
+const player1 = new Element ( { x: 10, y: 170, width:10, height: 50, color: "#fff", gravity: paddleGravity,});
 
-window.player2 = new Element ( {
-	x: 530,
-    y: 170, // Center vertically
-	width: 12,
-	height: 60,
-	color: "#fff",
-	gravity: paddleGravity,
-});
+window.player2 = new Element ( { x: 530, y: 170, width:10, height: 50, color: "#fff", gravity: paddleGravity,});
 
-const player3 = new Element({
-	x: 10,
-	y: 230,
-	width: 12,
-	height: 60,
-	color: "#fff",
-	gravity: paddleGravity,
-});
+const player3 = new Element ( { x: 10, y: 230, width:10, height: 50, color: "#fff", gravity: paddleGravity,});
 
-const player4 = new Element({
-	x: 525,
-	y: 230,
-	width: 12,
-	height: 60,
-	color: "#fff",
-	gravity: paddleGravity,
-});
+const player4 = new Element ( { x: 530, y: 230, width:10, height: 50, color: "#fff", gravity: paddleGravity,});
 
-window.ball = new Element ( {
-	x: 175,
-	y: 200,
-	width: 10,
-	height: 10,
-	color: "#fff",
-	speed: ballSpeed,
-	gravity: initialBallGravity,
-});
+window.ball = new Element ( { x: 175, y: 200, width: 10, height: 10, color: "#fff",
+	speed: ballSpeed, gravity: initialBallGravity,});
 
 function reset_game() {
 	pause = gameOver = false;
@@ -127,10 +91,26 @@ function reset_game() {
 window.keys = {};
 
 window.addEventListener("keydown", (e) => {
+	if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+		e.preventDefault();
+    }
 	keys[e.key] = true; //mark the key as pressed
-	if (window.location.pathname === '/rock-paper-scissors/multiplayer'){
+	if (window.location.href != `https://${window.location.hostname}:8443/` && window.isTournament === false){
 		return;
 	}else{
+		if (window.isTournament === false && init === 0)
+		{
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			
+			context.font = '20px \'Courier New\', Courier, monospace';
+			context.textAlign = 'center';
+			context.fillStyle = 'white';
+			context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2,  canvas.height * 0.125);
+			
+			draw(player1);
+			draw(player2);
+		}
+
 		if (keys['1'] && init === 0 && window.isTournament === false) {
 			ai = 1;
 			context.font = "20px 'Courier New', Courier, monospace";
@@ -141,7 +121,7 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("S - START", canvas.width / 2, 440);
 			username2 = "        AI";
 		}
-		if (keys['2'] && init === 0) {
+		else if (keys['2'] && init === 0) {
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
@@ -152,8 +132,7 @@ window.addEventListener("keydown", (e) => {
 			if (!window.isTournament)
 				username2 = "     HUMAN";
 		}
-
-		if (keys['4'] && init === 0 && window.isTournament === false) {
+		else if (keys['4'] && init === 0 && window.isTournament === false) {
 			multiplayer = 1;
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
@@ -166,17 +145,17 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("S - START", canvas.width / 2, 440);
 			username2 = "HUMAN PAIR";
 		}
+		else if (!keys['s'] && !keys['S'] && init === 0) {
+			username2 = "";
+		}
 
-		if (((gameOver == true && window.isTournament == false) || init == 0) && (keys['s'] || keys['S']))
+		if (username2 != "" && ((gameOver == true && window.isTournament == false) || init == 0) && (keys['s'] || keys['S']))
 		{
 			window.cancelAnimationFrame(ani);
-			if (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true) {
-				reset_game();
-				context.clearRect(0, 0, canvas.width, canvas.height);
-				ani = window.requestAnimationFrame(loop);
-			}
+			reset_game();
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			ani = window.requestAnimationFrame(loop);
 			init = 1;
-			// console.log("start game clicked");
 		}
 
 		if (gameOver === true && (keys['n'] || keys['N']) && window.isTournament === true)
@@ -186,7 +165,7 @@ window.addEventListener("keydown", (e) => {
 			window.onGameOver(winnerId);
 		}
 
-		if (keys['p'] || keys['P'] && gameOver == false && init == 1) {
+		if ((keys['p'] || keys['P']) && gameOver == false && init == 1) {
 			pause = !pause;
 			if (pause == true) {
 				context.font = "20px 'Courier New', Courier, monospace";
@@ -201,6 +180,9 @@ window.addEventListener("keydown", (e) => {
 
 window.addEventListener("keyup", (e) => {
 	keys[e.key] = false; //mark the key as released
+	if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+    }
 });
 
 /////////////////////////////////MOVES ENGINE//////////////////////////////////////
@@ -286,18 +268,20 @@ function paddleCollision() {
 	if (gameOver == true)
 		return ;
 		// Left side paddles (player1 and player3)
-	if (ball.x <= player1.x + player1.width && ball.speed < 0) {
-		if (ball.y + ball.height >= player1.y && ball.y <= player1.y + player1.height)
-			handleEdgeCollisions(player1);
-		else if (multiplayer && ball.y + ball.height >= player3.y && ball.y <= player3.y + player3.height)
-			handleEdgeCollisions(player3);
+	if (ball.speed < 0)
+		if (ball.x <= player1.x + player1.width && ball.x >= player1.x) {
+			if (ball.y + ball.height >= player1.y && ball.y <= player1.y + player1.height)
+				handleEdgeCollisions(player1);
+			else if (multiplayer && (ball.y + ball.height >= player3.y) && (ball.y <= player3.y + player3.height))
+				handleEdgeCollisions(player3);
 	}
 	// Right side paddles (player2 and player4)
-	else if (ball.x + ball.width >= player2.x && ball.speed > 0) {
-		if (ball.y + ball.height >= player2.y && ball.y <= player2.y + player2.height)
-			handleEdgeCollisions(player2);
-		else if (multiplayer && ball.y + ball.height >= player4.y && ball.y <= player4.y + player4.height)
-			handleEdgeCollisions(player4);
+	if (ball.speed > 0)
+		if (ball.x + ball.width >= player2.x && ball.x + ball.width <= player2.x + player2.width) {
+			if ((ball.y + ball.height >= player2.y) && (ball.y <= player2.y + player2.height))
+				handleEdgeCollisions(player2);
+			else if (multiplayer && (ball.y + ball.height >= player4.y) && (ball.y <= player4.y + player4.height))
+				handleEdgeCollisions(player4);
 	}
 
 	//point scored
@@ -342,15 +326,11 @@ function bounceBall() {
 		return ;
 	ball.x += ball.speed;
 	ball.y += ball.gravity;
-		//console.log("ball.speed:", ball.speed);
-		//console.log("window.previousBallDirection:", window.previousBallDirection);
-	// Update previousBallDirection and reset ballTurnedRight if necessary
 	if (ball.speed > 0 && window.previousBallDirection == -1) {
 		window.previousBallDirection = 1;
 		window.ballTurnedRight = true;
 		window.lastLeftHitTime = Date.now();
 			//console.log("game.js: lastLeftHitTime", window.lastLeftHitTime);
-
 	} else if (ball.speed < 0 && window.previousBallDirection == 1) {
 		window.previousBallDirection = -1;
 		ballTurnedRight = false;
@@ -416,7 +396,7 @@ function drawAll(){
 let AiLastUpdateTime = Date.now();
 
 function loop() {
-	if (init === 0 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
+	if (init === 0 && (window.location.href === `https://${window.location.hostname}:8443/` || window.isTournament == true)) {
 		reset_game();
 		if (window.isTournament)
 		{
@@ -441,8 +421,9 @@ function loop() {
 		draw(player2);
 	}
 	console.log()
-	if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8000/` || window.isTournament == true)) {
+	if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8443/` || window.isTournament == true)) {
 		//console.log("loop game");
+		console.log('ballSpeed: ', ball.speed);
 		handleMoves();
 		bounceBall();
 		paddleCollision();

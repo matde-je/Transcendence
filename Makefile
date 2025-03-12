@@ -1,7 +1,7 @@
 # Starts and build all containers defined in docker-compose.yml
 run:
 	@clear
-	docker compose --file docker-compose.yml up --build
+	docker-compose --file docker-compose.yml up --build
 
 # Stop all containers defined in docker-compose.yml
 stop:
@@ -81,6 +81,22 @@ tournament-it:
 	@clear
 	docker exec -it tournament /bin/bash
 
+nginx-it:
+	@clear
+	docker exec -it nginx /bin/bash
+
+rps-it:
+	@clear
+	docker exec -it rps /bin/bash
+
+redis-it:
+	@clear
+	docker exec -it redis /bin/bash
+
+pong-it:
+	@clear
+	docker exec -it pong /bin/bash
+
 # Display containers logs
 logs:
 	@clear
@@ -90,15 +106,18 @@ logs:
 generate-certs:
 	@clear
 	@echo "Generating SSL certificates..."
-	@openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/C=PT/ST=Lisboa/L=Lisboa/O=42/OU=42/CN=localhost"
+	@openssl req -x509 -newkey rsa:4096 -sha256 -days 365 \
+	-nodes -keyout cert.key -out cert.crt \
+	-subj "/CN=localhost" \
+	-addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 	@echo "Certificates generated and saved..."
 
 # Copy the certificates to the app directory
 copy-certs:
 	@clear
 	@echo "Copying certificates to the app directory..."
-	@cp cert.pem ./transcendence/cert.crt
-	@cp key.pem ./transcendence/cert.key
+	@cp cert.crt ./transcendence/cert.crt
+	@cp cert.key ./transcendence/cert.key
 	@echo "Certificates copied."
 
 
