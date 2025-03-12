@@ -17,9 +17,9 @@ RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/ap
 # RUN openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/C=PT/ST=Lisboa/L=Lisboa/O=42/OU=42/CN=matde-je.42.fr"
 
 # Copy all project files to the container
-COPY key.pem /app/cert.key
-COPY cert.pem /app/cert.crt
 COPY ./transcendence /app
+COPY cert.key /app/cert.key
+COPY cert.crt /app/cert.crt
 
 
 

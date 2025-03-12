@@ -136,7 +136,7 @@ export function initializeNavbar(authenticated) {
 
     if (authenticated) {
         if (!window.socket) {
-            window.socket = new WebSocket(`wss://${window.location.hostname}/ws/online_status/`);
+            window.socket = new WebSocket(`wss://${window.location.hostname}:8443/ws/online_status/`);
             window.socket.onopen = function() {};
             window.socket.onerror = function(error) {
                 console.error('WebSocket error:', error);

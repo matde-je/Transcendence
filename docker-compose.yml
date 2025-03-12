@@ -63,7 +63,7 @@ services:
         - ./transcendence/media:/usr/share/nginx/html/media:ro  # Serve media files
         - static_volume:/usr/share/nginx/html/static:ro
       ports:
-        - "443:443"  # Expose port 443 for HTTPS
+        - "8443:443"  # Expose port 443 for HTTPS
       networks:
         - transcendence
       depends_on:
@@ -135,9 +135,9 @@ services:
 
   redis:
     container_name: redis
-    image: "redis:alpine" 
+    image: "redis:alpine"
     ports:
-      - "6379:6379"
+      - "6380:6379"
     networks:
       - transcendence
     restart: always

@@ -91,10 +91,26 @@ function reset_game() {
 window.keys = {};
 
 window.addEventListener("keydown", (e) => {
+	if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+		e.preventDefault();
+    }
 	keys[e.key] = true; //mark the key as pressed
-	if (window.location.href != `https://${window.location.hostname}/` && window.isTournament === false){
+	if (window.location.href != `https://${window.location.hostname}:8443/` && window.isTournament === false){
 		return;
 	}else{
+		if (window.isTournament === false)
+		{
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			
+			context.font = '20px \'Courier New\', Courier, monospace';
+			context.textAlign = 'center';
+			context.fillStyle = 'white';
+			context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2,  canvas.height * 0.125);
+			
+			draw(player1);
+			draw(player2);
+		}
+
 		if (keys['1'] && init === 0 && window.isTournament === false) {
 			ai = 1;
 			context.font = "20px 'Courier New', Courier, monospace";
@@ -105,7 +121,7 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("S - START", canvas.width / 2, 440);
 			username2 = "        AI";
 		}
-		if (keys['2'] && init === 0) {
+		else if (keys['2'] && init === 0) {
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
@@ -116,8 +132,7 @@ window.addEventListener("keydown", (e) => {
 			if (!window.isTournament)
 				username2 = "     HUMAN";
 		}
-
-		if (keys['4'] && init === 0 && window.isTournament === false) {
+		else if (keys['4'] && init === 0 && window.isTournament === false) {
 			multiplayer = 1;
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
@@ -130,8 +145,11 @@ window.addEventListener("keydown", (e) => {
 			context.fillText("S - START", canvas.width / 2, 440);
 			username2 = "HUMAN PAIR";
 		}
+		else if (!keys['s'] && !keys['S'] && init === 0) {
+			username2 = "";
+		}
 
-		if (((gameOver == true && window.isTournament == false) || init == 0) && (keys['s'] || keys['S']))
+		if (username2 != "" && ((gameOver == true && window.isTournament == false) || init == 0) && (keys['s'] || keys['S']))
 		{
 			window.cancelAnimationFrame(ani);
 			reset_game();
@@ -162,6 +180,9 @@ window.addEventListener("keydown", (e) => {
 
 window.addEventListener("keyup", (e) => {
 	keys[e.key] = false; //mark the key as released
+	if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+    }
 });
 
 /////////////////////////////////MOVES ENGINE//////////////////////////////////////
@@ -375,7 +396,7 @@ function drawAll(){
 let AiLastUpdateTime = Date.now();
 
 function loop() {
-	if (init === 0 && (window.location.href === `https://${window.location.hostname}/` || window.isTournament == true)) {
+	if (init === 0 && (window.location.href === `https://${window.location.hostname}:8443/` || window.isTournament == true)) {
 		reset_game();
 		if (window.isTournament)
 		{
@@ -400,7 +421,7 @@ function loop() {
 		draw(player2);
 	}
 	console.log()
-	if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}/` || window.isTournament == true)) {
+	if (!gameOver && !pause && init === 1 && (window.location.href === `https://${window.location.hostname}:8443/` || window.isTournament == true)) {
 		//console.log("loop game");
 		console.log('ballSpeed: ', ball.speed);
 		handleMoves();
