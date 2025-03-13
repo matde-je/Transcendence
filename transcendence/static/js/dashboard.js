@@ -201,18 +201,68 @@ export async function showTournamentResults() {
             const losses = total - wins;
             const winPercentage = Math.ceil((wins / total) * 100); //round up
             content.innerHTML = `
-                <h3 class="mb-4 mt-3">Tournament Results</h3>
-                <p>Total Tournaments: ${total}</p>
-                <p>Wins: ${wins}</p>
-                <p>Win Percentage: ${winPercentage}%</p>
-                <div class="chart-container mt-3 mb-5">
-                    <canvas id="resultsChart"></canvas>
-                </div>`;
+            <div class="container-fluid">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-xl-4 col-lg-5 col-md-6 mb-4 mb-md-0">
+                    <div class="card shadow-sm p-3 mx-auto">
+                        <h4 class="text-center mb-4">Tournament Results</h4>
+                        <div class="row">
+                            <div class="col-6 text-end fw-bold">Total Games:</div>
+                            <div class="col-6">${total}</div>
+                            <div class="col-6 text-end fw-bold">Wins:</div>
+                            <div class="col-6">${wins}</div>
+                            <div class="col-6 text-end fw-bold">Losses:</div>
+                            <div class="col-6">${losses}</div>
+                            <div class="col-6 text-end fw-bold">Win Percentage:</div>
+                            <div class="col-6">${winPercentage}%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-4 col-lg-5 col-md-6 d-flex justify-content-center">
+                    <div class="chart-container">
+                        <canvas id="resultspie"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="chart-container mb-5">
+            <canvas id="resultsChart"><canvas>
+        </div>
+            `;  
+            if (window.pie instanceof Chart) {
+                window.pie.destroy();
+            }
+            window.pie = document.getElementById('resultspie').getContext('2d');
+            window.pie.canvas.width = 200; // Set desired width
+            window.pie.canvas.height = 200; // Set desired height
+            window.pie = new Chart(window.pie, {
+                type: 'pie',
+                data: {
+                    labels: ['Wins', 'Losses'],
+                    datasets: [{
+                        data: [wins, losses],
+                        backgroundColor: [
+                            'rgba(63, 205, 58, 0.77)',
+                            'rgba(226, 127, 40, 0.8)',
+                        ],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                    }
+                }
+            });
             if (window.myChart instanceof Chart) {
                 window.myChart.destroy();
             }
-            const ctx = document.getElementById("resultsChart");
-            window.myChart = new Chart(ctx, {
+            window.myChart = document.getElementById("resultsChart").getContext('2d');
+            window.myChart.canvas.height = 100; 
+            window.myChart = new Chart(window.myChart, {
                 type: "line",
                 data: {
                     labels: labels, // X-axis 
@@ -260,15 +310,13 @@ export async function showTournamentResults() {
                     },
                     layout: {
                         padding: {
-                            left: 60,
-                            right: 60,
+                            left: 20,
+                            right: 20,
                             top: 20, 
-                            bottom: 40 
                         }          
                     }
                 }
             });
-           
     } else {
         content.innerHTML += '<p>You have not participated in any tournaments.</p>';
     } 
@@ -288,6 +336,7 @@ function formatDate(dateString) {
 }
 
 window.myChart = null;
+window.pie = null;
 export async function showPongResults() {
     try {
         const data = await fetchWithRetry('/users/results/', {
@@ -296,14 +345,65 @@ export async function showPongResults() {
         });
         const content = document.getElementById('content');
         const percent = Math.ceil(data.win_percentage);
+        let loss = data.total_matches - data.total_wins;
         content.innerHTML = `
-            <h3 class="mb-4 mt-3">Pong Results</h3>
-            <p>Total Matches: ${data.total_matches}</p>
-            <p>Wins: ${data.total_wins}</p>
-            <p>Win Percentage: ${percent}%</p>
-            <div class="chart-container mt-3 mb-5 h-25">
-                <canvas id="resultsChart"></canvas>
-            </div> `;
+        <div class="container-fluid">
+         <div class="row justify-content-center align-items-center">
+            <div class="col-xl-4 col-lg-5 col-md-6 mb-4 mb-md-0">
+                <div class="card shadow-sm p-3 mx-auto">
+                    <h4 class="text-center mb-4">Pong Results</h4>
+                    <div class="row">
+                        <div class="col-6 text-end fw-bold">Total Games:</div>
+                        <div class="col-6">${data.total_matches}</div>
+                        <div class="col-6 text-end fw-bold">Wins:</div>
+                        <div class="col-6">${data.total_wins}</div>
+                        <div class="col-6 text-end fw-bold">Losses:</div>
+                        <div class="col-6">${loss}</div>
+                        <div class="col-6 text-end fw-bold">Win Percentage:</div>
+                        <div class="col-6">${percent}%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-lg-5 col-md-6 d-flex justify-content-center">
+                <div class="chart-container">
+                    <canvas id="resultspie"></canvas>
+                </div>
+            </div>
+        </div>
+        </div>
+        <div class="chart-container mb-5">
+            <canvas id="resultsChart"><canvas>
+        </div>
+        `;  
+            if (window.pie instanceof Chart) {
+                window.pie.destroy();
+            }
+            window.pie = document.getElementById('resultspie').getContext('2d');
+            window.pie.canvas.width = 200; // Set desired width
+            window.pie.canvas.height = 200; // Set desired height
+            window.pie = new Chart(window.pie, {
+                type: 'pie',
+                data: {
+                    labels: ['Wins', 'Losses'],
+                    datasets: [{
+                        data: [data.total_wins, loss],
+                        backgroundColor: [
+                            'rgba(63, 205, 58, 0.77)',
+                            'rgba(219, 123, 38, 0.8)',
+                        ],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                    }
+                }
+            });
+           
         const labels = [];
         const wins = [];  
         if (data.matches && data.matches.length > 0) {
@@ -316,8 +416,9 @@ export async function showPongResults() {
         if (window.myChart instanceof Chart) {
             window.myChart.destroy();
         }
-        const ctx = document.getElementById("resultsChart");
-        window.myChart = new Chart(ctx, {
+        window.myChart = document.getElementById("resultsChart").getContext('2d');
+        window.myChart.canvas.height = 100; 
+        window.myChart = new Chart(window.myChart, {
             type: "line",
             data: {
                 labels: labels, // X-axis 
@@ -365,10 +466,9 @@ export async function showPongResults() {
                 },
                 layout: {
                     padding: {
-                        left: 60,
-                        right: 60,
+                        left: 20,
+                        right: 20,
                         top: 20, 
-                        bottom: 40 
                     }          
                 }
             }
@@ -387,13 +487,62 @@ export async function showRockPaperScissor() {
         const content = document.getElementById('content');
         const rpsResults = response;
         content.innerHTML = `
-            <h3 class="mt-3 mb-4">Rock-Paper-Scissors Results</h3>
-            <p>Total Games: ${rpsResults.total_games}</p>
-            <p>Wins: ${rpsResults.wins}</p>
-            <p>Win Percentage: ${rpsResults.win_percentage}%</p>
-            <div class="chart-container mt-3 mb-5 h-25">
-                <canvas id="resultsChart"></canvas>
-            </div>`;
+        <div class="container-fluid">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-xl-4 col-lg-5 col-md-6 mb-4 mb-md-0">
+                    <div class="card shadow-sm p-3 mx-auto">
+                        <h4 class="text-center mb-4">Rock-Paper-Scissors Results</h4>
+                        <div class="row">
+                            <div class="col-6 text-end fw-bold">Total Games:</div>
+                            <div class="col-6">${rpsResults.total_games}</div>
+                            <div class="col-6 text-end fw-bold">Wins:</div>
+                            <div class="col-6">${rpsResults.wins}</div>
+                            <div class="col-6 text-end fw-bold">Losses:</div>
+                            <div class="col-6">${rpsResults.losses}</div>
+                            <div class="col-6 text-end fw-bold">Win Percentage:</div>
+                            <div class="col-6">${rpsResults.win_percentage}%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-4 col-lg-5 col-md-6 d-flex justify-content-center">
+                    <div class="chart-container">
+                        <canvas id="resultspie"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="chart-container mb-5">
+            <canvas id="resultsChart"><canvas>
+        </div>
+        `;  
+            if (window.pie instanceof Chart) {
+                window.pie.destroy();
+            }
+            window.pie = document.getElementById('resultspie').getContext('2d');
+            window.pie.canvas.width = 200; // Set desired width
+            window.pie.canvas.height = 200; // Set desired height
+            window.pie = new Chart(window.pie, {
+                type: 'pie',
+                data: {
+                    labels: ['Wins', 'Losses'],
+                    datasets: [{
+                        data: [rpsResults.wins, rpsResults.losses],
+                        backgroundColor: [
+                            'rgba(63, 205, 58, 0.77)',
+                            'rgba(222, 124, 39, 0.8)',
+                        ],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                    }
+                }
+            });
         const labels = [];
         const wins = [];  
         if (rpsResults.matches && rpsResults.matches.length > 0) {
@@ -406,8 +555,9 @@ export async function showRockPaperScissor() {
         if (window.myChart instanceof Chart) {
             window.myChart.destroy();
         }
-        const ctx = document.getElementById("resultsChart");
-        window.myChart = new Chart(ctx, {
+        window.myChart = document.getElementById("resultsChart").getContext('2d');
+        window.myChart.canvas.height = 100; 
+        window.myChart = new Chart(window.myChart, {
             type: 'bar',  // Bar chart type
             data: {
                 labels: labels, // X-axis (dates)
@@ -456,6 +606,13 @@ export async function showRockPaperScissor() {
                 },
                 barPercentage: 0.5, // Controls the width of the bars
                 categoryPercentage: 0.7,
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        top: 20, 
+                    }          
+                }
             }
         });
     } catch (error) {

@@ -88,7 +88,6 @@ export function initializeNavbar(authenticated) {
         'navbar navbar-expand-lg navbar-light bg-light fixed-top';
     const container = document.createElement('div'); // grouping
     container.className = 'container-fluid';
-    // Check if tournament mode is active
     if (window.isTournament === true) {
         /* Create an empty navbar for Tournament mode.
            No additional links will be added. */
@@ -254,7 +253,7 @@ export function initializeNavbar(authenticated) {
  */
 import { initializeGame } from './game.js';
 
-export function showHome() {
+export async function showHome() {
 	window.isTournament = false;
     let contentElement = document.getElementById('content');
     if (!contentElement) {
@@ -266,6 +265,16 @@ export function showHome() {
         contentElement.innerHTML = '';
     document.getElementById('gameScript')?.remove();
     document.getElementById('aiScript')?.remove();
+    let data = 0;
+    try {
+        data = await fetchWithRetry('/users/check-auth/', {
+            method: 'GET',
+            credentials: 'include',
+        });
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`Error: ${error.message}`);
+        }
     contentElement.innerHTML = `
         <h2 class="text-center text-dark fw-bold mb-5">Pong Game</h2>
         <div class="text-center"> 
@@ -273,19 +282,23 @@ export function showHome() {
                 <canvas id="game" width="550" height="400" style="background-color: #000;"></canvas>
             </div>
         </div>
+        `;
+    if (!data.is_authenticated) {
+        contentElement.innerHTML += `
         <div class="text-center mt-4">
             <p class="fs-6 fw-bold">To unlock new features and games,</p>
             <p class="fs-6">Register your User and Login!</p>
         </div>
         `;
-        const gameScript = document.createElement('script');
-        gameScript.type = 'module';
-        gameScript.src = '/static/js/game.js';
-        gameScript.id = 'gameScript';
-        gameScript.onload = () => {
-            initializeGame();
-        };
-        document.body.appendChild(gameScript);
+    }
+    const gameScript = document.createElement('script');
+    gameScript.type = 'module';
+    gameScript.src = '/static/js/game.js';
+    gameScript.id = 'gameScript';
+    gameScript.onload = () => {
+        initializeGame();
+    };
+    document.body.appendChild(gameScript);
     if (!document.getElementById('aiScript')) {
         const aiScript = document.createElement('script');
         aiScript.type = 'module';

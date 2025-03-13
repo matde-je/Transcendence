@@ -101,7 +101,7 @@ window.addEventListener("keydown", (e) => {
 		if (window.isTournament === false && init === 0)
 		{
 			context.clearRect(0, 0, canvas.width, canvas.height);
-			
+			console.log("ola");
 			context.font = '20px \'Courier New\', Courier, monospace';
 			context.textAlign = 'center';
 			context.fillStyle = 'white';
@@ -116,7 +116,7 @@ window.addEventListener("keydown", (e) => {
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, canvas.height / 2);
+			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, canvas.height / 2);
 			context.fillText("P - PAUSE", canvas.width / 2, canvas.height / 1.13);
 			context.fillText("S - START", canvas.width / 2, canvas.height / 1.05);
 			username2 = "        Ai";
