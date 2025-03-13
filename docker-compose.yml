@@ -21,6 +21,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    user: "1000:1000" 
     environment:
       - DJANGO_SETTINGS_MODULE=transcendence.settings
     command: >
