@@ -3,13 +3,13 @@
 import { playSinglePlayerGame } from './rps-singleplayer.js';
 import { playMultiplayerGame } from './rps-multiplayer.js';
 import { showRPS} from './app.js';
-import { getCookie, checkAuthentication } from './utils.js';
+import { getCookie, checkAuthentication} from './utils.js';
 
 
 /**
  * Displays the Single Player mode interface.
  */
-export function showSinglePlayer() {
+export async function showSinglePlayer() {
     const singlePlayerContent = `
         <h2 class="text-center mb-4 mt-5 pt-5 ">Rock - Paper - Scissors</h2>
         <div class="d-flex justify-content-center mb-4 mt-4 pt-3">
@@ -21,7 +21,7 @@ export function showSinglePlayer() {
             <h5 class="mb-4 mt-4 pt-2">Game Status</h5>
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <p id="playerDisplay" class="fs-6 fw-bold mb-2">Player:</p>
+                    <p id="playerDisplay" class="fs-6 fw-bold mb-2">${await checkAuthentication()}:</p>
                     <p id="playerScoreDisplay" class="fs-6 mb-2">Score: 0</p>
                 </div>
                 <div class="col-md-6">
@@ -56,18 +56,25 @@ export function showSinglePlayer() {
     }
 }
 
-export function showMultiplayer() {
+export async function showMultiplayer(opponent) {
+    let pl2;
+    if(opponent)
+        pl2 = opponent;
+    else
+    pl2 = 'Player 2';
+    console.log('opponent:', opponent);
+    
     const multiplayerContent = `
         <h3 class="text-center mb-5 mt-5">Rock - Paper - Scissors</h3>
         <div class="row justify-content-center mb-5">
             <div class="col-md-4 text-center">
-                <h5 class="mb-3 pt-3">Player 1</h5>
+                <h5 class="mb-3 pt-3">${await checkAuthentication()}</h5>
                 <button class="btn btn-success mb-2 w-100" id="player1RockBtn">👊 Rock (Key Q)</button>
                 <button class="btn btn-info mb-2 w-100" id="player1PaperBtn">✋ Paper (Key W)</button>
                 <button class="btn btn-danger mb-2 w-100" id="player1ScissorsBtn">✌️ Scissors (Key E)</button>
             </div>
             <div class="col-md-4 text-center">
-                <h5 class="mb-3 pt-3">Player 2</h5>
+                <h5 class="mb-3 pt-3">${pl2}</h5>
                 <button class="btn btn-success mb-2 w-100" id="player2RockBtn">👊 Rock (Arrow Left)</button>
                 <button class="btn btn-info mb-2 w-100" id="player2PaperBtn">✋ Paper (Arrow Down)</button>
                 <button class="btn btn-danger mb-2 w-100" id="player2ScissorsBtn">✌️ Scissors (Arrow Right)</button>
@@ -77,11 +84,11 @@ export function showMultiplayer() {
             <h5 class="mb-4">Game Status</h5>
             <div class="row mb-5">
                 <div class="col-md-6">
-                    <p id="player1Display" class="fs-6 fw-bold mb-2">Player 1:</p>
+                    <p id="player1Display" class="fs-6 fw-bold mb-2">${await checkAuthentication()}:</p>
                     <p id="player1ScoreDisplay" class="fs-6">Score: 0</p>
                 </div>
                 <div class="col-md-6">
-                    <p id="player2Display" class="fs-6 fw-bold mb-2">Player 2:</p>
+                    <p id="player2Display" class="fs-6 fw-bold mb-2">${pl2}:</p>
                     <p id="player2ScoreDisplay" class="fs-6">Score: 0</p>
                 </div>
             </div>
@@ -240,7 +247,7 @@ export async function showWaitingList() {
                 alert(`Match found: ${opponent}`);
                 sessionStorage.setItem('opponent', opponent);
 
-                showMultiplayer();
+                showMultiplayer(opponent);
                 history.pushState(
                     { page: 'rps-multiplayer' },
                     'Rock Paper Scissors Multiplayer',
