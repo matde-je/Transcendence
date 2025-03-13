@@ -183,10 +183,9 @@ export async function showTournamentResults() {
             method: 'GET',
             credentials: 'include',
         });
-        const content = document.getElementById('content');
-        content.innerHTML = '<h2 class="mb-4 mt-4">Tournament Results</h2>';
         const labels = [];
         const wins1 = [];  
+        const content = document.getElementById('content');
         if (tournaments.length > 0) {
             tournaments.forEach(tournament => {
                 const div = document.createElement('div');
@@ -200,74 +199,76 @@ export async function showTournamentResults() {
             const total = tournaments.length;
             const wins = tournaments.filter(t => t.is_winner).length;
             const losses = total - wins;
-            const winPercentage = ((wins / total) * 100);
-			// Show statistics
-            const statsDiv = document.createElement('div');
-            statsDiv.innerHTML = `
-                <h3 class="mt-5 mb-4">Statistics</h3>
+            const winPercentage = Math.ceil((wins / total) * 100); //round up
+            content.innerHTML = `
+                <h3 class="mb-4 mt-3">Tournament Results</h3>
                 <p>Total Tournaments: ${total}</p>
-                <p>Total Wins: ${wins}</p>
-                <p>Total Losses: ${losses}</p>
+                <p>Wins: ${wins}</p>
                 <p>Win Percentage: ${winPercentage}%</p>
-                <div class="chart-container mt-5 mb-5">
+                <div class="chart-container mt-3 mb-5">
                     <canvas id="resultsChart"></canvas>
                 </div>`;
-            content.appendChild(statsDiv);
             if (window.myChart instanceof Chart) {
                 window.myChart.destroy();
             }
             const ctx = document.getElementById("resultsChart");
             window.myChart = new Chart(ctx, {
-            type: 'bar',  // Bar chart type
-            data: {
-                labels: labels, // X-axis (dates)
-                datasets: [{
-                    label: 'Wins Over Time',
-                    data: wins1, // Y-axis (1 for win, 0 for loss)
-                    borderColor: "#28a745",
-                    backgroundColor: "rgba(40, 167, 69, 0.2)",
-                    borderWidth: 2,
-                    borderSkipped: false, // Makes sure bars are not skipped
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: "Date",
-                            font: {
-                                weight: 'bold',
-                                size: 14
-                            }
-                        },
-                        grid: {
-                            display: false  // Hide grid lines on the y-axis
-                        },
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: "Wins",
-                            font: {
-                                weight: 'bold',
-                                size: 14
-                            }
-                        },
-                        ticks: {
-                            beginAtZero: true,
-                            stepSize: 1
-                        },
-                        grid: {
-                            display: false  // Hide grid lines on the y-axis
-                        }
-                    }
+                type: "line",
+                data: {
+                    labels: labels, // X-axis 
+                    datasets: [{
+                        label: "Wins Over Time",
+                        data: wins1,
+                        borderColor: "#28a745",
+                        backgroundColor: "rgba(40, 167, 69, 0.2)",
+                        borderWidth: 2,
+                        fill: true,
+                    }]
                 },
-                barPercentage: 0.5, // Controls the width of the bars
-                categoryPercentage: 0.7,
-            }
-        });
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: "Date",
+                                font: {
+                                    weight: 'bold', 
+                                    size: 14
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: "Wins",
+                                font: {
+                                    weight: 'bold',
+                                    size: 14 
+                                },
+                            },
+                            ticks: {
+                                stepSize: 1,
+                            },
+                            grid: {
+                                display: false 
+                            },
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            left: 60,
+                            right: 60,
+                            top: 20, 
+                            bottom: 40 
+                        }          
+                    }
+                }
+            });
+           
     } else {
         content.innerHTML += '<p>You have not participated in any tournaments.</p>';
     } 
@@ -278,7 +279,12 @@ export async function showTournamentResults() {
 
 function formatDate(dateString) {
     const date = new Date(dateString);
-    return date.toLocaleString(); // Adjusts to user's locale
+    return date.toLocaleString('default', {
+        day: 'numeric',
+        month: 'short',
+        hour: 'numeric',
+        hour12: true
+    });
 }
 
 window.myChart = null;
@@ -289,12 +295,13 @@ export async function showPongResults() {
             credentials: 'include',
         });
         const content = document.getElementById('content');
+        const percent = Math.ceil(data.win_percentage);
         content.innerHTML = `
-            <h3 class="mb-4 mt-5">Pong Results</h3>
+            <h3 class="mb-4 mt-3">Pong Results</h3>
             <p>Total Matches: ${data.total_matches}</p>
             <p>Wins: ${data.total_wins}</p>
-            <p>Win Percentage: ${data.win_percentage}%</p>
-            <div class="chart-container mt-5 mb-5 h-25">
+            <p>Win Percentage: ${percent}%</p>
+            <div class="chart-container mt-3 mb-5 h-25">
                 <canvas id="resultsChart"></canvas>
             </div> `;
         const labels = [];
@@ -380,12 +387,11 @@ export async function showRockPaperScissor() {
         const content = document.getElementById('content');
         const rpsResults = response;
         content.innerHTML = `
-            <h3 class="pt-5 mb-5">Rock-Paper-Scissors Results</h3>
+            <h3 class="mt-3 mb-4">Rock-Paper-Scissors Results</h3>
             <p>Total Games: ${rpsResults.total_games}</p>
-            <p>Win Percentage: ${rpsResults.win_percentage}%</p>
             <p>Wins: ${rpsResults.wins}</p>
-            <p>Losses: ${rpsResults.losses}</p>
-            <div class="chart-container mt-5 mb-5 h-25">
+            <p>Win Percentage: ${rpsResults.win_percentage}%</p>
+            <div class="chart-container mt-3 mb-5 h-25">
                 <canvas id="resultsChart"></canvas>
             </div>`;
         const labels = [];
@@ -402,7 +408,7 @@ export async function showRockPaperScissor() {
         }
         const ctx = document.getElementById("resultsChart");
         window.myChart = new Chart(ctx, {
-            type: 'radar',  // Radar chart type
+            type: 'bar',  // Bar chart type
             data: {
                 labels: labels, // X-axis (dates)
                 datasets: [{
@@ -411,26 +417,45 @@ export async function showRockPaperScissor() {
                     borderColor: "#28a745",
                     backgroundColor: "rgba(40, 167, 69, 0.2)",
                     borderWidth: 2,
-                    fill: true
+                    borderSkipped: false, // Makes sure bars are not skipped
                 }]
             },
             options: {
                 responsive: true,
                 scales: {
-                    r: { //Radius scale
-                        min: 0,
-                        max: 1,
-                        ticks: {
-                            stepSize: 1
-                        },
-                        angleLines: {
-                            display: true
+                    x: {
+                        title: {
+                            display: true,
+                            text: "Date",
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            }
                         },
                         grid: {
-                            display: true
+                            display: false  // Hide grid lines on the y-axis
+                        },
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: "Wins",
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            }
+                        },
+                        ticks: {
+                            beginAtZero: true,
+                            stepSize: 1
+                        },
+                        grid: {
+                            display: false  // Hide grid lines on the y-axis
                         }
                     }
-                }
+                },
+                barPercentage: 0.5, // Controls the width of the bars
+                categoryPercentage: 0.7,
             }
         });
     } catch (error) {

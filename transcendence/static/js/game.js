@@ -40,8 +40,8 @@ export async function initializeGame() {
 	}
 	canvas = document.getElementById("game");
 	context = canvas.getContext("2d");
-	canvas.width = 800;
-	canvas.height = 470;
+	canvas.width = 550;
+	canvas.height = 400;
 	window.canvas = canvas;
 	window.context = context;
 	score1 = 0;
@@ -98,7 +98,7 @@ window.addEventListener("keydown", (e) => {
 	if (window.location.href != `https://${window.location.hostname}:8443/` && window.isTournament === false){
 		return;
 	}else{
-		if (window.isTournament === false)
+		if (window.isTournament === false && init === 0)
 		{
 			context.clearRect(0, 0, canvas.width, canvas.height);
 			
@@ -106,49 +106,51 @@ window.addEventListener("keydown", (e) => {
 			context.textAlign = 'center';
 			context.fillStyle = 'white';
 			context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2,  canvas.height * 0.125);
-			
 			draw(player1);
 			draw(player2);
 		}
 
 		if (keys['1'] && init === 0 && window.isTournament === false) {
 			ai = 1;
+			multiplayer = 0;
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, 290);
-			context.fillText("P - PAUSE", canvas.width / 2, 410);
-			context.fillText("S - START", canvas.width / 2, 440);
-			username2 = "        AI";
+			context.fillText("PLAYER 1 - Q AND A", canvas.width / 2, canvas.height / 2);
+			context.fillText("P - PAUSE", canvas.width / 2, canvas.height / 1.13);
+			context.fillText("S - START", canvas.width / 2, canvas.height / 1.05);
+			username2 = "        Ai";
 		}
 		else if (keys['2'] && init === 0) {
+			ai = 0;
+			multiplayer = 0;
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, 260);
-			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 290);
-			context.fillText("P - PAUSE", canvas.width / 2, 410);
-			context.fillText("S - START", canvas.width / 2, 440);
+			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, canvas.height / 2);
+			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 230);
+			context.fillText("P - PAUSE", canvas.width / 2, canvas.height / 1.13);
+			context.fillText("S - START", canvas.width / 2, canvas.height / 1.05);
 			if (!window.isTournament)
-				username2 = "     HUMAN";
+				username2 = "     Human";
 		}
 		else if (keys['4'] && init === 0 && window.isTournament === false) {
 			multiplayer = 1;
+			ai = 0;
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, 200);
+			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, canvas.height / 2);
 			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 230);
 			context.fillText("PLAYER 3 - F AND V   ", canvas.width / 2, 260);
 			context.fillText("PLAYER 4 - J AND M   ", canvas.width / 2, 290);
-			context.fillText("P - PAUSE", canvas.width / 2, 410);
-			context.fillText("S - START", canvas.width / 2, 440);
-			username2 = "HUMAN PAIR";
+			context.fillText("P - PAUSE", canvas.width / 2, canvas.height / 1.13);
+			context.fillText("S - START", canvas.width / 2, canvas.height / 1.05);
+			username2 = "Human pair";
 		}
 		else if (!keys['s'] && !keys['S'] && init === 0) {
 			username2 = "";
 		}
-
 		if (username2 != "" && ((gameOver == true && window.isTournament == false) || init == 0) && (keys['s'] || keys['S']))
 		{
 			window.cancelAnimationFrame(ani);
@@ -165,13 +167,13 @@ window.addEventListener("keydown", (e) => {
 			window.onGameOver(winnerId);
 		}
 
-		if (keys['p'] || keys['P'] && gameOver == false && init == 1) {
+		if ((keys['p'] || keys['P']) && gameOver == false && init == 1) {
 			pause = !pause;
 			if (pause == true) {
 				context.font = "20px 'Courier New', Courier, monospace";
 				context.textAlign = "center";
 				context.fillStyle = "white";
-				context.fillText("Paused, press P to continue", canvas.width / 4, canvas.height * 0.9);
+				context.fillText("Paused, press P to continue", canvas.width / 3, canvas.height * 0.9);
 			}
 			keys['p'] = false;
 		}
@@ -459,7 +461,7 @@ function loop() {
 					context.textAlign = 'center';
 					context.fillStyle = 'white';
 					context.fillText('WIN', x, canvas.height * 0.375);
-					context.font = '30px \'Courier New\', Courier, monospace';
+					context.font = '20px \'Courier New\', Courier, monospace';
 					context.fillText('S - START NEW GAME', x, canvas.height * 0.875);
 				}
 			gameOver = true;
