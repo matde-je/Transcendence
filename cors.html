@@ -7,7 +7,7 @@
     <button id="testButton">Test CORS</button>
     <script>
     document.getElementById('testButton').addEventListener('click', function() {
-        fetch('https://localhost:8000/users/login/', { 
+        fetch('https://localhost/users/login/', { 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
