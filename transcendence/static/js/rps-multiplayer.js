@@ -1,6 +1,10 @@
 // static/js/rps-multiplayer.js
 
+import { showRPS } from './app.js';
+import { showRockPaperScissor } from './dashboard.js';
 import { getCookie, capitalizeFirstLetter } from './utils.js';
+import { checkAuthentication} from './utils.js';
+
 
 const choices = ['rock', 'paper', 'scissors'];
 const player1Display = document.getElementById('player1Display');
@@ -52,7 +56,13 @@ export function choose(choice, player) {
 /**
  * Executes the game logic for Multiplayer mode.
  */
-function playGame() {
+async function playGame() {
+    let opponent = sessionStorage.getItem('opponent');
+    if (!opponent) {
+        opponent = 'Player 2';
+    }
+    console.log('Opponent:', opponent);
+
     const player1Display = document.getElementById('player1Display');
     const player2Display = document.getElementById('player2Display');
     const resultDisplay = document.getElementById('resultDisplay');
@@ -90,8 +100,8 @@ function playGame() {
         player2Score++;
     }
 
-    player1Display.textContent = `Player 1: ${capitalizeFirstLetter(player1Choice)}`;
-    player2Display.textContent = `Player 2: ${capitalizeFirstLetter(player2Choice)}`;
+    player1Display.textContent = `${await checkAuthentication()}: ${capitalizeFirstLetter(player1Choice)}`;
+    player2Display.textContent = `${opponent}: ${capitalizeFirstLetter(player2Choice)}`;
     resultDisplay.textContent = result;
     player1ScoreDisplay.innerText = `Score: ${player1Score}`;
     player2ScoreDisplay.innerText = `Score: ${player2Score}`;
@@ -101,11 +111,21 @@ function playGame() {
         const finalResult = player1Score === 3 ? 'Player 1 won the game!' : 'Player 2 won the game!';
         resultDisplay.textContent = finalResult;
         registerMultiplayerMatch(finalResult, player1Score === 3 ? 'Player 2' : 'Player 1');
+        const wonGame = player1Score === 3 ? `${await checkAuthentication()}` : opponent;
+        alert( wonGame + ' won the game!');
+
+        console.log('opponent:', opponent);
+        if(opponent !== 'Player 2'){
+            player1Choice = null;
+            player2Choice = null;
+            showRPS();
+        }
     }
 
     // Reset choices after the round
     player1Choice = null;
     player2Choice = null;
+
 }
 
 /**

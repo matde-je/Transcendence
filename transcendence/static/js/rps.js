@@ -21,7 +21,7 @@ export async function showSinglePlayer() {
             <h5 class="mb-4 mt-4 pt-2">Game Status</h5>
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <p id="playerDisplay" class="fs-6 fw-bold mb-2">${await checkAuthentication()}:</p>
+                    <p id="playerDisplay" class="fs-6 fw-bold mb-2">Player 1:</p>
                     <p id="playerScoreDisplay" class="fs-6 mb-2">Score: 0</p>
                 </div>
                 <div class="col-md-6">
@@ -61,8 +61,8 @@ export async function showMultiplayer(opponent) {
     if(opponent)
         pl2 = opponent;
     else
-    pl2 = 'Player 2';
-    console.log('opponent:', opponent);
+        pl2 = 'Player 2';
+
     
     const multiplayerContent = `
         <h3 class="text-center mb-5 mt-5">Rock - Paper - Scissors</h3>
