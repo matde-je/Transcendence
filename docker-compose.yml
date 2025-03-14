@@ -58,8 +58,7 @@ services:
       image: nginx:alpine
       container_name: nginx
       volumes:
-        - ./transcendence/cert.crt:/etc/nginx/ssl/cert.crt:ro # Your SSL certificate
-        - ./transcendence/cert.key:/etc/nginx/ssl/cert.key:ro # Your SSL certificate
+        - ./transcendence:/etc/nginx/ssl:ro
         - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Your Nginx config
         - ./transcendence/media:/usr/share/nginx/html/media:ro  # Serve media files
         - static_volume:/usr/share/nginx/html/static:ro
