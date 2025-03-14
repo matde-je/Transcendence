@@ -21,13 +21,11 @@ COPY ./transcendence /app
 COPY cert.key /app/cert.key
 COPY cert.crt /app/cert.crt
 
-
+# Create staticfiles directory and adjust permissions for Django
+RUN mkdir -p /app/staticfiles && chmod -R 777 /app/staticfiles
 
 # Set the environment variable for Django to run in non-interactive mode
 ENV PYTHONUNBUFFERED=1
-
-# Expose port 8001 for the Django server with SSL
-EXPOSE 8001
 
 # Use pg_isready to wait for the PostgreSQL database to be ready before starting Django
 CMD ["sh", "-c", "until pg_isready -h db -p 5432 -U $POSTGRES_USER; do echo 'Waiting for Postgres...'; sleep 2; done && python manage.py migrate && python manage.py runserver_plus --cert-file cert.pem 0.0.0.0:8001"]
