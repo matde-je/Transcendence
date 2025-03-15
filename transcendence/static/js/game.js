@@ -41,13 +41,13 @@ export async function initializeGame() {
 	canvas = document.getElementById("game");
 	context = canvas.getContext("2d");
 	canvas.width = 1000;
-	canvas.height = 650;
+	canvas.height = 620;
 	window.canvas = canvas;
 	window.context = context;
 	score1 = 0;
 	score2 = 0;
 	init = 0;
-	ballSpeed = 8;
+	ballSpeed = 10;
 	window.maxGravity = initialBallGravity * 3;
 	multiplayer = 0;
 	window.ai = 0;
@@ -72,7 +72,7 @@ const player1 = new Element ( { x: 10, y: 170, width:10, height: 50, color: "#ff
 
 window.player2 = new Element ( { x: 530, y: 170, width:10, height: 50, color: "#fff", gravity: paddleGravity,});
 
-const player3 = new Element ( { x: 10, y: 230, width:10, height: 50, color: "#fff", gravity: paddleGravity,});
+const player3 = new Element ( { x: 12, y: 230, width:10, height: 50, color: "#fff", gravity: paddleGravity,});
 
 const player4 = new Element ( { x: 530, y: 230, width:10, height: 50, color: "#fff", gravity: paddleGravity,});
 
