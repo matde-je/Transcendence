@@ -12,8 +12,8 @@ let gameOver = false;
 let pause = false;
 let init = 0;
 let initialBallGravity = 1;
-let ballSpeed = 8;
-let paddleGravity = 7;
+let ballSpeed = 10;
+let paddleGravity = 10;
 let multiplayer = 0;
 let username1 = " Anonymous";
 let username2 = "";
@@ -40,8 +40,8 @@ export async function initializeGame() {
 	}
 	canvas = document.getElementById("game");
 	context = canvas.getContext("2d");
-	canvas.width = 550;
-	canvas.height = 400;
+	canvas.width = 1000;
+	canvas.height = 650;
 	window.canvas = canvas;
 	window.context = context;
 	score1 = 0;
@@ -243,6 +243,7 @@ function preventPaddleOverlap(paddle1, paddle2) {
 }
 
 function handleEdgeCollisions(player) {
+	ball.speed = ballSpeed * Math.sign(ball.speed);
 	ball.speed *= -1; // Reverse X direction when hitting paddle
 	//Getting value 0 to 1 where 0 ball hit upper edde, 0,5 center, 1 lower edge.
 	let impactPoint = (ball.y + ball.height / 2 - player.y) / player.height;
@@ -262,9 +263,7 @@ function handleEdgeCollisions(player) {
 		let gravityRange = (maxGravity - initialBallGravity) * (0.5 - Math.abs(impactPoint - 0.5)) * 2;
 		ball.gravity = gravitySign * gravityRange;
 	}
-	console.log("ball.gravity:", ball.gravity);
 }
-console.log("ball.gravity:", ball.gravity);
 
 function paddleCollision() {
 	if (gameOver == true)
@@ -305,7 +304,7 @@ function ballToCenterAndMove() {
 	ball.y = canvas.height / 2 - ball.width / 2;
 	let randomSign = Math.random() < 0.5 ? -1 : 1;
 	ball.gravity = initialBallGravity * randomSign;
-	ball.speed = ball.speed * randomSign;
+	ball.speed = (ballSpeed / 2) * randomSign;
 	window.previousBallDirection = randomSign;
 }
 
@@ -394,8 +393,6 @@ function drawAll(){
 	score_1();
 	score_2();
 }
-
-let AiLastUpdateTime = Date.now();
 
 function loop() {
 	if (init === 0 && (window.location.href === `https://${window.location.hostname}:8443/` || window.isTournament == true)) {
