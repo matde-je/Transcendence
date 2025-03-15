@@ -13,16 +13,14 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 # Install PostgreSQL client to use pg_isready for checking database readiness
 RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
 
-# Generate SSL certificate using OpenSSL
-# RUN openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/C=PT/ST=Lisboa/L=Lisboa/O=42/OU=42/CN=matde-je.42.fr"
-
 # Copy all project files to the container
 COPY ./transcendence /app
-COPY cert.key /app/cert.key
-COPY cert.crt /app/cert.crt
 
 # Create staticfiles directory and adjust permissions for Django
 RUN mkdir -p /app/staticfiles && chmod -R 777 /app/staticfiles
+
+COPY cert.key /app/cert.key
+COPY cert.crt /app/cert.crt
 
 # Set the environment variable for Django to run in non-interactive mode
 ENV PYTHONUNBUFFERED=1

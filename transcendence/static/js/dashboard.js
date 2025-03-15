@@ -186,7 +186,6 @@ export async function showTournamentResults() {
         const labels = [];
         const wins1 = [];  
         const content = document.getElementById('content');
-        if (tournaments.length > 0) {
             tournaments.forEach(tournament => {
                 const div = document.createElement('div');
                 const date = formatDate(tournament.finished_on);
@@ -202,32 +201,32 @@ export async function showTournamentResults() {
             const winPercentage = Math.ceil((wins / total) * 100); //round up
             content.innerHTML = `
             <div class="container-fluid">
-            <div class="row justify-content-center align-items-center">
-                <div class="col-xl-4 col-lg-5 col-md-6 mb-4 mb-md-0">
-                    <div class="card shadow-sm p-3 mx-auto">
-                        <h4 class="text-center mb-4">Tournament Results</h4>
-                        <div class="row">
-                            <div class="col-6 text-end fw-bold">Total Games:</div>
-                            <div class="col-6">${total}</div>
-                            <div class="col-6 text-end fw-bold">Wins:</div>
-                            <div class="col-6">${wins}</div>
-                            <div class="col-6 text-end fw-bold">Losses:</div>
-                            <div class="col-6">${losses}</div>
-                            <div class="col-6 text-end fw-bold">Win Percentage:</div>
-                            <div class="col-6">${winPercentage}%</div>
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-xl-4 col-lg-5 col-md-6 mb-4 mb-md-0">
+                        <div class="card shadow-sm p-3 mx-auto">
+                            <h4 class="text-center mb-4">Tournament Results</h4>
+                            <div class="row">
+                                <div class="col-6 text-end fw-bold">Total Games:</div>
+                                <div class="col-6">${total}</div>
+                                <div class="col-6 text-end fw-bold">Wins:</div>
+                                <div class="col-6">${wins}</div>
+                                <div class="col-6 text-end fw-bold">Losses:</div>
+                                <div class="col-6">${losses}</div>
+                                <div class="col-6 text-end fw-bold">Win Percentage:</div>
+                                <div class="col-6">${winPercentage}%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-5 col-md-6 d-flex justify-content-center">
+                        <div class="chart-container">
+                            <canvas id="resultspie"></canvas>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-4 col-lg-5 col-md-6 d-flex justify-content-center">
-                    <div class="chart-container">
-                        <canvas id="resultspie"></canvas>
-                    </div>
-                </div>
             </div>
-        </div>
-        <div class="chart-container mb-5">
-            <canvas id="resultsChart"><canvas>
-        </div>
+            <div class="chart-container mb-5">
+                <canvas id="resultsChart"><canvas>
+            </div>
             `;  
             if (window.pie instanceof Chart) {
                 window.pie.destroy();
@@ -317,9 +316,6 @@ export async function showTournamentResults() {
                     }
                 }
             });
-    } else {
-        content.innerHTML += '<p>You have not participated in any tournaments.</p>';
-    } 
     } catch (error) {
         alert('Error fetching tournament results.');
     }
