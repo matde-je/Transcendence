@@ -1,7 +1,7 @@
 # Starts and build all containers defined in docker-compose.yml
-run:
+run: generate-certs copy-certs
 	@clear
-	docker-compose --file docker-compose.yml up --build
+	docker compose --file docker-compose.yml up --build
 
 # Stop all containers defined in docker-compose.yml
 stop:
@@ -16,7 +16,7 @@ down:
 # Stop and remove all containers, network, images and volumes defined in docker-compose.yml
 clean:
 	@clear
-	docker-compose --file docker-compose.yml down --rmi all --volumes --remove-orphans
+	docker compose --file docker-compose.yml down --rmi all --volumes --remove-orphans
 
 # Remove all containers, images and volumes not used
 fclean: clean

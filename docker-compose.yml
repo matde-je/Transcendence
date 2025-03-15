@@ -15,13 +15,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
   backend:
     container_name: backend
     build:
       context: .
       dockerfile: Dockerfile
-    user: "1000:1000" 
     environment:
       - DJANGO_SETTINGS_MODULE=transcendence.settings
     command: >
@@ -34,9 +32,8 @@ services:
         python manage.py makemigrations &&
         python manage.py migrate &&
         daphne -e ssl:8000:privateKey=/app/cert.key:certKey=/app/cert.crt transcendence.asgi:application"
-  
     volumes:
-      - ./transcendence:/app:cached
+      - ./transcendence:/app
       - static_volume:/app/staticfiles
     expose:
       - "8000"
