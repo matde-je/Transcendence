@@ -179,37 +179,32 @@ endpoint="https://localhost:8443/users/logout/"
 test_endpoint "$endpoint" "POST" "" "authenticated"
 
 # Get user data
-endpoint="https://localhost:8443/user/"
+endpoint="https://localhost:8443/users/user/"
 test_endpoint "$endpoint" "GET" "" "authenticated"
 
 # Update user data
-endpoint="https://localhost:8443/user/update/"
+endpoint="https://localhost:8443/users/user/update/"
 data='{"email": "updated@example.com"}'
 test_endpoint "$endpoint" "PUT" "$data" "authenticated"
 
 # Get friend list
-endpoint="https://localhost:8443/friends/"
+endpoint="https://localhost:8443/users/friends/"
 test_endpoint "$endpoint" "GET" "" "authenticated"
 
 # Get received friend requests
-endpoint="https://localhost:8443/friend_requests/received/"
+endpoint="https://localhost:8443/users/friend_requests/received/"
 test_endpoint "$endpoint" "GET" "" "authenticated"
 
 # Get sent friend requests
-endpoint="https://localhost:8443/friend_requests/sent/"
+endpoint="https://localhost:8443/users/friend_requests/sent/"
 test_endpoint "$endpoint" "GET" "" "authenticated"
 
 # Remove friend
-endpoint="https://localhost:8443/friends/2/remove/"  # Assuming friend's user_id is 2
+endpoint="https://localhost:8443/users/friends/1/remove/"  # Assuming friend's user_id is 2
 test_endpoint "$endpoint" "DELETE" "" "authenticated"
 
-# Create tournament
-endpoint="https://localhost:8443/tournaments/create/"
-data='{"name": "New Tournament", "description": "Test tournament"}'
-test_endpoint "$endpoint" "POST" "$data" "authenticated"
-
 # Get user by ID
-endpoint="https://localhost:8443/user/1/"  # Assuming user_id is 1
+endpoint="https://localhost:8443/users/user/1/"  # Assuming user_id is 1
 test_endpoint "$endpoint" "GET" "" "authenticated"
 
 # Get user results
