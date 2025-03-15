@@ -261,6 +261,7 @@ export async function showTournamentResults() {
             }
             window.myChart = document.getElementById("resultsChart").getContext('2d');
             window.myChart.canvas.height = 100; 
+            console.log(wins1);
             window.myChart = new Chart(window.myChart, {
                 type: "line",
                 data: {
@@ -300,7 +301,12 @@ export async function showTournamentResults() {
                                 },
                             },
                             ticks: {
+                                min: 0,
+                                max: 1,
                                 stepSize: 1,
+                                callback: function(value) { 
+                                    return value === 0 || value === 1 ? value : ''; // Only show 0 or 1
+                                }
                             },
                             grid: {
                                 display: false 
@@ -317,6 +323,7 @@ export async function showTournamentResults() {
                 }
             });
     } catch (error) {
+        console.error('Error ', error);
         alert('Error fetching tournament results.');
     }
 }
@@ -453,7 +460,12 @@ export async function showPongResults() {
                             },
                         },
                         ticks: {
+                            min: 0,
+                            max: 1,
                             stepSize: 1,
+                            callback: function(value) { 
+                                return value === 0 || value === 1 ? value : ''; // Only show 0 or 1
+                            }
                         },
                         grid: {
                             display: false 
