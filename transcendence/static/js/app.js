@@ -141,11 +141,10 @@ export function initializeNavbar(authenticated) {
                 console.error('WebSocket error:', error);
             };
             window.socket.onclose = function(e) {};
-
         }
         window.socket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            // console.log('Parsed data:', data);
+            console.log('Parsed data:', data);
             if (data.online_friends) {
                 window.onlineFriends = data.online_friends;
                 update_onlinestatus_ui();

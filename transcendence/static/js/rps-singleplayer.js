@@ -60,6 +60,7 @@ function playGame(playerChoice, playerDisplay, computerDisplay, resultDisplay, p
     if (playerScore === 3 || computerScore === 3) {
         const finalResult = playerScore === 3 ? 'You won the game!' : 'You lost the game!';
         resultDisplay.innerText = finalResult;
+        alert(finalResult);
         registerMatch(finalResult);
     }
 }

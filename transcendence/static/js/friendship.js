@@ -203,6 +203,10 @@ export async function showFriends() {
             button.className = 'btn btn-sm btn-danger';
             button.onclick = function() {
                 removeFriend(friend.id);
+                if (window.socket)
+                    window.socket.close();
+                window.socket = null;
+
             };
             listItem.appendChild(button);
             // Store reference to update later via WebSocket
