@@ -1,9 +1,7 @@
 .env
 code-style.md
-cert.pem
-key.pem
-/transcendence/cert.crt
-/transcendence/cert.key
+cert.crt
+cert.key
 /transcendence/__pycache__/
 /transcendence/media/
 /transcendence/pong_history/__pycache__/
