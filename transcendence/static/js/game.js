@@ -72,7 +72,7 @@ const player1 = new Element ( { x: 10, y: 170, width:10, height: 50, color: "#ff
 
 window.player2 = new Element ( { x: 530, y: 170, width:10, height: 50, color: "#fff", gravity: paddleGravity,});
 
-const player3 = new Element ( { x: 12, y: 230, width:10, height: 50, color: "#fff", gravity: paddleGravity,});
+const player3 = new Element ( { x: 10, y: 230, width:10, height: 50, color: "#fff", gravity: paddleGravity,});
 
 const player4 = new Element ( { x: 530, y: 230, width:10, height: 50, color: "#fff", gravity: paddleGravity,});
 
@@ -105,7 +105,7 @@ window.addEventListener("keydown", (e) => {
 			context.font = '20px \'Courier New\', Courier, monospace';
 			context.textAlign = 'center';
 			context.fillStyle = 'white';
-			context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2,  canvas.height * 0.125);
+			context.fillText('PRESS NUMBER OF PLAYERS (1, 2 or 4)', canvas.width / 2, canvas.height * 0.125);
 			draw(player1);
 			draw(player2);
 		}
@@ -116,7 +116,7 @@ window.addEventListener("keydown", (e) => {
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, canvas.height / 2);
+			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, canvas.height * 0.42);
 			context.fillText("P - PAUSE", canvas.width / 2, canvas.height / 1.13);
 			context.fillText("S - START", canvas.width / 2, canvas.height / 1.05);
 			username2 = "        Ai";
@@ -127,8 +127,8 @@ window.addEventListener("keydown", (e) => {
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, canvas.height / 2);
-			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 230);
+			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, canvas.height * 0.42);
+			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, canvas.height * 0.46);
 			context.fillText("P - PAUSE", canvas.width / 2, canvas.height / 1.13);
 			context.fillText("S - START", canvas.width / 2, canvas.height / 1.05);
 			if (!window.isTournament)
@@ -140,10 +140,10 @@ window.addEventListener("keydown", (e) => {
 			context.font = "20px 'Courier New', Courier, monospace";
 			context.textAlign = "center";
 			context.fillStyle = "white";
-			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, canvas.height / 2);
-			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, 230);
-			context.fillText("PLAYER 3 - F AND V   ", canvas.width / 2, 260);
-			context.fillText("PLAYER 4 - J AND M   ", canvas.width / 2, 290);
+			context.fillText("PLAYER 1 - Q AND A   ", canvas.width / 2, canvas.height * 0.42);
+			context.fillText("PLAYER 2 - ARROW KEYS", canvas.width / 2, canvas.height * 0.46);
+			context.fillText("PLAYER 3 - F AND V   ", canvas.width / 2, canvas.height * 0.50);
+			context.fillText("PLAYER 4 - J AND M   ", canvas.width / 2, canvas.height * 0.54);
 			context.fillText("P - PAUSE", canvas.width / 2, canvas.height / 1.13);
 			context.fillText("S - START", canvas.width / 2, canvas.height / 1.05);
 			username2 = "Human pair";
